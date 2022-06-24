@@ -1,0 +1,6 @@
+# Gradle
+/.gradle
+build/
+
+# Yarn
+/kotlin-js-store
