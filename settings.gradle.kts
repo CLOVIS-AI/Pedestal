@@ -7,5 +7,6 @@ plugins {
 
 include(
 	"backbone",
+	"logger",
 	"tester",
 )

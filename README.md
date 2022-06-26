@@ -4,6 +4,7 @@ OpenSavvy Pedestal is a collection of open source utilities for unified software
 
 - [Pedestal Backbone](backbone/README.md) unifies API architecture by including caching and efficient transfers directly into the API itself.
 - Pedestal Spine (TODO) allows Backbone implementations to interact with each other transparently through a network boundary.
+- [Pedestal Logger](logger/README.md) is a simple logger implementation for multiplatform projects.
 
 ## Development
 

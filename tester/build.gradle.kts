@@ -16,6 +16,8 @@ kotlin {
 			dependencies {
 				api(kotlin("test-common"))
 				api(kotlin("test-annotations-common"))
+
+				implementation("ch.qos.logback:logback-classic:_")
 			}
 		}
 

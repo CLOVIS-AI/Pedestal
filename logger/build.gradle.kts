@@ -12,18 +12,15 @@ kotlin {
 	}
 
 	sourceSets {
-		val commonMain by getting {
-			dependencies {
-				api(KotlinX.coroutines.core)
-				api(KotlinX.datetime)
-
-				implementation(project(":logger"))
-			}
-		}
-
 		val commonTest by getting {
 			dependencies {
 				implementation(project(":tester"))
+			}
+		}
+
+		val jvmMain by getting {
+			dependencies {
+				implementation("org.slf4j:slf4j-api:_")
 			}
 		}
 	}
