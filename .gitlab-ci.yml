@@ -15,7 +15,22 @@ sast:
 include:
 - template: Security/SAST.gitlab-ci.yml
 
-logger:publish:
-  image: openjdk:latest
+.publish:
+  image: archlinux:base
   script:
-    - ./gradlew logger:publishKotlinMultiplatformPublicationToGitLabRepository
+    - pacman -Syu --noconfirm git jre-openjdk-headless
+    - export JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v java))))
+    - ./gradlew $module:publishKotlinMultiplatformPublicationToGitLabRepository
+  only:
+    - main
+    - tags
+
+logger:publish:
+  extends: [ .publish ]
+  variables:
+    module: logger
+
+backbone:publish:
+  extends: [ .publish ]
+  variables:
+    module: backbone
