@@ -7,7 +7,15 @@
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
 - test
+- publish
+
 sast:
   stage: test
+
 include:
 - template: Security/SAST.gitlab-ci.yml
+
+logger:publish:
+  image: openjdk:latest
+  script:
+    - ./gradlew logger:publishKotlinMultiplatformPublicationToGitLabRepository
