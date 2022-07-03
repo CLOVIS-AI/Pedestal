@@ -77,25 +77,30 @@ class MemoryCache<O>(
 	}
 
 	override suspend fun expireAll(refs: Iterable<Ref<O>>) {
-		cacheLock.withPermit {
-			for (ref in refs)
-				cache.remove(ref)
-		}
+		log.trace(refs) { "expireAll" }
 
 		jobsLock.withPermit {
 			for (ref in refs) {
 				jobs.remove(ref)?.cancel("MemoryCache.expireAll(refs) was called")
 			}
 		}
+
+		cacheLock.withPermit {
+			for (ref in refs)
+				cache[ref]?.value = ref.initialData
+		}
 	}
 
 	override suspend fun expireAll() {
-		cacheLock.withPermit {
-			cache.clear()
-		}
+		log.trace { "expireAll" }
 
 		jobsLock.withPermit {
 			jobs.values.forEach { it.cancel("MemoryCache.expireAll() was called") }
+		}
+
+		cacheLock.withPermit {
+			for (ref in cache.keys)
+				cache[ref]?.value = ref.initialData
 		}
 	}
 
