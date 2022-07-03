@@ -78,20 +78,13 @@ class ExpirationCache<O>(
 
 	private suspend fun markAsUpdatedNow(ref: Ref<O>) {
 		lock.withPermit {
+			log.trace(ref) { "markAsUpdatedNow" }
 			lastUpdate[ref] = Clock.System.now()
 		}
 	}
 
 	override fun get(ref: Ref<O>): Flow<Data<O>> = upstream[ref]
 		.onEach { markAsUpdatedNow(ref) }
-
-	override suspend fun updateAll(values: Iterable<Data<O>>) {
-		for (value in values)
-			markAsUpdatedNow(value.ref)
-
-		// Ensure the previous layers are updated as well
-		super.updateAll(values)
-	}
 
 	override suspend fun expireAll(refs: Iterable<Ref<O>>) {
 		for (ref in refs)
