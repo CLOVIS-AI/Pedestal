@@ -34,3 +34,69 @@ backbone:publish:
   extends: [ .publish ]
   variables:
     module: backbone
+
+.test-jvm:
+  image: openjdk:latest
+  script:
+    - ./gradlew $module:koverReport  # implies running the JVM tests
+  after_script:
+    - mkdir -p test-report-$module
+    - mv $module/build/reports/tests/jvmTest test-report-$module/test
+    - mv $module/build/reports/kover/project-html test-report-$module/coverage
+    - mv $module/build/reports/kover/project-xml/report.xml test-report-$module/coverage.xml
+    - values=$(cat test-report-$module/coverage.xml | tail -7 | head -5 | grep 'INSTRUCTION' | cut -d ' ' -f 3,4 | sed 's/missed="//;s/" covered="/ /;s/"\/>//')
+    - missed=$(<<<$values cut -d ' ' -f 1)
+    - covered=$(<<<$values cut -d ' ' -f 2)
+    - echo "Coverage $(($covered * 100 / ($covered + $missed)))%"
+  coverage: '/Coverage \d+%/'
+  artifacts:
+    paths:
+      - test-report-$module
+    expose_as: 'Test and coverage report'
+    reports:
+       junit: $module/build/test-results/jvmTest/**.xml
+    when: always
+  only:
+    - merge_requests
+    - main
+    - tags
+
+.test-jvm-convert-coverage:
+  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.8
+  script:
+    - python /opt/cover2cover.py test-report-$module/coverage.xml $CI_PROJECT_DIR/$module/src/main/kotlin/ > cobertura.xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: cobertura.xml
+  only:
+    - merge_requests
+    - main
+    - tags
+
+logger:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: logger
+
+logger:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: logger:test:jvm
+      artifacts: true
+  variables:
+    module: logger
+
+backbone:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: backbone
+
+backbone:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: backbone:test:jvm
+      artifacts: true
+  variables:
+    module: backbone
