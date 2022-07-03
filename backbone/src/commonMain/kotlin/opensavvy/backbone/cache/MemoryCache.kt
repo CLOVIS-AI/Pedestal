@@ -48,26 +48,32 @@ class MemoryCache<O>(
 	private fun getUnsafe(ref: Ref<O>) = cache.getOrPut(ref) { MutableStateFlow(ref.initialData) }
 
 	override fun get(ref: Ref<O>): Flow<Data<O>> = flow {
+		log.trace(ref) { "get called for" }
+
 		emit(ref.initialData)
 
 		val cached = cacheLock.withPermit { getUnsafe(ref) }
 
-		jobsLock.withPermit {
-			jobs.getOrPut(ref) {
-				scope.launch(CoroutineName("MemoryCache for $ref")) {
-					log.trace { "Subscribing to previous layer for $ref" }
+		cached.collect { data ->
+			emit(data)
 
-					upstream[ref]
-						.collect { cached.value = it }
+			jobsLock.withPermit {
+				jobs.getOrPut(ref) {
+					scope.launch(CoroutineName("MemoryCache for $ref")) {
+						log.trace { "Subscribing to previous layer for $ref" }
+
+						upstream[ref]
+							.collect { cached.value = it }
+					}
 				}
 			}
 		}
-
-		emitAll(cached)
 	}.distinctUntilChanged()
-		.onEach { log.trace(it) { "Updated value" } }
+		.onEach { log.trace(it) { "new value emitted from 'get'" } }
 
 	override suspend fun updateAll(values: Iterable<Data<O>>) {
+		log.trace(values) { "updateAll" }
+
 		cacheLock.withPermit {
 			for (value in values)
 				getUnsafe(value.ref).value = value
