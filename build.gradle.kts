@@ -1,6 +1,7 @@
 plugins {
     kotlin("multiplatform") apply false
     id("com.palantir.git-version")
+    id("org.jetbrains.kotlinx.kover")
 }
 
 group = "opensavvy"
