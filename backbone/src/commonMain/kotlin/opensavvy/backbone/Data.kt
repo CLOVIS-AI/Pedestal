@@ -50,7 +50,7 @@ data class Data<O>(
 	val ref: Ref<O>,
 ) {
 
-	override fun toString() = "Data($data is $status for $ref)"
+	override fun toString() = "$data is $status for $ref"
 
 	/**
 	 * Whether a piece of [Data] is [Completed] or still [Loading].
