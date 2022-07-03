@@ -41,9 +41,8 @@ class MemoryCacheTest {
 		}
 	}
 
-	@Test
-	fun withoutCache() = runTest {
-		val backbone = AbsoluteIntBackbone(Cache.Default())
+	private suspend fun testCache(cache: Cache<UInt>) {
+		val backbone = AbsoluteIntBackbone(cache)
 
 		val zero = backbone.convert(0)
 		val one = backbone.convert(1)
@@ -55,21 +54,16 @@ class MemoryCacheTest {
 	}
 
 	@Test
+	fun withoutCache() = runTest {
+		testCache(Cache.Default())
+	}
+
+	@Test
 	fun infiniteMemoryCache() = runTest {
 		val job = Job()
 
-		val cache = Cache.Default<UInt>()
-			.cachedInMemory(coroutineContext + job)
-
-		val backbone = AbsoluteIntBackbone(cache)
-
-		val zero = backbone.convert(0)
-		val one = backbone.convert(1)
-		val minus = backbone.convert(-1)
-
-		assertEquals(0u, zero.requestValue())
-		assertEquals(1u, one.requestValue())
-		assertEquals(1u, minus.requestValue())
+		testCache(Cache.Default<UInt>()
+			           .cachedInMemory(coroutineContext + job))
 
 		job.cancel()
 	}
@@ -78,18 +72,8 @@ class MemoryCacheTest {
 	fun expiringDefaultCache() = runTest {
 		val job = Job()
 
-		val cache = Cache.Default<UInt>()
-			.expireAfter(1.minutes, coroutineContext + job) // This is useless, since the previous layer is a Default
-
-		val backbone = AbsoluteIntBackbone(cache)
-
-		val zero = backbone.convert(0)
-		val one = backbone.convert(1)
-		val minus = backbone.convert(-1)
-
-		assertEquals(0u, zero.requestValue())
-		assertEquals(1u, one.requestValue())
-		assertEquals(1u, minus.requestValue())
+		testCache(Cache.Default<UInt>()
+			          .expireAfter(1.minutes, coroutineContext + job))
 
 		job.cancel()
 	}
@@ -98,19 +82,9 @@ class MemoryCacheTest {
 	fun expiringMemoryCache() = runTest {
 		val job = Job()
 
-		val cache = Cache.Default<UInt>()
-			.cachedInMemory(coroutineContext + job)
-			.expireAfter(1.minutes, coroutineContext + job)
-
-		val backbone = AbsoluteIntBackbone(cache)
-
-		val zero = backbone.convert(0)
-		val one = backbone.convert(1)
-		val minus = backbone.convert(-1)
-
-		assertEquals(0u, zero.requestValue())
-		assertEquals(1u, one.requestValue())
-		assertEquals(1u, minus.requestValue())
+		testCache(Cache.Default<UInt>()
+			          .cachedInMemory(coroutineContext + job)
+			          .expireAfter(1.minutes, coroutineContext + job))
 
 		job.cancel()
 	}
