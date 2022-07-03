@@ -58,14 +58,32 @@ class MemoryCache<O>(
 			emit(data)
 
 			jobsLock.withPermit {
-				jobs.getOrPut(ref) {
-					scope.launch(CoroutineName("MemoryCache for $ref")) {
-						log.trace { "Subscribing to previous layer for $ref" }
+				// A new event arrived
+				// Possible causes:
+				// - the previous layer was updated
+				// - 'update' or 'expire' were called
+
+				// There are three possible cases:
+				// 1. We are not subscribed to the previous layer for this ref
+				//    -> subscribe to it
+				// 2. We are subscribed to the previous layer for this ref
+				//    -> nothing to do
+				// 3. We were previously subscribed, but the subscriber died
+				//    -> subscribe to the ref (overwrite the dead subscriber)
+
+				val job = jobs[ref]
+				if (job == null || !job.isActive) {
+					// job == null: case 1
+					// job is not active: case 3
+					// in both cases, a new job must be started
+
+					jobs[ref] = scope.launch(CoroutineName("MemoryCache for $ref")) {
+						log.trace { "Subscribing to the previous layer for $ref" }
 
 						upstream[ref]
 							.collect { cached.value = it }
 					}
-				}
+				} // else: case 2, nothing to do
 			}
 		}
 	}.distinctUntilChanged()
