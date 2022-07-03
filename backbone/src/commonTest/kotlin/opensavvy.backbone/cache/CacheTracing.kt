@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.test.runTest
 import opensavvy.backbone.*
+import opensavvy.backbone.Ref.Companion.expire
 import opensavvy.backbone.Ref.Companion.requestValue
 import opensavvy.backbone.cache.MemoryCache.Companion.cachedInMemory
 import kotlin.test.Test
@@ -59,6 +60,28 @@ class CacheTracing  {
 		}
 
 		// After the 10 requests have finished, check that only one real request was sent
+		assertEquals(1, backbone.tracker)
+
+		job.cancel()
+	}
+
+	/**
+	 * Expiring a value when no one is subscribed to it does not start a new request
+	 */
+	@Test
+	fun expireNoSubscribers() = runTest {
+		val job = Job()
+
+		val backbone = TracingBackbone(Cache.Default<Int>().cachedInMemory(coroutineContext + job))
+		val zero = backbone.get(0)
+		assertEquals(0, backbone.tracker)
+
+		// Start one request to ensure everything is initialized correctly
+		assertEquals(0, zero.requestValue())
+		assertEquals(1, backbone.tracker)
+
+		// Expire the value, no new requests should be started
+		zero.expire()
 		assertEquals(1, backbone.tracker)
 
 		job.cancel()
