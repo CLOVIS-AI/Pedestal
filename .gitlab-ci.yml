@@ -20,7 +20,7 @@ include:
   script:
     - pacman -Syu --noconfirm git jre-openjdk-headless
     - export JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v java))))
-    - ./gradlew $module:publishKotlinMultiplatformPublicationToGitLabRepository
+    - ./gradlew $module:publishKotlinMultiplatformPublicationToGitLabRepository $module:publishJvmPublicationToGitLabRepository $module:publishJsPublicationToGitLabRepository
   only:
     - main
     - tags
