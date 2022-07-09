@@ -48,7 +48,7 @@ interface Ref<O> {
 		 * The next time [request] is called, a new request will be started.
 		 */
 		suspend fun <O> Ref<O>.expire() {
-			backbone.cache.expire(this)
+			backbone.cache.expireAllRecursively(listOf(this))
 		}
 
 		/**

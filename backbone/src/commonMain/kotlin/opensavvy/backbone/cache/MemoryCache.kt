@@ -48,26 +48,50 @@ class MemoryCache<O>(
 	private fun getUnsafe(ref: Ref<O>) = cache.getOrPut(ref) { MutableStateFlow(ref.initialData) }
 
 	override fun get(ref: Ref<O>): Flow<Data<O>> = flow {
+		log.trace(ref) { "get called for" }
+
 		emit(ref.initialData)
 
 		val cached = cacheLock.withPermit { getUnsafe(ref) }
 
-		jobsLock.withPermit {
-			jobs.getOrPut(ref) {
-				scope.launch(CoroutineName("MemoryCache for $ref")) {
-					log.trace { "Subscribing to previous layer for $ref" }
+		cached.collect { data ->
+			emit(data)
 
-					upstream[ref]
-						.collect { cached.value = it }
-				}
+			jobsLock.withPermit {
+				// A new event arrived
+				// Possible causes:
+				// - the previous layer was updated
+				// - 'update' or 'expire' were called
+
+				// There are three possible cases:
+				// 1. We are not subscribed to the previous layer for this ref
+				//    -> subscribe to it
+				// 2. We are subscribed to the previous layer for this ref
+				//    -> nothing to do
+				// 3. We were previously subscribed, but the subscriber died
+				//    -> subscribe to the ref (overwrite the dead subscriber)
+
+				val job = jobs[ref]
+				if (job == null || !job.isActive) {
+					// job == null: case 1
+					// job is not active: case 3
+					// in both cases, a new job must be started
+
+					jobs[ref] = scope.launch(CoroutineName("MemoryCache for $ref")) {
+						log.trace { "Subscribing to the previous layer for $ref" }
+
+						upstream[ref]
+							.collect { cached.value = it }
+					}
+				} // else: case 2, nothing to do
 			}
 		}
-
-		emitAll(cached)
 	}.distinctUntilChanged()
-		.onEach { log.trace(it) { "Updated value" } }
+		.onEach { log.trace(it) { "new value emitted from 'get'" } }
 
 	override suspend fun updateAll(values: Iterable<Data<O>>) {
+		log.trace(values) { "updateAll" }
+
 		cacheLock.withPermit {
 			for (value in values)
 				getUnsafe(value.ref).value = value
@@ -77,25 +101,30 @@ class MemoryCache<O>(
 	}
 
 	override suspend fun expireAll(refs: Iterable<Ref<O>>) {
-		cacheLock.withPermit {
-			for (ref in refs)
-				cache.remove(ref)
-		}
+		log.trace(refs) { "expireAll" }
 
 		jobsLock.withPermit {
 			for (ref in refs) {
 				jobs.remove(ref)?.cancel("MemoryCache.expireAll(refs) was called")
 			}
 		}
+
+		cacheLock.withPermit {
+			for (ref in refs)
+				cache[ref]?.value = ref.initialData
+		}
 	}
 
 	override suspend fun expireAll() {
-		cacheLock.withPermit {
-			cache.clear()
-		}
+		log.trace { "expireAll" }
 
 		jobsLock.withPermit {
 			jobs.values.forEach { it.cancel("MemoryCache.expireAll() was called") }
+		}
+
+		cacheLock.withPermit {
+			for (ref in cache.keys)
+				cache[ref]?.value = ref.initialData
 		}
 	}
 

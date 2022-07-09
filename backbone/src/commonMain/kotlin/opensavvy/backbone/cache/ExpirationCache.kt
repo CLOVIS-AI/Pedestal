@@ -12,6 +12,7 @@ import opensavvy.backbone.Data
 import opensavvy.backbone.Ref
 import opensavvy.backbone.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.logger.Logger.Companion.debug
+import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -62,10 +63,13 @@ class ExpirationCache<O>(
 					val now = Clock.System.now()
 					val iterator= lastUpdate.iterator()
 					while (iterator.hasNext()) {
-						val (_, instant) = iterator.next()
+						val (ref, instant) = iterator.next()
 
-						if (instant < now - expireAfter)
+						if (instant < now - expireAfter) {
+							log.trace(ref) { "Removed reference" }
 							iterator.remove()
+							upstream.expire(ref)
+						}
 					}
 				}
 			}
@@ -74,20 +78,13 @@ class ExpirationCache<O>(
 
 	private suspend fun markAsUpdatedNow(ref: Ref<O>) {
 		lock.withPermit {
+			log.trace(ref) { "markAsUpdatedNow" }
 			lastUpdate[ref] = Clock.System.now()
 		}
 	}
 
 	override fun get(ref: Ref<O>): Flow<Data<O>> = upstream[ref]
 		.onEach { markAsUpdatedNow(ref) }
-
-	override suspend fun updateAll(values: Iterable<Data<O>>) {
-		for (value in values)
-			markAsUpdatedNow(value.ref)
-
-		// Ensure the previous layers are updated as well
-		super.updateAll(values)
-	}
 
 	override suspend fun expireAll(refs: Iterable<Ref<O>>) {
 		for (ref in refs)
