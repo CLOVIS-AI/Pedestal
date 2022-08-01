@@ -9,4 +9,5 @@ include(
 	"backbone",
 	"logger",
 	"tester",
+	"auth",
 )
