@@ -12,6 +12,7 @@ kotlin {
 		val commonMain by getting {
 			dependencies {
 				api(project(":backbone"))
+				api(KotlinX.datetime)
 
 				implementation(project(":logger"))
 			}
