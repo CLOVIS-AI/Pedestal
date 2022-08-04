@@ -156,19 +156,19 @@ class JwtAuthenticator<R : Role>(
 	private fun createTokenCommon(user: Account<R>) = JWT
 		.create()
 		.withIssuer(issuer)
-		// Expiration date
 		.withIssuedAt(Date.from(Instant.now()))
-		.withExpiresAt(Date.from(Instant.now() + accessTokenExpiration.toJavaDuration()))
 		// User information
 		.withSubject(user.id)
 		.withClaim("role", user.role.id)
 
-	override fun createRefreshToken(user: Account<R>): String = createTokenCommon(user)
+	override fun createAccessToken(user: Account<R>): String = createTokenCommon(user)
 		.withClaim("mode", "access")
+		.withExpiresAt(Date.from(Instant.now() + accessTokenExpiration.toJavaDuration()))
 		.sign(algorithm)
 
-	override fun createAccessToken(user: Account<R>): String  = createTokenCommon(user)
+	override fun createRefreshToken(user: Account<R>): String  = createTokenCommon(user)
 		.withClaim("mode", "refresh")
 		.withClaim("epoch", user.authEpoch)
+		.withExpiresAt(Date.from(Instant.now() + refreshTokenExpiration.toJavaDuration()))
 		.sign(algorithm)
 }
