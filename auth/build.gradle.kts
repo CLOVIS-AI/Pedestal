@@ -21,6 +21,7 @@ kotlin {
 		val commonTest by getting {
 			dependencies {
 				implementation(project(":tester"))
+				implementation(KotlinX.coroutines.test)
 			}
 		}
 
