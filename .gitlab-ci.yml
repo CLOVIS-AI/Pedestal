@@ -38,7 +38,7 @@ backbone:publish:
 .test-jvm:
   image: openjdk:latest
   script:
-    - ./gradlew $module:koverReport  # implies running the JVM tests
+    - ./gradlew $module:koverReport $module:koverVerify  # implies running the JVM tests
   after_script:
     - mkdir -p test-report-$module
     - mv $module/build/reports/tests/jvmTest test-report-$module/test
