@@ -100,3 +100,16 @@ backbone:convert-coverage:
       artifacts: true
   variables:
     module: backbone
+
+auth:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: auth
+
+auth:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: auth:test:jvm
+      artifacts: true
+  variables:
+    module: auth
