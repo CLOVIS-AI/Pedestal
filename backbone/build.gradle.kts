@@ -55,3 +55,12 @@ publishing {
 			println("The GitLab registry is disabled because credentials are missing.")
 	}
 }
+
+tasks.koverVerify {
+	rule {
+        name = "Minimal code coverage"
+        bound {
+            minValue = 80
+        }
+    }
+}
