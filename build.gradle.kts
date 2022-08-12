@@ -2,6 +2,7 @@ plugins {
     kotlin("multiplatform") apply false
     id("com.palantir.git-version")
     id("org.jetbrains.kotlinx.kover")
+    id("org.jetbrains.dokka")
 }
 
 group = "opensavvy"
@@ -16,6 +17,8 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
+    plugins.apply("org.jetbrains.dokka")
 }
 
 fun calculateVersion(): String {
