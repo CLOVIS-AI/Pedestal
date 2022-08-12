@@ -1,10 +1,20 @@
 package opensavvy.backbone
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import opensavvy.backbone.Cache.Batching
 import opensavvy.backbone.Cache.Default
+import opensavvy.backbone.Data.Companion.initialData
 import opensavvy.backbone.Ref.Companion.directRequest
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.coroutineContext
 
 /**
  * Stores information temporarily to avoid unneeded network requests.
@@ -36,8 +46,8 @@ import opensavvy.backbone.Ref.Companion.directRequest
  *
  * Cache chaining is instantiated in the opposite order, like iterators (the last in the chain is the first checked,
  * and delegates to the previous one if they do not have the value).
- * The first element of the chain, and therefore the one responsible for actually starting the request, is [Default].
- * Note that [Default] has a few implementation differences, it is not recommended to use it directly without chaining it under another implementation.
+ * The first element of the chain, and therefore the one responsible for actually starting the request, is [Default] or [Batching].
+ * Note that both have a few implementation differences, it is not recommended to use them directly without chaining under another implementation.
  */
 interface Cache<O> {
 
@@ -175,6 +185,9 @@ interface Cache<O> {
 	 * between caches and the underlying network APIs (via [Backbone]), it takes a few liberties with the API:
 	 * - [get] doesn't actually return a long-lived flow,
 	 * - [updateAll] and [expireAll] don't actually do anything.
+	 *
+	 * The actual request is delegated to [Backbone.directRequest].
+	 * To call [Backbone.batchRequests] instead, see [Batching].
 	 */
 	class Default<O> : Cache<O> {
 		override fun get(ref: Ref<O>): Flow<Data<O>> = flow {
@@ -202,6 +215,144 @@ interface Cache<O> {
 		}
 
 		override suspend fun expireAllRecursively(refs: Iterable<Ref<O>>) {
+			// This has no state, there is nothing to expire
+		}
+	}
+
+	/**
+	 * Default cache implementation aimed to be used as the first link in a cache chain, batching requests.
+	 *
+	 * Much like [Default], this is not strictly a valid implementation of [Cache], and is only intended to be used as
+	 * the first layer in a chain.
+	 * More information is found in [Default].
+	 *
+	 * The actual request is delegated to [Backbone.batchRequests].
+	 * To call [Backbone.directRequest] instead, see [Default].
+	 *
+	 * The batching is implemented by having multiple workers collect the various requests.
+	 * Because of this, **all references passed to this class should come from the same [Backbone] instance**.
+	 */
+	class Batching<O>(
+
+		/**
+		 * The number of workers batching the requests.
+		 *
+		 * All requests are split among them.
+		 * Each worker tries to batch as many requests as possible, then calls [Backbone.batchRequests] all at once.
+		 *
+		 * Increasing the number of workers may increase latency.
+		 */
+		workers: Int = 1,
+
+		/**
+		 * The context of execution for the workers.
+		 *
+		 * Use a context you control to be able to stop the workers.
+		 */
+		context: CoroutineContext = EmptyCoroutineContext,
+	) : Cache<O> {
+
+		private val requests: SendChannel<Pair<Ref<O>, CompletableDeferred<StateFlow<Data<O>>>>>
+
+		init {
+			require(workers > 0) { "There must be at least 1 actor: found $workers" }
+
+			val requests = Channel<Pair<Ref<O>, CompletableDeferred<StateFlow<Data<O>>>>>()
+			this.requests = requests
+
+			val scope = CoroutineScope(context)
+			repeat(workers) {
+				scope.launch {
+					worker(requests)
+				}
+			}
+		}
+
+		private suspend fun worker(requests: ReceiveChannel<Pair<Ref<O>, CompletableDeferred<StateFlow<Data<O>>>>>) {
+			while (coroutineContext.isActive) {
+				val batch = HashSet<Ref<O>>()
+
+				// Store the results
+				// We have to store lists of Deferred in case multiple requests to the same Ref happen to be in the same
+				// batch.
+				val results = HashMap<Ref<O>, MutableList<CompletableDeferred<StateFlow<Data<O>>>>>()
+
+				run {
+					// Suspend until a first request arrives
+					val (ref, promise) = requests.receive()
+					batch.add(ref)
+					results.getOrPut(ref) { ArrayList() }
+						.add(promise)
+				}
+
+				while (true) {
+					// Try to read as many requests as possible, without suspending
+					val (ref, promise) = requests.tryReceive()
+						.getOrNull()
+						?: break
+
+					batch.add(ref)
+					results.getOrPut(ref) { ArrayList() }
+						.add(promise)
+				}
+
+				// Just in case, check that they all come from the same Backbone instance
+				// If they don't, batching them makes no sense
+				val backbone = batch.first().backbone
+				check(batch.all { it.backbone === backbone }) { "To start a request batch, all references must depend on the same Backbone instance. Found: $batch" }
+
+				val states = HashMap<Ref<O>, MutableStateFlow<Data<O>>>()
+
+				// Tell all clients that their request is starting
+				for ((ref, promises) in results) {
+					val state = MutableStateFlow(ref.initialData)
+
+					for (promise in promises) {
+						promise.complete(state)
+					}
+
+					states[ref] = state
+				}
+
+				// The channel is now empty, request all of them
+				backbone.batchRequests(batch)
+					.collect {
+						val state = states[it.ref]
+							?: error("Could not find the state for the reference ${it.ref}, this means we received an update for a reference we did not ask for. There may a bug in $backbone.")
+
+						state.value = it
+					}
+			}
+		}
+
+		override fun get(ref: Ref<O>): Flow<Data<O>> = flow {
+			val promise = CompletableDeferred<StateFlow<Data<O>>>()
+
+			requests.send(ref to promise)
+
+			promise.await()
+				.collect {
+					emit(it)
+				}
+		}
+
+		override suspend fun updateAll(values: Iterable<Data<O>>) {
+			// This has no state, there is nothing to update
+		}
+
+		override suspend fun expireAll(refs: Iterable<Ref<O>>) {
+			// This has no state, there is nothing to expire
+		}
+
+		override suspend fun expireAllRecursively(refs: Iterable<Ref<O>>) {
+			// This has no state, there is nothing to expire
+		}
+
+		override suspend fun expireAll() {
+			// This has no state, there is nothing to expire
+		}
+
+		override suspend fun expireAllRecursively() {
 			// This has no state, there is nothing to expire
 		}
 	}
