@@ -27,7 +27,7 @@ kotlin {
 
 		val jvmMain by getting {
 			dependencies {
-				api("com.auth0:java-jwt:3.19.2")
+				api("com.auth0:java-jwt:_")
 			}
 		}
 	}
