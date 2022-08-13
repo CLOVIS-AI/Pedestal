@@ -113,3 +113,30 @@ auth:convert-coverage:
       artifacts: true
   variables:
     module: auth
+
+dokka:
+  image: openjdk:latest
+  needs: [ ]
+  script:
+    - ./gradlew dokkaHtmlMultiModule
+    - mv build/dokka/htmlMultiModule documentation
+  artifacts:
+    paths:
+      - documentation
+    expose_as: "Documentation"
+
+pages:
+  image: alpine:latest
+  stage: publish
+  needs:
+    - job: dokka
+      artifacts: true
+  script:
+    - mkdir -p public
+    - mv documentation public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - when: never
