@@ -22,7 +22,6 @@ include:
     - export JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v java))))
     - ./gradlew $module:publishKotlinMultiplatformPublicationToGitLabRepository $module:publishJvmPublicationToGitLabRepository $module:publishJsPublicationToGitLabRepository
   only:
-    - main
     - tags
 
 logger:publish:
