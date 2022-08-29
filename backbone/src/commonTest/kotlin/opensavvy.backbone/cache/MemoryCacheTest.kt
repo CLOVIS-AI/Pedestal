@@ -152,4 +152,18 @@ class MemoryCacheTest {
 
 		job.cancel()
 	}
+
+	@Test
+	fun expiringMemoryBatchedCache() = runTest {
+		val job = Job()
+		val cache = Cache.Batching<UInt>()
+			.cachedInMemory(coroutineContext + job)
+			.expireAfter(300.milliseconds, coroutineContext + job)
+
+		testCache(cache)
+		testUpdateExpiration(cache)
+		testAutoExpiration(cache)
+
+		job.cancel()
+	}
 }
