@@ -50,8 +50,6 @@ class MemoryCache<O>(
 	override fun get(ref: Ref<O>): Flow<Data<O>> = flow {
 		log.trace(ref) { "get called for" }
 
-		emit(ref.initialData)
-
 		val cached = cacheLock.withPermit { getUnsafe(ref) }
 
 		cached.collect { data ->
