@@ -1,6 +1,8 @@
 package opensavvy.backbone
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 
 /**
  * A common interface for API endpoints.
@@ -27,6 +29,25 @@ interface Backbone<O> {
 	 * The returned flow is **short-lived**: it is closed after the request finishes.
 	 */
 	fun directRequest(ref: Ref<O>): Flow<Data<O>>
+
+	/**
+	 * Fetches the value associated with all [refs] in an external media (e.g. a remote server, a database).
+	 *
+	 * This function completely bypasses the [cache]: a request will be sent everytime this is called.
+	 * To avoid sending unnecessary requests, use [request] instead.
+	 *
+	 * The returned flow is **short-lived**: it is closed after the request finishes.
+	 * The updates regarding the various references are not ordered between each other.
+	 *
+	 * To fetch a single value, see [directRequest].
+	 *
+	 * The default implementation simply calls [directRequest] sequentially.
+	 */
+	fun batchRequests(refs: Set<Ref<O>>): Flow<Data<O>> = flow {
+		for (ref in refs) {
+			emitAll(directRequest(ref))
+		}
+	}
 
 	companion object {
 		/**
