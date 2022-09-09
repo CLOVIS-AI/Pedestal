@@ -11,18 +11,23 @@ package opensavvy.spine
  * val first = Route / "test"
  * val second = first / "other"
  * ```
- *
- * @property segments The segments of this URI. Segments may only be composed of characters explicitly unreserved in URIs.
  */
-class Route(val segments: List<String>) {
+class Route(val segments: List<Segment>) {
 
-	init {
-		for (segment in segments) {
+	/**
+	 * A route segment.
+	 *
+	 * Segments may only be composed of characters explicitly unreserved in URIs.
+	 */
+	data class Segment(val segment: String) {
+		init {
 			for (char in segment) {
 				if (!char.isLetterOrDigit() && char != '-' && char != '.' && char != '_' && char != '~')
 					throw IllegalArgumentException("A route segment can only be composed of letter, digits, and the characters '-', '.', '_' and '~'; found character '$char' in segment '$segment'")
 			}
 		}
+
+		override fun toString() = segment
 	}
 
 	override fun toString() = segments.joinToString(separator = "/")
@@ -37,13 +42,24 @@ class Route(val segments: List<String>) {
 		/**
 		 * Shorthand to create a sub-route named [id] from the current route.
 		 */
-		operator fun Route.div(id: String) = Route(segments + id)
+		operator fun Route.div(id: String) = Route(segments + Segment(id))
+
+
+		/**
+		 * Shorthand to create a sub-route named [id] from the current route.
+		 */
+		operator fun Route.div(id: Segment) = Route(segments + id)
+
+		/**
+		 * Shorthand to concatenate [other] at the end of this route.
+		 */
+		operator fun Route.div(other: Route) = Route(segments + other.segments)
 
 		/**
 		 * Shorthand to create a top-level route named [id] (its parent is the [Root]).
 		 */
 		@Suppress("RemoveRedundantQualifierName") // could be declared on Companion, but I think it's easier to read this way
-		operator fun Route.Companion.div(id: String) = Route(listOf(id))
+		operator fun Route.Companion.div(id: String) = Route(listOf(Segment(id)))
 
 	}
 }
