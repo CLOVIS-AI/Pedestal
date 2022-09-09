@@ -1,5 +1,12 @@
 package opensavvy.spine
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
 /**
  * An API route.
  *
@@ -12,13 +19,15 @@ package opensavvy.spine
  * val second = first / "other"
  * ```
  */
-class Route(val segments: List<Segment>) {
+@Serializable(with = Route.Serializer::class)
+data class Route(val segments: List<Segment>) {
 
 	/**
 	 * A route segment.
 	 *
 	 * Segments may only be composed of characters explicitly unreserved in URIs.
 	 */
+	@Serializable(with = Segment.Serializer::class)
 	data class Segment(val segment: String) {
 		init {
 			for (char in segment) {
@@ -28,9 +37,45 @@ class Route(val segments: List<Segment>) {
 		}
 
 		override fun toString() = segment
+
+		/**
+		 * Serializer for [Segment].
+		 *
+		 * Without this serializer, segments would be serialized as objects: `{ "segment": "foo" }`.
+		 * With this serializer, segments are serialized as values: `"foo"`.
+		 */
+		internal object Serializer : KSerializer<Segment> {
+			override val descriptor = PrimitiveSerialDescriptor("opensavvy.spine.Route.Segment", PrimitiveKind.STRING)
+
+			override fun serialize(encoder: Encoder, value: Segment) {
+				encoder.encodeString(value.segment)
+			}
+
+			override fun deserialize(decoder: Decoder): Segment {
+				return Segment(decoder.decodeString())
+			}
+		}
 	}
 
 	override fun toString() = segments.joinToString(separator = "/")
+
+	/**
+	 * Serializer for [Route].
+	 *
+	 * Without this serializer, routes would be serialized as objects of arrays: `{ segments: ["foo", "bar"] }`.
+	 * With this serializer, routes are serialized as values: `"foo/bar"`.
+	 */
+	internal object Serializer : KSerializer<Route> {
+		override val descriptor = PrimitiveSerialDescriptor("opensavvy.spine.Route", PrimitiveKind.STRING)
+
+		override fun serialize(encoder: Encoder, value: Route) {
+			encoder.encodeString(value.toString())
+		}
+
+		override fun deserialize(decoder: Decoder): Route {
+			return Route(decoder.decodeString().split("/").map { Segment(it) })
+		}
+	}
 
 	companion object {
 

@@ -28,6 +28,7 @@ kotlin {
 				implementation(project(":tester"))
 
 				api(KotlinX.coroutines.test)
+				implementation(KotlinX.serialization.json)
 			}
 		}
 	}

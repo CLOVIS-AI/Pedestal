@@ -1,5 +1,8 @@
 package opensavvy.spine
 
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import opensavvy.spine.Route.Companion.div
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -24,6 +27,26 @@ class RouteTest {
 	@Test
 	fun secondElement() {
 		assertEquals("first/second", (Route / "first" / "second").toString())
+	}
+
+	@Test
+	fun serializeSegment() {
+		val segment = Route.Segment("whatever-hello")
+
+		val segmentJson = Json.encodeToString(segment)
+		assertEquals("\"whatever-hello\"", segmentJson)
+
+		assertEquals(Route.Segment("whatever-hello"), Json.decodeFromString(segmentJson))
+	}
+
+	@Test
+	fun serializeRoute() {
+		val route = Route / "whatever" / "hello"
+
+		val routeJson = Json.encodeToString(route)
+		assertEquals("\"whatever/hello\"", routeJson)
+
+		assertEquals(Route / "whatever" / "hello", Json.decodeFromString(routeJson))
 	}
 
 }
