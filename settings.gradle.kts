@@ -7,6 +7,7 @@ plugins {
 
 include(
 	"backbone",
+	"spine",
 	"logger",
 	"tester",
 	"auth",
