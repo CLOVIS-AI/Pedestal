@@ -1,12 +1,37 @@
 package opensavvy.backbone
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.*
 import opensavvy.backbone.Data.Status
 import opensavvy.backbone.Data.Status.Completed
 import opensavvy.backbone.Data.Status.Loading
 import opensavvy.backbone.Data.Status.Loading.Basic
+
+/**
+ * Successive values.
+ *
+ * Model objects should be immutable.
+ * The [Data] type is immutable as well.
+ * Mutation is represented as change over time.
+ *
+ * [State] is an asynchronous stream of immutable values.
+ * By collecting the [State], it is possible to be notified when the value is updated.
+ */
+typealias State<O> = Flow<Data<O>>
+
+/**
+ * Builder type for [State].
+ *
+ * This type is used for conveniently building asynchronous flows in synchronous environments:
+ * ```kotlin
+ * val ref = /* … */
+ * val result = flow {
+ *     loading(ref)      // Mark the value as loading
+ *     delay(1000)       // Wait for 1 second
+ *     completed(ref, 5) // Mark the value as completed with result 5
+ * }
+ * ```
+ */
+typealias StateBuilder<O> = FlowCollector<Data<O>>
 
 /**
  * Wrapper around a data object of type [O].
@@ -151,7 +176,7 @@ data class Data<O>(
 		 *
 		 * @see firstResult
 		 */
-		fun <O> Flow<Data<O>>.skipLoading() = filter { it.status !is Loading }
+		fun <O> State<O>.skipLoading() = filter { it.status !is Loading }
 
 		/**
 		 * Returns the first non-loading element of this [Flow].
@@ -162,7 +187,7 @@ data class Data<O>(
 		 * @see skipLoading
 		 * @see firstSuccessOrThrow
 		 */
-		suspend fun <O> Flow<Data<O>>.firstResult() = skipLoading().first()
+		suspend fun <O> State<O>.firstResult() = skipLoading().first()
 
 		/**
 		 * Waits for the first concrete value ([Completed] and not [Result.NoData]).
@@ -170,7 +195,7 @@ data class Data<O>(
 		 * If it is [successful][Result.Success], the value is returned.
 		 * If it is a [failure][Result.Failure], [Result.Failure.toThrowable] is thrown.
 		 */
-		suspend fun <O> Flow<Data<O>>.firstSuccessOrThrow(): O {
+		suspend fun <O> State<O>.firstSuccessOrThrow(): O {
 			val result = skipLoading()
 				.filter { it.data !is Result.NoData }
 				.first()
@@ -181,5 +206,15 @@ data class Data<O>(
 				is Result.Failure -> throw result.data.toThrowable()
 			}
 		}
+
+		fun <In, Out> State<In>.map(ref: (Ref<In>) -> Ref<Out>, value: (In) -> Out): State<Out> = map {
+			Data(
+				it.data.map(value),
+				it.status,
+				ref(it.ref),
+			)
+		}
+
+		//endregion
 	}
 }
