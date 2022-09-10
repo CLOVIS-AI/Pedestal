@@ -11,10 +11,17 @@ package opensavvy.backbone
 sealed interface Result<out O> {
 
 	/**
+	 * Applies a [transform] to the value stored by this [Result].
+	 */
+	fun <T> map(transform: (O) -> T): Result<T>
+
+	/**
 	 * The request has not finished yet, and no previous result is available.
 	 */
 	object NoData : Result<Nothing> {
 		override fun toString() = "NoData"
+
+		override fun <T> map(transform: (Nothing) -> T) = NoData
 	}
 
 	/**
@@ -22,6 +29,8 @@ sealed interface Result<out O> {
 	 */
 	data class Success<O>(val value: O) : Result<O> {
 		override fun toString() = "Success($value)"
+
+		override fun <T> map(transform: (O) -> T): Result<T> = Success(transform(value))
 	}
 
 	/**
