@@ -169,6 +169,56 @@ data class Data<O>(
 		val <O> Ref<O>.initialData
 			get() = Data(Result.NoData, Basic(), this)
 
+		//region Access
+
+		val <O> Data<O>.value: O? get() = (this.data as? Result.Success)?.value
+
+		//endregion
+		//region Creation DSL
+
+		/**
+		 * Marks [ref] as [successful][Result.Success] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markCompleted(ref: Ref<O>, value: O) = emit(Data(Result.Success(value), Completed, ref))
+
+		/**
+		 * Marks [ref] as [failed][Result.Failure] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markFailed(ref: Ref<O>, error: Result.Failure) = emit(Data(error, Completed, ref))
+
+		/**
+		 * Marks [ref] as [invalid][Result.Failure.Standard.Kind.Invalid] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markInvalid(ref: Ref<O>, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Invalid, message))
+
+		/**
+		 * Marks [ref] as [unauthenticated][Result.Failure.Standard.Kind.Unauthenticated] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markUnauthenticated(ref: Ref<O>, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthenticated, message))
+
+		/**
+		 * Marks [ref] as [unauthorized][Result.Failure.Standard.Kind.Unauthorized] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markUnauthorized(ref: Ref<O>, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthorized, message))
+
+		/**
+		 * Marks [ref] as [not found][Result.Failure.Standard.Kind.NotFound] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markNotFound(ref: Ref<O>, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.NotFound, message))
+
+		/**
+		 * Marks [ref] as an [unknown failure][Result.Failure.Standard.Kind.Unknown] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markUnknownFailure(ref: Ref<O>, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unknown, message))
+
+		/**
+		 * Marks [ref] as [loading][Basic].
+		 */
+		suspend fun <O> StateBuilder<O>.markLoading(ref: Ref<O>, progression: Float? = null) = emit(Data(Result.NoData, Basic(progression), ref))
+
+		//endregion
+		//region Result selection
+
 		/**
 		 * Skips the loading events in the [Flow].
 		 *
@@ -193,7 +243,7 @@ data class Data<O>(
 		 * Waits for the first concrete value ([Completed] and not [Result.NoData]).
 		 *
 		 * If it is [successful][Result.Success], the value is returned.
-		 * If it is a [failure][Result.Failure], [Result.Failure.toThrowable] is thrown.
+		 * If it is a [failure][Result.Failure], [Result.Failure.throwable] is thrown.
 		 */
 		suspend fun <O> State<O>.firstSuccessOrThrow(): O {
 			val result = skipLoading()
@@ -203,7 +253,7 @@ data class Data<O>(
 			return when (result.data) {
 				is Result.NoData -> error("Impossible, we just filtered them out")
 				is Result.Success -> result.data.value
-				is Result.Failure -> throw result.data.toThrowable()
+				is Result.Failure -> throw result.data.throwable
 			}
 		}
 
