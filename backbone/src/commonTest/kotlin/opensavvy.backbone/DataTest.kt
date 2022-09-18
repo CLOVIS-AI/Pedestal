@@ -49,6 +49,15 @@ class DataTest {
 		assertEquals(100, loadingDone.percent)
 	}
 
+	@Test
+	fun dataWithoutReference() {
+		Data(Result.NoData, Data.Status.Loading.Basic(0.5f), ref = null)
+
+		assertFails {
+			Data(Result.Success(5), Data.Status.Loading.Basic(0.5f), ref = null)
+		}
+	}
+
 	private class IntBone(context: CoroutineContext) : Backbone<Int> {
 		override val cache = Cache.Default<Int>().cachedInMemory(context).expireAfter(10.seconds, context)
 

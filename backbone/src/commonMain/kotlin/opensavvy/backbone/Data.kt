@@ -71,9 +71,17 @@ data class Data<O>(
 	val status: Status,
 	/**
 	 * The reference to the data this object represents, which was used to initiate the request.
+	 *
+	 * In some contexts, this data is not associated with any object (for example, progression or error messages in a `create` endpoint).
+	 * In these cases, [ref] may be `null` and [data] may not be [successful][Result.Success].
 	 */
-	val ref: Ref<O>,
+	val ref: Ref<O>?,
 ) {
+
+	init {
+		if (ref == null)
+			require(data !is Result.Success) { "Data linked to no reference cannot be successful: $this" }
+	}
 
 	override fun toString() = "$data is $status for $ref"
 
@@ -179,42 +187,42 @@ data class Data<O>(
 		/**
 		 * Marks [ref] as [successful][Result.Success] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markCompleted(ref: Ref<O>, value: O) = emit(Data(Result.Success(value), Completed, ref))
+		suspend fun <O> StateBuilder<O>.markCompleted(ref: Ref<O>?, value: O) = emit(Data(Result.Success(value), Completed, ref))
 
 		/**
 		 * Marks [ref] as [failed][Result.Failure] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markFailed(ref: Ref<O>, error: Result.Failure) = emit(Data(error, Completed, ref))
+		suspend fun <O> StateBuilder<O>.markFailed(ref: Ref<O>?, error: Result.Failure) = emit(Data(error, Completed, ref))
 
 		/**
 		 * Marks [ref] as [invalid][Result.Failure.Standard.Kind.Invalid] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markInvalid(ref: Ref<O>, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Invalid, message))
+		suspend fun <O> StateBuilder<O>.markInvalid(ref: Ref<O>?, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Invalid, message))
 
 		/**
 		 * Marks [ref] as [unauthenticated][Result.Failure.Standard.Kind.Unauthenticated] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markUnauthenticated(ref: Ref<O>, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthenticated, message))
+		suspend fun <O> StateBuilder<O>.markUnauthenticated(ref: Ref<O>?, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthenticated, message))
 
 		/**
 		 * Marks [ref] as [unauthorized][Result.Failure.Standard.Kind.Unauthorized] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markUnauthorized(ref: Ref<O>, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthorized, message))
+		suspend fun <O> StateBuilder<O>.markUnauthorized(ref: Ref<O>?, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthorized, message))
 
 		/**
 		 * Marks [ref] as [not found][Result.Failure.Standard.Kind.NotFound] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markNotFound(ref: Ref<O>, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.NotFound, message))
+		suspend fun <O> StateBuilder<O>.markNotFound(ref: Ref<O>?, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.NotFound, message))
 
 		/**
 		 * Marks [ref] as an [unknown failure][Result.Failure.Standard.Kind.Unknown] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markUnknownFailure(ref: Ref<O>, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unknown, message))
+		suspend fun <O> StateBuilder<O>.markUnknownFailure(ref: Ref<O>?, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unknown, message))
 
 		/**
 		 * Marks [ref] as [loading][Basic].
 		 */
-		suspend fun <O> StateBuilder<O>.markLoading(ref: Ref<O>, progression: Float? = null) = emit(Data(Result.NoData, Basic(progression), ref))
+		suspend fun <O> StateBuilder<O>.markLoading(ref: Ref<O>?, progression: Float? = null) = emit(Data(Result.NoData, Basic(progression), ref))
 
 		//endregion
 		//region Result selection
@@ -261,7 +269,7 @@ data class Data<O>(
 			Data(
 				it.data.map(value),
 				it.status,
-				ref(it.ref),
+				it.ref?.let(ref),
 			)
 		}
 
