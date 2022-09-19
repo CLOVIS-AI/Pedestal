@@ -1,5 +1,6 @@
 package opensavvy.backbone
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.*
 import opensavvy.backbone.Data.Status
 import opensavvy.backbone.Data.Status.Completed
@@ -189,35 +190,41 @@ data class Data<O>(
 		 */
 		suspend fun <O> StateBuilder<O>.markCompleted(ref: Ref<O>?, value: O) = emit(Data(Result.Success(value), Completed, ref))
 
+		@Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
+		class StateBuilderFailure(val failure: Result.Failure): CancellationException("Failure in StateBuilder: ${failure.message}")
+
 		/**
 		 * Marks [ref] as [failed][Result.Failure] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markFailed(ref: Ref<O>?, error: Result.Failure) = emit(Data(error, Completed, ref))
+		suspend fun <O> StateBuilder<O>.markFailed(ref: Ref<O>?, error: Result.Failure): Nothing {
+			emit(Data(error, Completed, ref))
+			throw StateBuilderFailure(error)
+		}
 
 		/**
 		 * Marks [ref] as [invalid][Result.Failure.Standard.Kind.Invalid] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markInvalid(ref: Ref<O>?, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Invalid, message))
+		suspend fun <O> StateBuilder<O>.markInvalid(ref: Ref<O>?, message: String): Nothing = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Invalid, message))
 
 		/**
 		 * Marks [ref] as [unauthenticated][Result.Failure.Standard.Kind.Unauthenticated] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markUnauthenticated(ref: Ref<O>?, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthenticated, message))
+		suspend fun <O> StateBuilder<O>.markUnauthenticated(ref: Ref<O>?, message: String): Nothing = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthenticated, message))
 
 		/**
 		 * Marks [ref] as [unauthorized][Result.Failure.Standard.Kind.Unauthorized] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markUnauthorized(ref: Ref<O>?, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthorized, message))
+		suspend fun <O> StateBuilder<O>.markUnauthorized(ref: Ref<O>?, message: String): Nothing = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthorized, message))
 
 		/**
 		 * Marks [ref] as [not found][Result.Failure.Standard.Kind.NotFound] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markNotFound(ref: Ref<O>?, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.NotFound, message))
+		suspend fun <O> StateBuilder<O>.markNotFound(ref: Ref<O>?, message: String): Nothing = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.NotFound, message))
 
 		/**
 		 * Marks [ref] as an [unknown failure][Result.Failure.Standard.Kind.Unknown] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markUnknownFailure(ref: Ref<O>?, message: String) = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unknown, message))
+		suspend fun <O> StateBuilder<O>.markUnknownFailure(ref: Ref<O>?, message: String): Nothing = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unknown, message))
 
 		/**
 		 * Marks [ref] as [loading][Basic].

@@ -65,39 +65,34 @@ class DataTest {
 			markLoading(ref, 0f)
 			delay(20)
 
-			if (ref !is Ref.Basic) {
+			if (ref !is Ref.Basic)
 				markInvalid(ref, "The passed reference is invalid")
-				return@flow
-			}
+
 			markLoading(ref, 0.2f)
 			delay(20)
 
-			val value = ref.id.toIntOrNull()
-			if (value == null) {
-				markInvalid(ref, "Could not convert '${ref.id}' to an integer")
-				return@flow
-			}
+			val value = ref.id.toIntOrNull() ?: markInvalid(ref, "Could not convert '${ref.id}' to an integer")
+
 			markLoading(ref, 0.4f)
 			delay(20)
 
-			if (value < 0) { // just imagine we're testing the credentials here
+			// just imagine we're testing the credentials here
+			if (value < 0)
 				markUnauthenticated(ref, "Only logged-in users can access the number $value")
-				return@flow
-			}
+
 			markLoading(ref, 0.6f)
 			delay(20)
 
-			if (value == 0) { // just imagine we're testing the credentials here
+			// just imagine we're testing the credentials here
+			if (value == 0)
 				markUnauthorized(ref, "Only administrators can access the number $value")
-				return@flow
-			}
+
 			markLoading(ref, 0.8f)
 			delay(20)
 
-			if (value >= 100) {
+			if (value >= 100)
 				markNotFound(ref, "Only values lesser than 100 can be found: $value")
-				return@flow
-			}
+
 			markLoading(ref, 0.9f)
 			delay(20)
 
@@ -153,7 +148,11 @@ class DataTest {
 		val expected = listOf(
 			Data(Result.NoData, Data.Status.Loading.Basic(), ref),
 			Data(Result.NoData, Data.Status.Loading.Basic(0.0f), ref),
-			Data(Result.Failure.Standard(Result.Failure.Standard.Kind.Invalid, "The passed reference is invalid"), Data.Status.Completed, ref)
+			Data(
+				Result.Failure.Standard(Result.Failure.Standard.Kind.Invalid, "The passed reference is invalid"),
+				Data.Status.Completed,
+				ref
+			)
 		)
 
 		assertEquals(expected, real)
@@ -176,7 +175,11 @@ class DataTest {
 
 		val expected = listOf(
 			Data(Result.NoData, Data.Status.Loading.Basic(), ref),
-			Data(Result.Failure.Standard(Result.Failure.Standard.Kind.Invalid, "Could not convert 'foo' to an integer"), Data.Status.Completed, ref)
+			Data(
+				Result.Failure.Standard(Result.Failure.Standard.Kind.Invalid, "Could not convert 'foo' to an integer"),
+				Data.Status.Completed,
+				ref
+			)
 		)
 
 		assertEquals(expected, real)
@@ -202,7 +205,12 @@ class DataTest {
 			Data(Result.NoData, Data.Status.Loading.Basic(0.0f), ref),
 			Data(Result.NoData, Data.Status.Loading.Basic(0.2f), ref),
 			Data(Result.NoData, Data.Status.Loading.Basic(0.4f), ref),
-			Data(Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthenticated, "Only logged-in users can access the number -1"), Data.Status.Completed, ref)
+			Data(
+				Result.Failure.Standard(
+					Result.Failure.Standard.Kind.Unauthenticated,
+					"Only logged-in users can access the number -1"
+				), Data.Status.Completed, ref
+			)
 		)
 
 		assertEquals(expected, real)
@@ -229,7 +237,12 @@ class DataTest {
 			Data(Result.NoData, Data.Status.Loading.Basic(0.2f), ref),
 			Data(Result.NoData, Data.Status.Loading.Basic(0.4f), ref),
 			Data(Result.NoData, Data.Status.Loading.Basic(0.6f), ref),
-			Data(Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthorized, "Only administrators can access the number 0"), Data.Status.Completed, ref)
+			Data(
+				Result.Failure.Standard(
+					Result.Failure.Standard.Kind.Unauthorized,
+					"Only administrators can access the number 0"
+				), Data.Status.Completed, ref
+			)
 		)
 
 		assertEquals(expected, real)
@@ -257,7 +270,12 @@ class DataTest {
 			Data(Result.NoData, Data.Status.Loading.Basic(0.4f), ref),
 			Data(Result.NoData, Data.Status.Loading.Basic(0.6f), ref),
 			Data(Result.NoData, Data.Status.Loading.Basic(0.8f), ref),
-			Data(Result.Failure.Standard(Result.Failure.Standard.Kind.NotFound, "Only values lesser than 100 can be found: 207"), Data.Status.Completed, ref)
+			Data(
+				Result.Failure.Standard(
+					Result.Failure.Standard.Kind.NotFound,
+					"Only values lesser than 100 can be found: 207"
+				), Data.Status.Completed, ref
+			)
 		)
 
 		assertEquals(expected, real)
