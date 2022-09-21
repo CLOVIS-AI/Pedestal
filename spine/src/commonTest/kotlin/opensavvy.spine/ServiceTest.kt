@@ -1,5 +1,7 @@
 package opensavvy.spine
 
+import opensavvy.backbone.Data.Companion.markInvalid
+import opensavvy.spine.Route.Companion.div
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -12,12 +14,15 @@ import kotlin.test.assertEquals
  * /users                        List of IDs of users
  * /users/{id}                   Info about a single user
  * /users/{id}/departments       List of departments a user is a part of
- * /users/{id}/departments/join  PUT
- * /users/{id}/departments/leave PUT
+ * /users/{id}/join              PATCH
+ * /users/{id}/leave             PATCH
  */
 
 private data class Department(val name: String)
-private data class User(val name: String)
+private data class User(val name: String) {
+
+	data class New(val name: String)
+}
 
 private class Api : Service("v2") {
 	inner class Departments : StaticResource<List<Id<Department>>>("departments") {
@@ -34,7 +39,19 @@ private class Api : Service("v2") {
 		inner class Unique : DynamicResource<User>("user") {
 			inner class Departments : StaticResource<List<Id<Department>>>("departments")
 
+			val join = edit<Unit>(Route / "join")
+
+			val leave = edit<Unit>(Route / "leave")
+
 			val departments = Departments()
+		}
+
+		val create = create { it: User.New ->
+			if (it.name.isBlank())
+				markInvalid(ref = null, "A user's name may not be empty: '${it.name}'")
+
+			if (it.name.length < 100)
+				markInvalid(ref = null, "A user's name may not be longer than 100 characters, found ${it.name.length} characters")
 		}
 
 		val id = Unique()

@@ -45,4 +45,6 @@ abstract class Service(
 
 	override val routeTemplate get() = name.segment
 
+	override val service get() = this
+
 }

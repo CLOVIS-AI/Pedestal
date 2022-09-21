@@ -1,5 +1,9 @@
 package opensavvy.spine
 
+import opensavvy.backbone.Data.Companion.markInvalid
+import opensavvy.backbone.StateBuilder
+import opensavvy.spine.ResourceGroup.AbstractResource
+
 /**
  * Common ancestor of [Service] and [AbstractResource].
  *
@@ -29,7 +33,7 @@ sealed class ResourceGroup {
 	 *
 	 * To access all routes including non-direct children of this resource group, see [routesRecursively].
 	 */
-	val routes: Sequence<AbstractResource>
+	val routes: Sequence<AbstractResource<*>>
 		get() = sequence {
 			yieldAll(staticRoutes.values)
 			dynamicRoute?.let { yield(it) }
@@ -40,7 +44,7 @@ sealed class ResourceGroup {
 	 *
 	 * To access only direct children, see [routes].
 	 */
-	val routesRecursively: Sequence<AbstractResource>
+	val routesRecursively: Sequence<AbstractResource<*>>
 		get() = routes.flatMap { sequenceOf(it) + it.routesRecursively }
 
 	/**
@@ -50,6 +54,11 @@ sealed class ResourceGroup {
 	 */
 	abstract val routeTemplate: String
 
+	/**
+	 * Retrieves the [Service] which is responsible for this [ResourceGroup].
+	 */
+	abstract val service: Service
+
 	override fun toString() = routeTemplate
 
 	/**
@@ -57,7 +66,65 @@ sealed class ResourceGroup {
 	 *
 	 * End users should not use this class directly.
 	 */
-	sealed class AbstractResource : ResourceGroup()
+	sealed class AbstractResource<O> : ResourceGroup() {
+
+		/**
+		 * The direct parent of this resource in the URI hierarchy.
+		 */
+		abstract val parent: ResourceGroup
+
+		/**
+		 * Verifies that [id] is a valid identifier for this resource.
+		 *
+		 * This function is automatically called to verify all identifiers passed to all endpoints to this resource ([get] and the other functions).
+		 * It can be overridden to add checks for user rights, etc.
+		 */
+		open suspend fun StateBuilder<O>.validateId(id: Id<O>) {
+			if (id.service != service.name)
+				markInvalid(ref = null, "The passed identifier refers to the service '${id.service}', but this resource belongs to the service '${service.name}'")
+
+			// Let's check that the resource designated by the ID matches with this resource
+			var resource: ResourceGroup = this@AbstractResource
+			var index = id.resource.segments.lastIndex
+			while (resource is AbstractResource<*>) {
+				val segment = id.resource.segments.getOrNull(index) ?: markInvalid(ref = null, "The passed identifier's URI length is too short for this resource: $id")
+
+				when (resource) {
+					is StaticResource<*> -> {
+						if (segment != resource.route)
+							markInvalid(ref = null, "The passed identifier's segment #$index doesn't match the resource; expected '${resource.route}' but found '$segment'")
+					}
+					is DynamicResource<*> -> {
+						// There are no constraints on what IDs look like.
+						// If we expect an ID, we can't make any verification on the value.
+					}
+					// else -> is impossible
+				}
+
+				resource = resource.parent
+				index--
+			}
+
+			if (index != 0)
+				markInvalid(ref = null, "The passed identifier's URI length is too long for this resource: $id")
+		}
+
+		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
+		val get = Operation<O, Id<O>, O>(this, Operation.Kind.Read) { validateId(it) }
+
+		protected fun <In> create(route: Route? = null, validate: OperationValidator<In, O> = {})=  Operation(this, Operation.Kind.Create, route, validate)
+
+		protected fun <In> edit(route: Route? = null, validate: OperationValidator<Pair<Id<O>, In>, Unit> = {}) = Operation(this, Operation.Kind.Edit, route) {(id, it): Pair<Id<O>, In> ->
+			validateId(id)
+			validate(id to it)
+		}
+
+		protected fun <In> delete(validate: OperationValidator<Pair<Id<O>, In>, Unit> = {}) = Operation(this, Operation.Kind.Delete, route = null) { (id, it): Pair<Id<O>, In> ->
+			validateId(id)
+			validate(id to it)
+		}
+
+	}
 
 	/**
 	 * A resource that has a hardcoded ID.
@@ -65,7 +132,7 @@ sealed class ResourceGroup {
 	 * For example, top-level resources tend to be static: `/users`.
 	 * Static resources may also appear as children of other resources: `/users/{id}/emails`.
 	 */
-	abstract inner class StaticResource<O> protected constructor(route: String) : AbstractResource() {
+	abstract inner class StaticResource<O> protected constructor(route: String) : AbstractResource<O>() {
 
 		val route = Route.Segment(route)
 
@@ -77,6 +144,9 @@ sealed class ResourceGroup {
 		}
 
 		override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/$route"
+
+		override val parent get() = this@ResourceGroup
+		override val service get() = this@ResourceGroup.service
 	}
 
 	/**
@@ -89,7 +159,7 @@ sealed class ResourceGroup {
 		 * When a request is made to this resource, the ID appears as a parameter under this name.
 		 */
 		val name: String
-	) : AbstractResource() {
+	) : AbstractResource<O>() {
 
 		init {
 			require(this@ResourceGroup.dynamicRoute == null) { "A single resource group cannot have multiple dynamic sub resources ; ${this@ResourceGroup.dynamicRoute} has been registered before $this" }
@@ -99,5 +169,8 @@ sealed class ResourceGroup {
 		}
 
 		override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/{$name}"
+
+		override val parent get() = this@ResourceGroup
+		override val service get() = this@ResourceGroup.service
 	}
 }
