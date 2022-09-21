@@ -2,13 +2,13 @@ package opensavvy.spine
 
 import opensavvy.backbone.StateBuilder
 
-typealias OperationValidator<In, Out> = suspend StateBuilder<Out>.(In) -> Unit
+typealias OperationValidator<In, Out, Context> = suspend StateBuilder<Out>.(In, context: Context) -> Unit
 
-class Operation<Resource, In, Out>(
-	val parent: ResourceGroup.AbstractResource<Resource>,
+class Operation<Resource, In, Out, Context>(
+	val parent: ResourceGroup.AbstractResource<Resource, Context>,
 	val kind: Kind,
 	val route: Route? = null,
-	val validate: OperationValidator<In, Out>,
+	val validate: OperationValidator<In, Out, Context>,
 ) {
 
 	/**

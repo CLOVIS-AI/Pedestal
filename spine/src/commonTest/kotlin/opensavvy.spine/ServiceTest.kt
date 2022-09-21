@@ -1,6 +1,9 @@
 package opensavvy.spine
 
 import opensavvy.backbone.Data.Companion.markInvalid
+import opensavvy.backbone.Data.Companion.markUnauthorized
+import opensavvy.backbone.Ref
+import opensavvy.backbone.Ref.Companion.requestValue
 import opensavvy.spine.Route.Companion.div
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,15 +22,17 @@ import kotlin.test.assertEquals
  */
 
 private data class Department(val name: String)
-private data class User(val name: String) {
+private data class User(val name: String, val admin: Boolean) {
 
 	data class New(val name: String)
 }
 
+private class Context(val user: Ref<User>)
+
 private class Api : Service("v2") {
-	inner class Departments : StaticResource<List<Id<Department>>>("departments") {
-		inner class Unique : DynamicResource<Department>("department") {
-			inner class Users : StaticResource<List<Id<User>>>("users")
+	inner class Departments : StaticResource<List<Id<Department>>, Context>("departments") {
+		inner class Unique : DynamicResource<Department, Context>("department") {
+			inner class Users : StaticResource<List<Id<User>>, Context>("users")
 
 			val users = Users()
 		}
@@ -35,9 +40,9 @@ private class Api : Service("v2") {
 		val id = Unique()
 	}
 
-	inner class Users : StaticResource<List<Id<User>>>("users") {
-		inner class Unique : DynamicResource<User>("user") {
-			inner class Departments : StaticResource<List<Id<Department>>>("departments")
+	inner class Users : StaticResource<List<Id<User>>, Context>("users") {
+		inner class Unique : DynamicResource<User, Context>("user") {
+			inner class Departments : StaticResource<List<Id<Department>>, Context>("departments")
 
 			val join = edit<Unit>(Route / "join")
 
@@ -46,12 +51,18 @@ private class Api : Service("v2") {
 			val departments = Departments()
 		}
 
-		val create = create { it: User.New ->
+		val create = create { it: User.New, context ->
 			if (it.name.isBlank())
 				markInvalid(ref = null, "A user's name may not be empty: '${it.name}'")
 
 			if (it.name.length < 100)
-				markInvalid(ref = null, "A user's name may not be longer than 100 characters, found ${it.name.length} characters")
+				markInvalid(
+					ref = null,
+					"A user's name may not be longer than 100 characters, found ${it.name.length} characters"
+				)
+
+			if (!context.user.requestValue().admin)
+				markUnauthorized(ref = null, "Only admins can create new users")
 		}
 
 		val id = Unique()
