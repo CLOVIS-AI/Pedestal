@@ -172,10 +172,10 @@ sealed class ResourceGroup {
 			validateGetParams(params, context)
 		}
 
-		override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/$route"
+		final override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/$route"
 
-		override val parent get() = this@ResourceGroup
-		override val service get() = this@ResourceGroup.service
+		final override val parent get() = this@ResourceGroup
+		final override val service get() = this@ResourceGroup.service
 	}
 
 	/**
@@ -205,9 +205,9 @@ sealed class ResourceGroup {
 			)
 		}
 
-		override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/{$name}"
+		final override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/{$name}"
 
-		override val parent get() = this@ResourceGroup
-		override val service get() = this@ResourceGroup.service
+		final override val parent get() = this@ResourceGroup
+		final override val service get() = this@ResourceGroup.service
 	}
 }
