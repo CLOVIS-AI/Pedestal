@@ -21,7 +21,12 @@ import kotlin.test.assertEquals
  * /users/{id}/leave             PATCH
  */
 
-private data class Department(val name: String)
+private data class Department(val name: String) {
+	class SearchParams : Parameters() {
+		var showArchived by parameter("archived", default = false)
+	}
+}
+
 private data class User(val name: String, val admin: Boolean) {
 
 	data class New(val name: String)
@@ -30,9 +35,9 @@ private data class User(val name: String, val admin: Boolean) {
 private class Context(val user: Ref<User>)
 
 private class Api : Service("v2") {
-	inner class Departments : StaticResource<List<Id<Department>>, Context>("departments") {
+	inner class Departments : StaticResource<List<Id<Department>>, Department.SearchParams, Context>("departments") {
 		inner class Unique : DynamicResource<Department, Context>("department") {
-			inner class Users : StaticResource<List<Id<User>>, Context>("users")
+			inner class Users : StaticResource<List<Id<User>>, Nothing?, Context>("users")
 
 			val users = Users()
 		}
@@ -40,18 +45,18 @@ private class Api : Service("v2") {
 		val id = Unique()
 	}
 
-	inner class Users : StaticResource<List<Id<User>>, Context>("users") {
+	inner class Users : StaticResource<List<Id<User>>, Nothing?, Context>("users") {
 		inner class Unique : DynamicResource<User, Context>("user") {
-			inner class Departments : StaticResource<List<Id<Department>>, Context>("departments")
+			inner class Departments : StaticResource<List<Id<Department>>, Nothing?, Context>("departments")
 
-			val join = edit<Unit>(Route / "join")
+			val join = edit<Unit, Nothing?>(Route / "join")
 
-			val leave = edit<Unit>(Route / "leave")
+			val leave = edit<Unit, Nothing?>(Route / "leave")
 
 			val departments = Departments()
 		}
 
-		val create = create { it: User.New, context ->
+		val create = create { it: User.New, _: Nothing?, context: Context ->
 			if (it.name.isBlank())
 				markInvalid(ref = null, "A user's name may not be empty: '${it.name}'")
 

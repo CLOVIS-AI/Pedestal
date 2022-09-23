@@ -17,8 +17,8 @@ sealed class ResourceGroup {
 	 *
 	 * If no static resources were registered, this collection is empty.
 	 */
-	val staticRoutes: Map<Route.Segment, StaticResource<*, *>> get() = _staticRoutes
-	private val _staticRoutes: HashMap<Route.Segment, StaticResource<*, *>> = HashMap()
+	val staticRoutes: Map<Route.Segment, StaticResource<*, *, *>> get() = _staticRoutes
+	private val _staticRoutes: HashMap<Route.Segment, StaticResource<*, *, *>> = HashMap()
 
 	/**
 	 * The [dynamic resource][DynamicResource] that appears as a direct child of this resource group.
@@ -96,7 +96,7 @@ sealed class ResourceGroup {
 				)
 
 				when (resource) {
-					is StaticResource<*, *> -> {
+					is StaticResource<*, *, *> -> {
 						if (segment != resource.route)
 							markInvalid(
 								ref = null,
@@ -119,24 +119,24 @@ sealed class ResourceGroup {
 				markInvalid(ref = null, "The passed identifier's URI length is too long for this resource: $id")
 		}
 
-		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
-		val get = Operation<O, Id<O>, O, Context>(this, Operation.Kind.Read) { it, context -> validateId(it, context) }
-
-		protected fun <In> create(route: Route? = null, validate: OperationValidator<In, O, Context> = { _, _ -> }) =
+		protected fun <In, Params> create(
+			route: Route? = null,
+			validate: OperationValidator<In, O, Params, Context> = { _, _, _ -> },
+		) =
 			Operation(this, Operation.Kind.Create, route, validate)
 
-		protected fun <In> edit(
+		protected fun <In, Params> edit(
 			route: Route? = null,
-			validate: OperationValidator<Pair<Id<O>, In>, Unit, Context> = { _, _ -> },
-		) = Operation(this, Operation.Kind.Edit, route) { (id, it): Pair<Id<O>, In>, context ->
+			validate: OperationValidator<Pair<Id<O>, In>, Unit, Params, Context> = { _, _, _ -> },
+		) = Operation(this, Operation.Kind.Edit, route) { (id, it): Pair<Id<O>, In>, params: Params, context ->
 			validateId(id, context)
-			validate(id to it, context)
+			validate(id to it, params, context)
 		}
 
-		protected fun <In> delete(validate: OperationValidator<Pair<Id<O>, In>, Unit, Context> = { _, _ -> }) =
-			Operation(this, Operation.Kind.Delete, route = null) { (id, it): Pair<Id<O>, In>, context ->
+		protected fun <In> delete(validate: OperationValidator<Pair<Id<O>, In>, Unit, Nothing?, Context> = { _, _, _ -> }) =
+			Operation(this, Operation.Kind.Delete, route = null) { (id, it): Pair<Id<O>, In>, _: Nothing?, context ->
 				validateId(id, context)
-				validate(id to it, context)
+				validate(id to it, null, context)
 			}
 
 	}
@@ -147,7 +147,7 @@ sealed class ResourceGroup {
 	 * For example, top-level resources tend to be static: `/users`.
 	 * Static resources may also appear as children of other resources: `/users/{id}/emails`.
 	 */
-	abstract inner class StaticResource<O, Context> protected constructor(route: String) :
+	abstract inner class StaticResource<O, GetParams : Parameters?, Context> protected constructor(route: String) :
 		AbstractResource<O, Context>() {
 
 		val route = Route.Segment(route)
@@ -157,6 +157,19 @@ sealed class ResourceGroup {
 
 			@Suppress("LeakingThis")
 			this@ResourceGroup._staticRoutes[this.route] = this
+		}
+
+		/**
+		 * Validates that [params] allow the user to access this resource.
+		 *
+		 * You should override this function if the parameters impact the access rights.
+		 */
+		open suspend fun StateBuilder<O>.validateGetParams(params: GetParams, context: Context) {}
+
+		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
+		val get = Operation<O, Id<O>, O, GetParams, Context>(this, Operation.Kind.Read) { it, params, context ->
+			validateId(it, context)
+			validateGetParams(params, context)
 		}
 
 		override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/$route"
@@ -182,6 +195,14 @@ sealed class ResourceGroup {
 
 			@Suppress("LeakingThis")
 			this@ResourceGroup.dynamicRoute = this
+		}
+
+		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
+		val get = Operation<O, Id<O>, O, Nothing?, Context>(this, Operation.Kind.Read) { it, _, context ->
+			validateId(
+				it,
+				context
+			)
 		}
 
 		override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/{$name}"
