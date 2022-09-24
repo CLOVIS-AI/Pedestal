@@ -19,7 +19,10 @@ allprojects {
     }
 
     plugins.apply("org.jetbrains.dokka")
+    plugins.apply("org.jetbrains.kotlinx.kover")
 }
+
+koverMerged.enable()
 
 fun calculateVersion(): String {
     val versionDetails: groovy.lang.Closure<com.palantir.gradle.gitversion.VersionDetails> by extra
