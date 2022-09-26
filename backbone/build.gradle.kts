@@ -18,13 +18,13 @@ kotlin {
 				api(KotlinX.coroutines.core)
 				api(KotlinX.datetime)
 
-				implementation(project(":logger"))
+				implementation(projects.logger)
 			}
 		}
 
 		val commonTest by getting {
 			dependencies {
-				implementation(project(":tester"))
+				implementation(projects.tester)
 
 				api(KotlinX.coroutines.test)
 			}

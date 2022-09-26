@@ -15,7 +15,7 @@ kotlin {
 	sourceSets {
 		val commonTest by getting {
 			dependencies {
-				implementation(project(":tester"))
+				implementation(projects.tester)
 			}
 		}
 

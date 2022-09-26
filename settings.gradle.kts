@@ -12,3 +12,5 @@ include(
 	"tester",
 	"auth",
 )
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

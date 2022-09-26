@@ -11,16 +11,16 @@ kotlin {
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
-				api(project(":backbone"))
+				api(projects.backbone)
 				api(KotlinX.datetime)
 
-				implementation(project(":logger"))
+				implementation(projects.logger)
 			}
 		}
 
 		val commonTest by getting {
 			dependencies {
-				implementation(project(":tester"))
+				implementation(projects.tester)
 				implementation(KotlinX.coroutines.test)
 			}
 		}
