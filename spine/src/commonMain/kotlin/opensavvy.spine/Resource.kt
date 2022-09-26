@@ -92,7 +92,7 @@ sealed class ResourceGroup {
 			while (resource is AbstractResource<*, *>) {
 				val segment = id.resource.segments.getOrNull(index) ?: markInvalid(
 					ref = null,
-					"The passed identifier's URI length is too short for this resource: $id"
+					"The passed identifier's URI length is too short for this resource: '$id' for resource '${this@AbstractResource}'"
 				)
 
 				when (resource) {
@@ -115,17 +115,20 @@ sealed class ResourceGroup {
 				index--
 			}
 
-			if (index != 0)
-				markInvalid(ref = null, "The passed identifier's URI length is too long for this resource: $id")
+			if (index != -1)
+				markInvalid(
+					ref = null,
+					"The passed identifier's URI length is too long for this resource: '$id' for resource '${this@AbstractResource}'"
+				)
 		}
 
-		protected fun <In, Params> create(
+		protected fun <In, Params : Parameters?> create(
 			route: Route? = null,
 			validate: OperationValidator<In, O, Params, Context> = { _, _, _ -> },
 		) =
 			Operation(this, Operation.Kind.Create, route, validate)
 
-		protected fun <In, Params> edit(
+		protected fun <In, Params : Parameters?> edit(
 			route: Route? = null,
 			validate: OperationValidator<Pair<Id<O>, In>, Unit, Params, Context> = { _, _, _ -> },
 		) = Operation(this, Operation.Kind.Edit, route) { (id, it): Pair<Id<O>, In>, params: Params, context ->
