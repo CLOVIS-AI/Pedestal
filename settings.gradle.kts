@@ -8,6 +8,8 @@ plugins {
 include(
 	"backbone",
 	"spine",
+	"spine-ktor-client",
+	"spine-ktor-server",
 	"logger",
 	"tester",
 	"auth",
