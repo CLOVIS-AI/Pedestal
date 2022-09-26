@@ -3,6 +3,7 @@ package opensavvy.spine
 import opensavvy.backbone.Data.Companion.markInvalid
 import opensavvy.backbone.StateBuilder
 import opensavvy.spine.ResourceGroup.AbstractResource
+import opensavvy.spine.Route.Companion.div
 
 /**
  * Common ancestor of [Service] and [AbstractResource].
@@ -142,6 +143,30 @@ sealed class ResourceGroup {
 				validate(id to it, null, context)
 			}
 
+		/**
+		 * Instantiates an [Id] for this resource.
+		 *
+		 * Because this corresponds to instantiating a [Route], it is necessary to replace all dynamic identifiers with
+		 * their concrete values.
+		 *
+		 * The user is responsible for providing the [dynamic] values.
+		 *
+		 * Here are a few examples of proper usage:
+		 * - for resource `/users`: `idOf()` generates the ID `/users`
+		 * - for resource `/users/{user}`: `idOf("52f8")` generates the ID `/users/52f8`
+		 * - for resource `/users/{user}/{pet}`: `idOf("52f8", "a32b")` generates the ID `/users/52f8/a32b`
+		 */
+		fun idOf(vararg dynamic: String): Id<O> = idOf(dynamic.asSequence().map { Route.Segment(it) }.iterator())
+
+		/**
+		 * Instantiates an [Id] for this resource.
+		 *
+		 * This method has a lower level interface, we recommend using the [idOf] overload with a vararg instead.
+		 *
+		 * Implementations of this method should consume the number of dynamic elements they need from the [dynamic] iterator
+		 * and ignore any other value (calling this function with an iterator that has too many elements is correct).
+		 */
+		abstract fun idOf(dynamic: Iterator<Route.Segment>): Id<O>
 	}
 
 	/**
@@ -179,6 +204,15 @@ sealed class ResourceGroup {
 
 		final override val parent get() = this@ResourceGroup
 		final override val service get() = this@ResourceGroup.service
+
+		final override fun idOf(dynamic: Iterator<Route.Segment>): Id<O> {
+			val parentId = when (val parent = parent) {
+				is AbstractResource<*, *> -> parent.idOf(dynamic)
+				is Service -> parent.idOf()
+			}
+
+			return Id(parentId.service, parentId.resource / route)
+		}
 	}
 
 	/**
@@ -212,5 +246,17 @@ sealed class ResourceGroup {
 
 		final override val parent get() = this@ResourceGroup
 		final override val service get() = this@ResourceGroup.service
+
+		final override fun idOf(dynamic: Iterator<Route.Segment>): Id<O> {
+			val parentId = when (val parent = parent) {
+				is AbstractResource<*, *> -> parent.idOf(dynamic)
+				is Service -> parent.idOf()
+			}
+
+			check(dynamic.hasNext()) { "Not enough dynamic elements were passed to the idOf function of resource '$this'; stuck after '${parentId.resource}'" }
+			val route = dynamic.next()
+
+			return Id(parentId.service, parentId.resource / route)
+		}
 	}
 }

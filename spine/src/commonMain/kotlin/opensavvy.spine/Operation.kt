@@ -5,11 +5,18 @@ import opensavvy.backbone.StateBuilder
 typealias OperationValidator<In, Out, Params, Context> = suspend StateBuilder<Out>.(In, parameters: Params, context: Context) -> Unit
 
 class Operation<Resource, In, Out, Params : Parameters?, Context>(
-	val parent: ResourceGroup.AbstractResource<Resource, Context>,
+	val resource: ResourceGroup.AbstractResource<Resource, Context>,
 	val kind: Kind,
 	val route: Route? = null,
 	val validate: OperationValidator<In, Out, Params, Context>,
 ) {
+
+	/**
+	 * Instantiates an [Id] for the resource this operation is based on.
+	 *
+	 * This is simply syntax sugar for calling [resource].[idOf][ResourceGroup.AbstractResource.idOf].
+	 */
+	fun idOf(vararg dynamic: String) = resource.idOf(*dynamic)
 
 	/**
 	 * The various kinds of operations that can be executed on a [ResourceGroup.AbstractResource] instance.

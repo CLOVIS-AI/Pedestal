@@ -47,4 +47,12 @@ abstract class Service(
 
 	override val service get() = this
 
+	/**
+	 * Instantiates an imaginary [Id] for the whole service.
+	 *
+	 * Services are not resources, they cannot be queried.
+	 * However, it may be convenient to generate an ID for them.
+	 */
+	fun idOf() = Id<Nothing>(name, Route.Root)
+
 }

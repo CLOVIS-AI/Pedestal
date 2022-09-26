@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalCoroutinesApi::class)
+@file:Suppress("unused")
 
 package opensavvy.spine
 
@@ -143,7 +144,7 @@ class ServiceTest {
 
 		// Scenario 1: an employee accesses themselves
 
-		val id1 = Id<User>("v2", Route / "users" / "0")
+		val id1 = endpoint.idOf("0")
 		assertEquals(listOf(Data(Result.Success(User("Employee", false)), Data.Status.Completed, employee.user)), flow {
 			endpoint.validate(this, id1, null, employee)
 			emitAll(employee.user.request())
@@ -235,7 +236,7 @@ class ServiceTest {
 
 		val admin = Context(Ref.Basic("1", bone))
 
-		val id = Id<User>("v2", Route / "users" / "0") // should be /users/0
+		val id = endpoint.idOf("0")
 		assertEquals(emptyList(), flow {
 			endpoint.validate(this, id to User.Rename("Another name"), null, admin)
 		}.skipLoading().toList())
