@@ -1,12 +1,38 @@
 package opensavvy.backbone
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.*
 import opensavvy.backbone.Data.Status
 import opensavvy.backbone.Data.Status.Completed
 import opensavvy.backbone.Data.Status.Loading
 import opensavvy.backbone.Data.Status.Loading.Basic
+
+/**
+ * Successive values.
+ *
+ * Model objects should be immutable.
+ * The [Data] type is immutable as well.
+ * Mutation is represented as change over time.
+ *
+ * [State] is an asynchronous stream of immutable values.
+ * By collecting the [State], it is possible to be notified when the value is updated.
+ */
+typealias State<O> = Flow<Data<O>>
+
+/**
+ * Builder type for [State].
+ *
+ * This type is used for conveniently building asynchronous flows in synchronous environments:
+ * ```kotlin
+ * val ref = /* … */
+ * val result = flow {
+ *     loading(ref)      // Mark the value as loading
+ *     delay(1000)       // Wait for 1 second
+ *     completed(ref, 5) // Mark the value as completed with result 5
+ * }
+ * ```
+ */
+typealias StateBuilder<O> = FlowCollector<Data<O>>
 
 /**
  * Wrapper around a data object of type [O].
@@ -46,9 +72,17 @@ data class Data<O>(
 	val status: Status,
 	/**
 	 * The reference to the data this object represents, which was used to initiate the request.
+	 *
+	 * In some contexts, this data is not associated with any object (for example, progression or error messages in a `create` endpoint).
+	 * In these cases, [ref] may be `null` and [data] may not be [successful][Result.Success].
 	 */
-	val ref: Ref<O>,
+	val ref: Ref<O>?,
 ) {
+
+	init {
+		if (ref == null)
+			require(data !is Result.Success) { "Data linked to no reference cannot be successful: $this" }
+	}
 
 	override fun toString() = "$data is $status for $ref"
 
@@ -144,6 +178,62 @@ data class Data<O>(
 		val <O> Ref<O>.initialData
 			get() = Data(Result.NoData, Basic(), this)
 
+		//region Access
+
+		val <O> Data<O>.value: O? get() = (this.data as? Result.Success)?.value
+
+		//endregion
+		//region Creation DSL
+
+		/**
+		 * Marks [ref] as [successful][Result.Success] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markCompleted(ref: Ref<O>?, value: O) = emit(Data(Result.Success(value), Completed, ref))
+
+		@Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
+		class StateBuilderFailure(val failure: Result.Failure): CancellationException("Failure in StateBuilder: ${failure.message}")
+
+		/**
+		 * Marks [ref] as [failed][Result.Failure] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markFailed(ref: Ref<O>?, error: Result.Failure): Nothing {
+			emit(Data(error, Completed, ref))
+			throw StateBuilderFailure(error)
+		}
+
+		/**
+		 * Marks [ref] as [invalid][Result.Failure.Standard.Kind.Invalid] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markInvalid(ref: Ref<O>?, message: String): Nothing = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Invalid, message))
+
+		/**
+		 * Marks [ref] as [unauthenticated][Result.Failure.Standard.Kind.Unauthenticated] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markUnauthenticated(ref: Ref<O>?, message: String): Nothing = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthenticated, message))
+
+		/**
+		 * Marks [ref] as [unauthorized][Result.Failure.Standard.Kind.Unauthorized] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markUnauthorized(ref: Ref<O>?, message: String): Nothing = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unauthorized, message))
+
+		/**
+		 * Marks [ref] as [not found][Result.Failure.Standard.Kind.NotFound] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markNotFound(ref: Ref<O>?, message: String): Nothing = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.NotFound, message))
+
+		/**
+		 * Marks [ref] as an [unknown failure][Result.Failure.Standard.Kind.Unknown] and [completed][Completed].
+		 */
+		suspend fun <O> StateBuilder<O>.markUnknownFailure(ref: Ref<O>?, message: String): Nothing = markFailed(ref, Result.Failure.Standard(Result.Failure.Standard.Kind.Unknown, message))
+
+		/**
+		 * Marks [ref] as [loading][Basic].
+		 */
+		suspend fun <O> StateBuilder<O>.markLoading(ref: Ref<O>?, progression: Float? = null) = emit(Data(Result.NoData, Basic(progression), ref))
+
+		//endregion
+		//region Result selection
+
 		/**
 		 * Skips the loading events in the [Flow].
 		 *
@@ -151,7 +241,7 @@ data class Data<O>(
 		 *
 		 * @see firstResult
 		 */
-		fun <O> Flow<Data<O>>.skipLoading() = filter { it.status !is Loading }
+		fun <O> State<O>.skipLoading() = filter { it.status !is Loading }
 
 		/**
 		 * Returns the first non-loading element of this [Flow].
@@ -162,15 +252,15 @@ data class Data<O>(
 		 * @see skipLoading
 		 * @see firstSuccessOrThrow
 		 */
-		suspend fun <O> Flow<Data<O>>.firstResult() = skipLoading().first()
+		suspend fun <O> State<O>.firstResult() = skipLoading().first()
 
 		/**
 		 * Waits for the first concrete value ([Completed] and not [Result.NoData]).
 		 *
 		 * If it is [successful][Result.Success], the value is returned.
-		 * If it is a [failure][Result.Failure], [Result.Failure.toThrowable] is thrown.
+		 * If it is a [failure][Result.Failure], [Result.Failure.throwable] is thrown.
 		 */
-		suspend fun <O> Flow<Data<O>>.firstSuccessOrThrow(): O {
+		suspend fun <O> State<O>.firstSuccessOrThrow(): O {
 			val result = skipLoading()
 				.filter { it.data !is Result.NoData }
 				.first()
@@ -178,8 +268,18 @@ data class Data<O>(
 			return when (result.data) {
 				is Result.NoData -> error("Impossible, we just filtered them out")
 				is Result.Success -> result.data.value
-				is Result.Failure -> throw result.data.toThrowable()
+				is Result.Failure -> throw result.data.throwable
 			}
 		}
+
+		fun <In, Out> State<In>.map(ref: (Ref<In>) -> Ref<Out>, value: (In) -> Out): State<Out> = map {
+			Data(
+				it.data.map(value),
+				it.status,
+				it.ref?.let(ref),
+			)
+		}
+
+		//endregion
 	}
 }

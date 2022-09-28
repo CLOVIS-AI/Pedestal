@@ -10,6 +10,7 @@ import opensavvy.backbone.Data.Companion.initialData
 import opensavvy.backbone.Ref
 import opensavvy.backbone.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
+import opensavvy.logger.Logger.Companion.warn
 import opensavvy.logger.loggerFor
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -91,8 +92,12 @@ class MemoryCache<O>(
 		log.trace(values) { "updateAll" }
 
 		cacheLock.withPermit {
-			for (value in values)
-				getUnsafe(value.ref).value = value
+			for (value in values) {
+				if (value.ref != null)
+					getUnsafe(value.ref).value = value
+				else
+					log.warn(value) { "Attempted an update with reference-less data (no-op)" }
+			}
 		}
 
 		super.updateAll(values)

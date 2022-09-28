@@ -51,11 +51,13 @@ publishing {
 	}
 }
 
-tasks.koverVerify {
-	rule {
-        name = "Minimal code coverage"
-        bound {
-            minValue = 90
-        }
-    }
+kover {
+	verify {
+		rule {
+			name = "Minimal code coverage"
+			bound {
+				minValue = 90
+			}
+		}
+	}
 }

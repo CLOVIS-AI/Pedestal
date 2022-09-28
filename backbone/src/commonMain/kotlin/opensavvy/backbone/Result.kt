@@ -1,5 +1,7 @@
 package opensavvy.backbone
 
+import opensavvy.backbone.Result.*
+
 /**
  * The various possible results of querying a [reference][Ref].
  *
@@ -11,10 +13,17 @@ package opensavvy.backbone
 sealed interface Result<out O> {
 
 	/**
+	 * Applies a [transform] to the value stored by this [Result].
+	 */
+	fun <T> map(transform: (O) -> T): Result<T>
+
+	/**
 	 * The request has not finished yet, and no previous result is available.
 	 */
 	object NoData : Result<Nothing> {
 		override fun toString() = "NoData"
+
+		override fun <T> map(transform: (Nothing) -> T) = NoData
 	}
 
 	/**
@@ -22,15 +31,68 @@ sealed interface Result<out O> {
 	 */
 	data class Success<O>(val value: O) : Result<O> {
 		override fun toString() = "Success($value)"
+
+		override fun <T> map(transform: (O) -> T): Result<T> = Success(transform(value))
 	}
 
 	/**
 	 * The request has failed.
 	 */
-	interface Failure : Result<Nothing> {
+	sealed interface Failure : Result<Nothing> {
+		val message: String
+
 		/**
 		 * Converts this failure into a [Throwable] object.
 		 */
-		fun toThrowable(): Throwable
+		val throwable: Throwable
+
+		override fun <T> map(transform: (Nothing) -> T): Result<T> = this
+
+		data class Standard(
+			val kind: Kind,
+			override val message: String,
+		) : Failure {
+
+			override val throwable get() = StandardException()
+
+			inner class StandardException : Exception("$kind: $message")
+
+			enum class Kind {
+				/**
+				 * The request is not valid.
+				 *
+				 * All prerequisites are correct (the user is correctly authenticated and authorized…) but the
+				 * request payload is invalid.
+				 */
+				Invalid,
+
+				/**
+				 * The implementation could not determine which user is making the request.
+				 */
+				Unauthenticated,
+
+				/**
+				 * The implementation could determine which user is making the request, but they do not have
+				 * sufficient rights to make the request.
+				 */
+				Unauthorized,
+
+				/**
+				 * The request is well-formed and the user is allowed to make it,
+				 * but the resource it should apply to could not be found.
+				 */
+				NotFound,
+
+				/**
+				 * The implementation caught an unknown error.
+				 */
+				Unknown,
+				;
+			}
+		}
+
+		data class Kotlin(override val throwable: Throwable) : Failure {
+			override val message = throwable.message ?: "No known message"
+		}
 	}
 }

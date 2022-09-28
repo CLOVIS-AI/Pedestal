@@ -2,6 +2,7 @@
 
 plugins {
 	kotlin("multiplatform")
+	kotlin("plugin.serialization")
 	id("maven-publish")
 }
 
@@ -15,8 +16,8 @@ kotlin {
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
-				api(KotlinX.coroutines.core)
-				api(KotlinX.datetime)
+				api(project(":backbone"))
+				api(KotlinX.serialization.core)
 
 				implementation(project(":logger"))
 			}
@@ -27,6 +28,7 @@ kotlin {
 				implementation(project(":tester"))
 
 				api(KotlinX.coroutines.test)
+				implementation(KotlinX.serialization.json)
 			}
 		}
 	}
