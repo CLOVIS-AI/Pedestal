@@ -4,7 +4,7 @@ import opensavvy.backbone.StateBuilder
 
 typealias OperationValidator<In, Out, Params, Context> = suspend StateBuilder<Out>.(In, parameters: Params, context: Context) -> Unit
 
-class Operation<Resource, In, Out, Params : Parameters, Context>(
+class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Context : Any>(
 	val resource: ResourceGroup.AbstractResource<Resource, Context>,
 	val kind: Kind,
 	val route: Route? = null,

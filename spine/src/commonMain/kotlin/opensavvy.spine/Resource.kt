@@ -67,7 +67,7 @@ sealed class ResourceGroup {
 	 *
 	 * End users should not use this class directly.
 	 */
-	sealed class AbstractResource<O, Context> : ResourceGroup() {
+	sealed class AbstractResource<O : Any, Context : Any> : ResourceGroup() {
 
 		/**
 		 * The direct parent of this resource in the URI hierarchy.
@@ -123,7 +123,7 @@ sealed class ResourceGroup {
 				)
 		}
 
-		protected fun <In, Params : Parameters> create(
+		protected fun <In : Any, Params : Parameters> create(
 			route: Route? = null,
 			validate: OperationValidator<In, O, Params, Context> = { _, _, _ -> },
 		) =
@@ -179,7 +179,7 @@ sealed class ResourceGroup {
 	 * For example, top-level resources tend to be static: `/users`.
 	 * Static resources may also appear as children of other resources: `/users/{id}/emails`.
 	 */
-	abstract inner class StaticResource<O, GetParams : Parameters, Context> protected constructor(route: String) :
+	abstract inner class StaticResource<O : Any, GetParams : Parameters, Context : Any> protected constructor(route: String) :
 		AbstractResource<O, Context>() {
 
 		val route = Route.Segment(route)
@@ -222,7 +222,7 @@ sealed class ResourceGroup {
 	/**
 	 * A template for resources identified by IDs.
 	 */
-	abstract inner class DynamicResource<O, Context> protected constructor(
+	abstract inner class DynamicResource<O : Any, Context : Any> protected constructor(
 		/**
 		 * The name of the identifier.
 		 *
