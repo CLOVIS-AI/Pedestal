@@ -50,7 +50,7 @@ private class Context(val user: Ref<User>)
 private class Api : Service("v2") {
 	inner class Departments : StaticResource<List<Id<Department>>, Department.SearchParams, Context>("departments") {
 		inner class Unique : DynamicResource<Department, Context>("department") {
-			inner class Users : StaticResource<List<Id<User>>, Nothing?, Context>("users")
+			inner class Users : StaticResource<List<Id<User>>, Parameters.Empty, Context>("users")
 
 			val users = Users()
 		}
@@ -58,15 +58,15 @@ private class Api : Service("v2") {
 		val id = Unique()
 	}
 
-	inner class Users : StaticResource<List<Id<User>>, Nothing?, Context>("users") {
+	inner class Users : StaticResource<List<Id<User>>, Parameters.Empty, Context>("users") {
 		inner class Unique : DynamicResource<User, Context>("user") {
-			inner class Departments : StaticResource<List<Id<Department>>, Nothing?, Context>("departments")
+			inner class Departments : StaticResource<List<Id<Department>>, Parameters.Empty, Context>("departments")
 
-			val join = edit<Unit, Nothing?>(Route / "join")
+			val join = edit<Unit, Parameters.Empty>(Route / "join")
 
-			val leave = edit<Unit, Nothing?>(Route / "leave")
+			val leave = edit<Unit, Parameters.Empty>(Route / "leave")
 
-			val rename = edit<User.Rename, Nothing?>(Route / "name") { (_, newName), _, _ ->
+			val rename = edit<User.Rename, Parameters.Empty>(Route / "name") { (_, newName), _, _ ->
 				if (newName.name.isBlank())
 					markInvalid(ref = null, "A user's name may not be empty: '${newName.name}'")
 			}
@@ -74,7 +74,7 @@ private class Api : Service("v2") {
 			val departments = Departments()
 		}
 
-		val create = create { it: User.New, _: Nothing?, context: Context ->
+		val create = create { it: User.New, _: Parameters.Empty, context: Context ->
 			if (it.name.isBlank())
 				markInvalid(ref = null, "A user's name may not be empty: '${it.name}'")
 
@@ -149,7 +149,7 @@ class ServiceTest {
 		assertEquals(
 			listOf(Data(Result.Success(User("Employee", false)), Data.Status.Completed, employee.user)),
 			state {
-				endpoint.validate(this, id1, null, employee)
+				endpoint.validate(this, id1, Parameters.Empty, employee)
 				emitAll(employee.user.request())
 			}.skipLoading().toList()
 		)
@@ -166,7 +166,7 @@ class ServiceTest {
 					), Data.Status.Completed, null
 				)
 			), state {
-				endpoint.validate(this, id2, null, employee)
+				endpoint.validate(this, id2, Parameters.Empty, employee)
 			}.skipLoading().toList()
 		)
 
@@ -182,7 +182,7 @@ class ServiceTest {
 					), Data.Status.Completed, null
 				)
 			), state {
-				endpoint.validate(this, id3, null, employee)
+				endpoint.validate(this, id3, Parameters.Empty, employee)
 			}.skipLoading().toList()
 		)
 
@@ -198,7 +198,7 @@ class ServiceTest {
 					), Data.Status.Completed, null
 				)
 			), state {
-				endpoint.validate(this, id4, null, employee)
+				endpoint.validate(this, id4, Parameters.Empty, employee)
 			}.skipLoading().toList()
 		)
 
@@ -214,7 +214,7 @@ class ServiceTest {
 					), Data.Status.Completed, null
 				)
 			), state {
-				endpoint.validate(this, id5, null, employee)
+				endpoint.validate(this, id5, Parameters.Empty, employee)
 			}.skipLoading().toList()
 		)
 	}
@@ -228,7 +228,7 @@ class ServiceTest {
 		val admin = Context(Ref.Basic("1", bone))
 
 		assertEquals(emptyList(), state {
-			endpoint.validate(this, User.New("Third user"), null, admin)
+			endpoint.validate(this, User.New("Third user"), Parameters.Empty, admin)
 		}.skipLoading().toList())
 	}
 
@@ -242,7 +242,7 @@ class ServiceTest {
 
 		val id = endpoint.idOf("0")
 		assertEquals(emptyList(), state {
-			endpoint.validate(this, id to User.Rename("Another name"), null, admin)
+			endpoint.validate(this, id to User.Rename("Another name"), Parameters.Empty, admin)
 		}.skipLoading().toList())
 	}
 
