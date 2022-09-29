@@ -12,6 +12,7 @@ import opensavvy.backbone.Data.Companion.markInvalid
 import opensavvy.backbone.Data.Companion.markNotFound
 import opensavvy.backbone.Data.Companion.markUnauthorized
 import opensavvy.backbone.Data.Companion.skipLoading
+import opensavvy.backbone.Data.Companion.state
 import opensavvy.backbone.Ref.Companion.request
 import opensavvy.backbone.Ref.Companion.requestValue
 import opensavvy.spine.Route.Companion.div
@@ -145,10 +146,13 @@ class ServiceTest {
 		// Scenario 1: an employee accesses themselves
 
 		val id1 = endpoint.idOf("0")
-		assertEquals(listOf(Data(Result.Success(User("Employee", false)), Data.Status.Completed, employee.user)), flow {
-			endpoint.validate(this, id1, null, employee)
-			emitAll(employee.user.request())
-		}.skipLoading().toList())
+		assertEquals(
+			listOf(Data(Result.Success(User("Employee", false)), Data.Status.Completed, employee.user)),
+			state {
+				endpoint.validate(this, id1, null, employee)
+				emitAll(employee.user.request())
+			}.skipLoading().toList()
+		)
 
 		// Scenario 2: access with an invalid service ID
 
@@ -161,9 +165,9 @@ class ServiceTest {
 						"The passed identifier refers to the service 'this-is-not-the-correct-service-name', but this resource belongs to the service 'v2'"
 					), Data.Status.Completed, null
 				)
-			), flow {
+			), state {
 				endpoint.validate(this, id2, null, employee)
-			}.skipLoading().catch { /* https://github.com/Kotlin/kotlinx.coroutines/issues/3463 */ }.toList()
+			}.skipLoading().toList()
 		)
 
 		// Scenario 3: access with an invalid ID (too short)
@@ -177,9 +181,9 @@ class ServiceTest {
 						"The passed identifier's URI length is too short for this resource: 'v2/users' for resource 'v2/users/{user}'"
 					), Data.Status.Completed, null
 				)
-			), flow {
+			), state {
 				endpoint.validate(this, id3, null, employee)
-			}.skipLoading().catch { /* https://github.com/Kotlin/kotlinx.coroutines/issues/3463 */ }.toList()
+			}.skipLoading().toList()
 		)
 
 		// Scenario 4: access with an invalid ID (wrong resource)
@@ -193,9 +197,9 @@ class ServiceTest {
 						"The passed identifier's segment #0 doesn't match the resource; expected 'users' but found 'departments'"
 					), Data.Status.Completed, null
 				)
-			), flow {
+			), state {
 				endpoint.validate(this, id4, null, employee)
-			}.skipLoading().catch { /* https://github.com/Kotlin/kotlinx.coroutines/issues/3463 */ }.toList()
+			}.skipLoading().toList()
 		)
 
 		// Scenario 5: access with an invalid ID (too long)
@@ -209,9 +213,9 @@ class ServiceTest {
 						"The passed identifier's URI length is too long for this resource: 'v2/departments/users/0' for resource 'v2/users/{user}'"
 					), Data.Status.Completed, null
 				)
-			), flow {
+			), state {
 				endpoint.validate(this, id5, null, employee)
-			}.skipLoading().catch { /* https://github.com/Kotlin/kotlinx.coroutines/issues/3463 */ }.toList()
+			}.skipLoading().toList()
 		)
 	}
 
@@ -223,7 +227,7 @@ class ServiceTest {
 
 		val admin = Context(Ref.Basic("1", bone))
 
-		assertEquals(emptyList(), flow {
+		assertEquals(emptyList(), state {
 			endpoint.validate(this, User.New("Third user"), null, admin)
 		}.skipLoading().toList())
 	}
@@ -237,7 +241,7 @@ class ServiceTest {
 		val admin = Context(Ref.Basic("1", bone))
 
 		val id = endpoint.idOf("0")
-		assertEquals(emptyList(), flow {
+		assertEquals(emptyList(), state {
 			endpoint.validate(this, id to User.Rename("Another name"), null, admin)
 		}.skipLoading().toList())
 	}
