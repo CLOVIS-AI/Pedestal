@@ -79,7 +79,7 @@ data class Data<O>(
 			require(data !is Result.Success) { "Data linked to no reference cannot be successful: $this" }
 	}
 
-	override fun toString() = "$data is $status for $ref"
+	override fun toString() = "$ref: $data $status"
 
 	/**
 	 * Whether a piece of [Data] is [Completed] or still [Loading].
@@ -148,8 +148,8 @@ data class Data<O>(
 			 */
 			class Basic(progression: Float? = null) : Loading(progression) {
 				override fun toString() =
-					if (progression != null) "Loading.Basic(progression = $progression)"
-					else "Loading.Basic"
+					if (progression != null) "Loading($percent%)"
+					else "Loading"
 
 				override fun equals(other: Any?): Boolean {
 					if (this === other) return true
