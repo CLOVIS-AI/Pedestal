@@ -74,11 +74,6 @@ data class Data<O>(
 	val ref: Ref<O>?,
 ) {
 
-	init {
-		if (ref == null)
-			require(data !is Result.Success) { "Data linked to no reference cannot be successful: $this" }
-	}
-
 	override fun toString() = "$ref: $data $status"
 
 	/**

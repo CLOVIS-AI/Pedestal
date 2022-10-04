@@ -23,7 +23,6 @@ import opensavvy.backbone.cache.MemoryCache.Companion.cachedInMemory
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.time.Duration.Companion.seconds
 
 class DataTest {
@@ -47,15 +46,6 @@ class DataTest {
 		val loadingDone = Data.Status.Loading.Basic(1.0f)
 		assertEquals(1.0f, loadingDone.progression)
 		assertEquals(100, loadingDone.percent)
-	}
-
-	@Test
-	fun dataWithoutReference() {
-		Data(Result.NoData, Data.Status.Loading.Basic(0.5f), ref = null)
-
-		assertFails {
-			Data(Result.Success(5), Data.Status.Loading.Basic(0.5f), ref = null)
-		}
 	}
 
 	private class IntBone(context: CoroutineContext) : Backbone<Int> {

@@ -123,9 +123,9 @@ sealed class ResourceGroup {
 				)
 		}
 
-		protected fun <In : Any, Params : Parameters> create(
+		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
-			validate: OperationValidator<In, O, Params, Context> = { _, _, _ -> },
+			validate: OperationValidator<In, Out, Params, Context> = { _, _, _ -> },
 		) =
 			Operation(this, Operation.Kind.Create, route, validate)
 

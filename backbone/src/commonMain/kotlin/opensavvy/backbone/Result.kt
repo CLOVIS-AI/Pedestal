@@ -53,6 +53,10 @@ sealed interface Result<out O> {
 			override val message: String,
 		) : Failure {
 
+			init {
+				require(message.isNotBlank()) { "The message of a standard error may not be blank: found '$message'" }
+			}
+
 			override val throwable get() = StandardException()
 
 			inner class StandardException : Exception("$kind: $message")

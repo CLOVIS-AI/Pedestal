@@ -26,7 +26,14 @@ kotlin {
 				implementation(projects.spineKtorClient)
 
 				implementation(KotlinX.coroutines.test)
+				implementation(KotlinX.serialization.core)
+				implementation(KotlinX.serialization.json)
+
+				implementation(Ktor.client.logging)
 				implementation(Ktor.server.testHost)
+				implementation("io.ktor:ktor-server-content-negotiation:_")
+				implementation("io.ktor:ktor-client-content-negotiation:_")
+				implementation("io.ktor:ktor-serialization-kotlinx-json:_")
 			}
 		}
 	}
