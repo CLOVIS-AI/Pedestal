@@ -47,6 +47,6 @@ enum class LogLevel {
 		 * }
 		 * ```
 		 */
-		var default = INFO
+		var default = TRACE
 	}
 }
