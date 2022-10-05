@@ -25,8 +25,9 @@ kotlin {
 		val commonTest by getting {
 			dependencies {
 				implementation(projects.tester)
+				implementation(projects.backbone)
 
-				api(KotlinX.coroutines.test)
+				implementation(KotlinX.coroutines.test)
 				implementation(KotlinX.serialization.json)
 			}
 		}

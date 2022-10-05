@@ -1,8 +1,8 @@
 package opensavvy.spine
 
-import opensavvy.backbone.StateBuilder
+import opensavvy.state.StateBuilder
 
-typealias OperationValidator<In, Out, Params, Context> = suspend StateBuilder<Out>.(In, parameters: Params, context: Context) -> Unit
+typealias OperationValidator<In, Out, Params, Context> = suspend StateBuilder<Id<Out>, Out>.(In, parameters: Params, context: Context) -> Unit
 
 class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Context : Any>(
 	val resource: ResourceGroup.AbstractResource<Resource, Context>,

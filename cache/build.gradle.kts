@@ -8,14 +8,12 @@ kotlin {
 	jvm()
 	js(IR) {
 		browser()
-		nodejs()
 	}
 
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
 				api(projects.state)
-				api(projects.cache)
 				api(KotlinX.datetime)
 
 				implementation(projects.logger)
@@ -25,8 +23,7 @@ kotlin {
 		val commonTest by getting {
 			dependencies {
 				implementation(projects.tester)
-
-				api(KotlinX.coroutines.test)
+				implementation(KotlinX.coroutines.test)
 			}
 		}
 	}
@@ -37,7 +34,7 @@ kover {
 		rule {
 			name = "Minimal code coverage"
 			bound {
-				minValue = 80
+				minValue = 90
 			}
 		}
 	}

@@ -2,6 +2,7 @@
 
 plugins {
 	kotlin("multiplatform")
+	kotlin("plugin.serialization")
 }
 
 kotlin {
@@ -14,9 +15,10 @@ kotlin {
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
-				api(projects.state)
-				api(projects.cache)
-				api(KotlinX.datetime)
+				api(projects.spine)
+
+				api(KotlinX.serialization.core)
+				api(Ktor.http)
 
 				implementation(projects.logger)
 			}
@@ -26,11 +28,14 @@ kotlin {
 			dependencies {
 				implementation(projects.tester)
 
-				api(KotlinX.coroutines.test)
+				implementation(KotlinX.coroutines.test)
+				implementation(KotlinX.serialization.json)
 			}
 		}
 	}
 }
+
+koverMerged.enable()
 
 kover {
 	verify {

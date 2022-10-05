@@ -34,6 +34,11 @@ state:publish:
   variables:
     module: state
 
+cache:publish:
+  extends: [ .publish ]
+  variables:
+    module: cache
+
 backbone:publish:
   extends: [ .publish ]
   variables:
@@ -41,24 +46,26 @@ backbone:publish:
 
 .test-jvm:
   image: openjdk:latest
+  variables:
+    module_path: $module
   script:
     - ./gradlew $module:koverReport $module:koverVerify  # implies running the JVM tests
   after_script:
-    - mkdir -p test-report-$module
-    - mv $module/build/reports/tests/jvmTest test-report-$module/test
-    - mv $module/build/reports/kover/html test-report-$module/coverage
-    - mv $module/build/reports/kover/xml/report.xml test-report-$module/coverage.xml
-    - values=$(cat test-report-$module/coverage.xml | tail -7 | head -5 | grep 'INSTRUCTION' | cut -d ' ' -f 3,4 | sed 's/missed="//;s/" covered="/ /;s/"\/>//')
+    - mkdir -p test-report-$module_path
+    - mv $module_path/build/reports/tests/jvmTest test-report-$module_path/test
+    - mv $module_path/build/reports/kover/html test-report-$module_path/coverage
+    - mv $module_path/build/reports/kover/xml/report.xml test-report-$module_path/coverage.xml
+    - values=$(cat test-report-$module_path/coverage.xml | tail -7 | head -5 | grep 'INSTRUCTION' | cut -d ' ' -f 3,4 | sed 's/missed="//;s/" covered="/ /;s/"\/>//')
     - missed=$(<<<$values cut -d ' ' -f 1)
     - covered=$(<<<$values cut -d ' ' -f 2)
     - echo "Coverage $(($covered * 100 / ($covered + $missed)))%"
   coverage: '/Coverage \d+%/'
   artifacts:
     paths:
-      - test-report-$module
+      - test-report-$module_path
     expose_as: 'Test and coverage report'
     reports:
-       junit: $module/build/test-results/jvmTest/**.xml
+      junit: $module_path/build/test-results/jvmTest/**.xml
     when: always
   only:
     - merge_requests
@@ -67,8 +74,10 @@ backbone:publish:
 
 .test-jvm-convert-coverage:
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.8
+  variables:
+    module_path: $module
   script:
-    - python /opt/cover2cover.py test-report-$module/coverage.xml $CI_PROJECT_DIR/$module/src/main/kotlin/ > cobertura.xml
+    - python /opt/cover2cover.py test-report-$module_path/coverage.xml $CI_PROJECT_DIR/$module_path/src/main/kotlin/ > cobertura.xml
   artifacts:
     reports:
       coverage_report:
@@ -105,6 +114,19 @@ state:convert-coverage:
   variables:
     module: state
 
+cache:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: cache
+
+cache:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: cache:test:jvm
+      artifacts: true
+  variables:
+    module: cache
+
 backbone:test:jvm:
   extends: [ .test-jvm ]
   variables:
@@ -134,7 +156,8 @@ spine:convert-coverage:
 spine-ktor:test:jvm:
   extends: [ .test-jvm ]
   variables:
-    module: spine-ktor-server
+    module: spine-ktor:spine-ktor-server
+    module_path: spine-ktor/spine-ktor-server
 
 spine-ktor:convert-coverage:
   extends: [ .test-jvm-convert-coverage ]
@@ -142,7 +165,8 @@ spine-ktor:convert-coverage:
     - job: spine-ktor:test:jvm
       artifacts: true
   variables:
-    module: spine-ktor-server
+    module: spine-ktor:spine-ktor-server
+    module_path: spine-ktor/spine-ktor-server
 
 auth:test:jvm:
   extends: [ .test-jvm ]

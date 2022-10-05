@@ -1,12 +1,13 @@
 package opensavvy.spine
 
 import kotlinx.serialization.Serializable
+import opensavvy.state.Identifier
 
 @Serializable
-data class Id<@Suppress("unused") T>(
+data class Id<T>(
 	val service: Route.Segment,
 	val resource: Route,
-) {
+) : Identifier<T> {
 
 	constructor(service: String, resource: Route) : this(Route.Segment(service), resource)
 

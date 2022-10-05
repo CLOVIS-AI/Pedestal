@@ -2,9 +2,13 @@ package opensavvy.backbone
 
 import kotlinx.coroutines.flow.Flow
 import opensavvy.backbone.Backbone.Companion.request
-import opensavvy.backbone.Data.Companion.firstSuccessOrThrow
 import opensavvy.backbone.Ref.Companion.directRequest
 import opensavvy.backbone.Ref.Companion.request
+import opensavvy.state.Identifier
+import opensavvy.state.State
+import opensavvy.state.firstResultOrThrow
+
+typealias RefState<O> = State<Ref<O>, O>
 
 /**
  * A reference to a specific [object][O].
@@ -18,7 +22,7 @@ import opensavvy.backbone.Ref.Companion.request
  *
  * @param O The object this reference refers to.
  */
-interface Ref<O> {
+interface Ref<O> : Identifier<O> {
 
 	/**
 	 * The [Backbone] responsible for this reference.
@@ -53,7 +57,7 @@ interface Ref<O> {
 		 * The next time [request] is called, a new request will be started.
 		 */
 		suspend fun <O> Ref<O>.expire() {
-			backbone.cache.expireAllRecursively(listOf(this))
+			backbone.cache.expire(this)
 		}
 
 		/**
@@ -64,6 +68,6 @@ interface Ref<O> {
 		 * is modified.
 		 * This method should therefore only be used in non-reactive contexts (tests, to write the value to the terminal, etc).
 		 */
-		suspend fun <O> Ref<O>.requestValue() = request().firstSuccessOrThrow()
+		suspend fun <O> Ref<O>.requestValue() = request().firstResultOrThrow()
 	}
 }
