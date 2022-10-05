@@ -29,6 +29,11 @@ logger:publish:
   variables:
     module: logger
 
+state:publish:
+  extends: [ .publish ]
+  variables:
+    module: state
+
 backbone:publish:
   extends: [ .publish ]
   variables:
@@ -86,6 +91,19 @@ logger:convert-coverage:
       artifacts: true
   variables:
     module: logger
+
+state:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: state
+
+state:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: state:test:jvm
+      artifacts: true
+  variables:
+    module: state
 
 backbone:test:jvm:
   extends: [ .test-jvm ]

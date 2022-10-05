@@ -14,7 +14,7 @@ kotlin {
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
-				api(KotlinX.coroutines.core)
+				api(projects.state)
 				api(KotlinX.datetime)
 
 				implementation(projects.logger)

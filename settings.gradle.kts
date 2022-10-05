@@ -6,6 +6,7 @@ plugins {
 }
 
 include(
+	"state",
 	"backbone",
 	"spine",
 	"spine-ktor-client",
