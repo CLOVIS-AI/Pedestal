@@ -56,11 +56,18 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 
 			val id = call.generateId(operation.resource)
 
-			val params = Params::class.java
-				.getConstructor()
-				.newInstance() // Created via reflection, assumes the default constructor is present
-			for ((name, values) in call.parameters.entries())
-				params.data[name] = values.first() // if a parameter is added multiple times, only the first one is kept
+			val params: Params = when {
+				Params::class == Parameters.Empty::class -> Parameters.Empty as Params
+				else -> {
+					val params = Params::class.java
+						.getConstructor()
+						.newInstance()
+					for ((name, values) in call.parameters.entries())
+					// if a parameter is added multiple times, only the first one is kept
+						params.data[name] = values.first()
+					params
+				}
+			}
 
 			val body = when {
 				// If the expected input is Unit, don't even try to read the body

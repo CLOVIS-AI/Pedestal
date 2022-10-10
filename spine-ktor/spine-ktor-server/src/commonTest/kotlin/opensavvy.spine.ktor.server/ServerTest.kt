@@ -8,6 +8,10 @@ import kotlinx.coroutines.flow.onEach
 import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.Logger.Companion.info
 import opensavvy.logger.loggerFor
+import opensavvy.spine.Id
+import opensavvy.spine.Parameters
+import opensavvy.spine.Route
+import opensavvy.spine.Route.Companion.div
 import opensavvy.spine.ktor.client.request
 import opensavvy.state.emitSuccessful
 import opensavvy.state.ensureFound
@@ -42,9 +46,12 @@ class ServerTest {
 
 		log.info { "Declaring the routes…" }
 		val users = ArrayList<User>() // for the example, we're using a simple list and not a proper database
+		var nextId = 0
 		val context = ContextGenerator {}
 
 		routing {
+			trace { println(it) }
+
 			route(api.users.get, context) {
 				val result = users
 					.filter { parameters.includeArchived || !it.archived }
@@ -54,8 +61,9 @@ class ServerTest {
 
 			route(api.users.create, context) {
 				val name = body.name
-				val newId = api.users.id.idOf(kotlin.random.Random.nextInt().toString())
+				val newId = api.users.id.idOf((nextId++).toString())
 				val new = User(newId, name, archived = false)
+				users += new
 				emitSuccessful(new.id, new)
 			}
 
@@ -105,12 +113,38 @@ class ServerTest {
 
 		log.info { "Step 1: query the initial users (empty list)" }
 
-		val params = User.SearchParams().apply { includeArchived = true }
-		val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
-			.onEach { log.debug(it) { "Received event for" } }
-			.firstResultOrThrow()
+		run {
+			val params = User.SearchParams().apply { includeArchived = true }
+			val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
+				.onEach { log.debug(it) { "Received event for" } }
+				.firstResultOrThrow()
 
-		assertEquals(emptyList(), results)
+			assertEquals(emptyList(), results)
+		}
+
+		log.info { "Step 2: creating two users" }
+
+		run {
+			val first =
+				client.request(api.users.create, api.users.create.idOf(), User.New("first"), Parameters.Empty, Unit)
+					.onEach { log.debug(it) { "Received event for" } }
+					.firstResultOrThrow()
+
+			val second =
+				client.request(api.users.create, api.users.create.idOf(), User.New("second"), Parameters.Empty, Unit)
+					.onEach { log.debug(it) { "Received event for" } }
+					.firstResultOrThrow()
+
+			assertEquals(User(Id("test", Route / "users" / "0"), "first", archived = false), first)
+			assertEquals(User(Id("test", Route / "users" / "1"), "second", archived = false), second)
+
+			val params = User.SearchParams().apply { includeArchived = true }
+			val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
+				.onEach { log.debug(it) { "Received event for" } }
+				.firstResultOrThrow()
+
+			assertEquals(listOf(first.id, second.id), results)
+		}
 
 		//endregion
 	}
