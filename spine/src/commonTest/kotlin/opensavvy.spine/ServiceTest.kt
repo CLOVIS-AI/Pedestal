@@ -63,13 +63,13 @@ private class Api : Service("v2") {
 		inner class Unique : DynamicResource<User, Context>("user") {
 			inner class Departments : StaticResource<List<Id<Department>>, Parameters.Empty, Context>("departments")
 
-			val join = edit<Unit, Parameters.Empty>(Route / "join")
+			val join = action<Unit, Unit, Parameters.Empty>(Route / "join")
 
-			val leave = edit<Unit, Parameters.Empty>(Route / "leave")
+			val leave = action<Unit, Unit, Parameters.Empty>(Route / "leave")
 
-			val rename = edit<User.Rename, Parameters.Empty>(Route / "name") { (_, newName), _, _ ->
+			val rename = edit<User.Rename, Parameters.Empty>(Route / "name") { id, newName, _, _ ->
 				ensureValid(
-					id = null,
+					id.unit,
 					newName.name.isNotBlank()
 				) { "A user's name may not be empty: '${newName.name}'" }
 			}
@@ -77,10 +77,10 @@ private class Api : Service("v2") {
 			val departments = Departments()
 		}
 
-		val create = create { it: User.New, _: Parameters.Empty, context: Context ->
-			ensureValid(id = null, it.name.isNotBlank()) { "A user's name may not be empty: '${it.name}'" }
+		val create = create { id, it: User.New, _: Parameters.Empty, context: Context ->
+			ensureValid(id.unit, it.name.isNotBlank()) { "A user's name may not be empty: '${it.name}'" }
 			ensureValid(
-				id = null,
+				id.unit,
 				it.name.length < 100
 			) { "A user's name may not be longer than 100 characters, found ${it.name.length} characters: '${it.name}'" }
 			ensureAuthorized(id = null, context.user.requestValue().admin) { "Only admins can create new users" }
@@ -147,7 +147,7 @@ class ServiceTest {
 		assertEquals(
 			successful(id1, User("Employee", false)),
 			state {
-				endpoint.validate(this, id1, Parameters.Empty, employee)
+				endpoint.validate(this, id1, Unit, Parameters.Empty, employee)
 				emitAll(employee.user.request().mapIdentifier { endpoint.idOf((it as Ref.Basic).id) })
 			}.firstResult()
 		)
@@ -162,7 +162,7 @@ class ServiceTest {
 				"The passed identifier refers to the service 'this-is-not-the-correct-service-name', but this resource belongs to the service 'v2'"
 			),
 			state {
-				endpoint.validate(this, id2, Parameters.Empty, employee)
+				endpoint.validate(this, id2, Unit, Parameters.Empty, employee)
 			}.firstResult()
 		)
 
@@ -176,7 +176,7 @@ class ServiceTest {
 				"The passed identifier's URI length is too short for this resource: 'v2/users' for resource 'v2/users/{user}'"
 			),
 			state {
-				endpoint.validate(this, id3, Parameters.Empty, employee)
+				endpoint.validate(this, id3, Unit, Parameters.Empty, employee)
 			}.firstResult()
 		)
 
@@ -190,7 +190,7 @@ class ServiceTest {
 				"The passed identifier's segment #0 doesn't match the resource; expected 'users' but found 'departments'"
 			),
 			state {
-				endpoint.validate(this, id4, Parameters.Empty, employee)
+				endpoint.validate(this, id4, Unit, Parameters.Empty, employee)
 			}.firstResult()
 		)
 
@@ -204,7 +204,7 @@ class ServiceTest {
 				"The passed identifier's URI length is too long for this resource: 'v2/departments/users/0' for resource 'v2/users/{user}'"
 			),
 			state {
-				endpoint.validate(this, id5, Parameters.Empty, employee)
+				endpoint.validate(this, id5, Unit, Parameters.Empty, employee)
 			}.firstResult()
 		)
 	}
@@ -218,7 +218,7 @@ class ServiceTest {
 		val admin = Context(Ref.Basic("1", bone))
 
 		assertEquals(emptyList(), state {
-			endpoint.validate(this, User.New("Third user"), Parameters.Empty, admin)
+			endpoint.validate(this, endpoint.idOf(), User.New("Third user"), Parameters.Empty, admin)
 		}.skipLoading().toList())
 	}
 
@@ -232,7 +232,7 @@ class ServiceTest {
 
 		val id = endpoint.idOf("0")
 		assertEquals(emptyList(), state {
-			endpoint.validate(this, id to User.Rename("Another name"), Parameters.Empty, admin)
+			endpoint.validate(this, id, User.Rename("Another name"), Parameters.Empty, admin)
 		}.skipLoading().toList())
 	}
 

@@ -125,34 +125,34 @@ sealed class ResourceGroup {
 
 		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
-			validate: OperationValidator<In, Out, Params, Context> = { _, _, _ -> },
+			validate: OperationValidator<O, In, Out, Params, Context> = { _, _, _, _ -> },
 		) =
 			Operation(this, Operation.Kind.Create, route, validate)
 
 		protected fun <In : Any, Params : Parameters> edit(
 			route: Route? = null,
-			validate: OperationValidator<Pair<Id<O>, In>, Unit, Params, Context> = { _, _, _ -> },
-		) = Operation(this, Operation.Kind.Edit, route) { (id, it): Pair<Id<O>, In>, params: Params, context ->
+			validate: OperationValidator<O, In, Unit, Params, Context> = { _, _, _, _ -> },
+		) = Operation(this, Operation.Kind.Edit, route) { id: Id<O>, it: In, params: Params, context ->
 			validateId(id, context)
-			validate(id to it, params, context)
+			validate(id, it, params, context)
 		}
 
-		protected fun <In : Any, Params : Parameters> action(
+		protected fun <In : Any, Out : Any, Params : Parameters> action(
 			route: Route,
-			validate: OperationValidator<Pair<Id<O>, In>, Unit, Params, Context> = { _, _, _ -> },
-		) = Operation(this, Operation.Kind.Action, route) { (id, it): Pair<Id<O>, In>, params: Params, context ->
+			validate: OperationValidator<O, In, Out, Params, Context> = { _, _, _, _ -> },
+		) = Operation(this, Operation.Kind.Action, route) { id: Id<O>, it: In, params: Params, context ->
 			validateId(id, context)
-			validate(id to it, params, context)
+			validate(id, it, params, context)
 		}
 
-		protected fun <In : Any> delete(validate: OperationValidator<Pair<Id<O>, In>, Unit, Parameters.Empty, Context> = { _, _, _ -> }) =
+		protected fun <In : Any> delete(validate: OperationValidator<O, In, Unit, Parameters.Empty, Context> = { _, _, _, _ -> }) =
 			Operation(
 				this,
 				Operation.Kind.Delete,
 				route = null
-			) { (id, it): Pair<Id<O>, In>, _: Parameters.Empty, context ->
+			) { id: Id<O>, it: In, _: Parameters.Empty, context ->
 				validateId(id, context)
-				validate(id to it, Parameters.Empty, context)
+				validate(id, it, Parameters.Empty, context)
 			}
 
 		/**
@@ -207,10 +207,11 @@ sealed class ResourceGroup {
 		open suspend fun StateBuilder<Id<O>, O>.validateGetParams(params: GetParams, context: Context) {}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
-		val get = Operation<O, Id<O>, O, GetParams, Context>(this, Operation.Kind.Read) { it, params, context ->
-			validateId(it, context)
-			validateGetParams(params, context)
-		}
+		val get =
+			Operation<O, Unit, O, GetParams, Context>(this, Operation.Kind.Read) { id: Id<O>, _, params, context ->
+				validateId(id, context)
+				validateGetParams(params, context)
+			}
 
 		final override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/$route"
 
@@ -247,9 +248,9 @@ sealed class ResourceGroup {
 		}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
-		val get = Operation<O, Id<O>, O, Parameters.Empty, Context>(this, Operation.Kind.Read) { it, _, context ->
+		val get = Operation<O, Unit, O, Parameters.Empty, Context>(this, Operation.Kind.Read) { id, _, _, context ->
 			validateId(
-				it,
+				id,
 				context
 			)
 		}

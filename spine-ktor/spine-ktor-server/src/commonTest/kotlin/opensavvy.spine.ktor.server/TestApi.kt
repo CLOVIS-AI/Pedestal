@@ -43,9 +43,9 @@ class TestApi : Service("test") {
 	inner class Users : StaticResource<List<Id<User>>, User.SearchParams, Unit>("users") {
 		inner class Unique : DynamicResource<User, Unit>("user") {
 
-			val archive = action<Unit, Parameters.Empty>(Route / "archive")
+			val archive = action<Unit, Unit, Parameters.Empty>(Route / "archive")
 
-			val unarchive = action<Unit, Parameters.Empty>(Route / "reopen")
+			val unarchive = action<Unit, Unit, Parameters.Empty>(Route / "reopen")
 
 			val delete = delete<Unit>()
 		}

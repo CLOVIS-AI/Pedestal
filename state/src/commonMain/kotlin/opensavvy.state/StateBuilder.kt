@@ -42,6 +42,14 @@ fun <I : Identifier<T>, T> state(block: suspend StateBuilder<I, T>.() -> Unit) =
 			// See https://kotlinlang.org/docs/cancellation-and-timeouts.html#cancellation-is-cooperative
 			is CancellationException -> throw CancellationException("A state builder was cancelled", it)
 
+			is Status.StandardFailure -> emitFailed(
+				id = null,
+				kind = it.kind,
+				message = it.message ?: "Caught a downstream error",
+				progression = Progression.done(),
+				cause = it.cause
+			)
+
 			// All other exceptions are caught into the Kind.Unknown standard failure.
 			else -> emitFailed(
 				id = null,

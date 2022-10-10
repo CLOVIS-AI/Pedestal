@@ -8,8 +8,13 @@ import opensavvy.state.StateBuilder
 /**
  * Information available in [route].
  */
-class ResponseStateBuilder<In, Out, Params : Parameters?, Context>(
+class ResponseStateBuilder<Resource, In, Out, Params : Parameters?, Context>(
 	builder: StateBuilder<Id<Out>, Out>,
+
+	/**
+	 * The identifier of the resource being requested.
+	 */
+	val id: Id<Resource>,
 
 	/**
 	 * The body of the request.

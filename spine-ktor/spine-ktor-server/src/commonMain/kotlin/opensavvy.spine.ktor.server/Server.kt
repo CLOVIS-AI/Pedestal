@@ -45,13 +45,16 @@ import opensavvy.state.state
 inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params : Parameters, Context : Any> Route.route(
 	operation: Operation<Resource, In, Out, Params, Context>,
 	contextGenerator: ContextGenerator<Context>,
-	crossinline block: suspend ResponseStateBuilder<In, Out, Params, Context>.() -> Unit,
+	crossinline block: suspend ResponseStateBuilder<Resource, In, Out, Params, Context>.() -> Unit,
 ) {
 	val path: String = operation.resource.routeTemplate + (operation.route ?: "")
 
-	route(path, operation.kind.toHttp()) {
+	val method = operation.kind.toHttp()
+	route(path, method) {
 		handle {
 			val context = contextGenerator.generate(call)
+
+			val id = call.generateId(operation.resource)
 
 			val params = Params::class.java
 				.getConstructor()
@@ -59,12 +62,19 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 			for ((name, values) in call.parameters.entries())
 				params.data[name] = values.first() // if a parameter is added multiple times, only the first one is kept
 
-			val body = call.receive<In>()
+			val body = when {
+				// If the expected input is Unit, don't even try to read the body
+				// Ktor fails to read the body on GET, DELETE and OPTIONS requests. Because we encode them as Unit,
+				// it's not a problem.
+				In::class == Unit::class -> Unit as In
+				// For any other type, delegate to the ContentNegotiation plugin
+				else -> call.receive()
+			}
 
 			val state = state {
-				operation.validate(this, body, params, context)
+				operation.validate(this, id, body, params, context)
 
-				val responseBuilder = ResponseStateBuilder(this, body, params, call, context)
+				val responseBuilder = ResponseStateBuilder(this, id, body, params, call, context)
 				responseBuilder.block()
 			}.firstResult() // How can we send loading events via HTTP?
 

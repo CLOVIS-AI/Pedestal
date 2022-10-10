@@ -60,14 +60,12 @@ class ServerTest {
 			}
 
 			route(api.users.id.get, context) {
-				val id = body
 				val user = users.find { it.id == id }
 				ensureFound(id, user != null) { "Could not find the user $id" }
 				emitSuccessful(id, user)
 			}
 
 			route(api.users.id.archive, context) {
-				val (id, _) = body
 				val userIndex = users.indexOfFirst { it.id == id }
 				ensureFound(id, userIndex >= 0) { "Could not find user $id" }
 				val user = users.removeAt(userIndex)
@@ -76,7 +74,6 @@ class ServerTest {
 			}
 
 			route(api.users.id.unarchive, context) {
-				val (id, _) = body
 				val userIndex = users.indexOfFirst { it.id == id }
 				ensureFound(id, userIndex >= 0) { "Could not find user $id" }
 				val user = users.removeAt(userIndex)
@@ -85,7 +82,6 @@ class ServerTest {
 			}
 
 			route(api.users.id.delete, context) {
-				val (id, _) = body
 				val userIndex = users.indexOfFirst { it.id == id }
 				ensureFound(id, userIndex >= 0) { "Could not find user $id" }
 				val user = users.removeAt(userIndex)
@@ -110,7 +106,7 @@ class ServerTest {
 		log.info { "Step 1: query the initial users (empty list)" }
 
 		val params = User.SearchParams().apply { includeArchived = true }
-		val results = client.request(api.users.get, api.users.get.idOf(), api.users.get.idOf(), params, Unit)
+		val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
 			.onEach { log.debug(it) { "Received event for" } }
 			.firstResultOrThrow()
 
