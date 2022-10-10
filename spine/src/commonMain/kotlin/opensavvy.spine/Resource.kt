@@ -129,7 +129,7 @@ sealed class ResourceGroup {
 		) =
 			Operation(this, Operation.Kind.Create, route, validate)
 
-		protected fun <In, Params : Parameters> edit(
+		protected fun <In : Any, Params : Parameters> edit(
 			route: Route? = null,
 			validate: OperationValidator<Pair<Id<O>, In>, Unit, Params, Context> = { _, _, _ -> },
 		) = Operation(this, Operation.Kind.Edit, route) { (id, it): Pair<Id<O>, In>, params: Params, context ->
@@ -137,7 +137,15 @@ sealed class ResourceGroup {
 			validate(id to it, params, context)
 		}
 
-		protected fun <In> delete(validate: OperationValidator<Pair<Id<O>, In>, Unit, Parameters.Empty, Context> = { _, _, _ -> }) =
+		protected fun <In : Any, Params : Parameters> action(
+			route: Route,
+			validate: OperationValidator<Pair<Id<O>, In>, Unit, Params, Context> = { _, _, _ -> },
+		) = Operation(this, Operation.Kind.Action, route) { (id, it): Pair<Id<O>, In>, params: Params, context ->
+			validateId(id, context)
+			validate(id to it, params, context)
+		}
+
+		protected fun <In : Any> delete(validate: OperationValidator<Pair<Id<O>, In>, Unit, Parameters.Empty, Context> = { _, _, _ -> }) =
 			Operation(
 				this,
 				Operation.Kind.Delete,

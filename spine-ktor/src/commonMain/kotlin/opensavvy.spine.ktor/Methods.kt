@@ -9,4 +9,5 @@ fun Operation.Kind.toHttp() = when (this) {
 	Create -> HttpMethod.Post
 	Edit -> HttpMethod.Patch
 	Delete -> HttpMethod.Delete
+	Action -> HttpMethod.Put
 }

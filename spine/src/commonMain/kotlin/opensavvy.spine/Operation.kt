@@ -46,6 +46,15 @@ class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Contex
 		Edit,
 
 		/**
+		 * Executes an arbitrary action on a resource.
+		 *
+		 * This operation should not be confused with [Create], [Edit] and [Delete].
+		 *
+		 * This operation may or may not be idempotent.
+		 */
+		Action,
+
+		/**
 		 * Deletes an existing resource.
 		 */
 		Delete,
