@@ -67,6 +67,13 @@ abstract class Parameters {
 		}
 	}
 
+	/**
+	 * The default parameter instance.
+	 *
+	 * Use this instance for operations that take no parameters.
+	 */
+	object Empty : Parameters()
+
 	// Accesses the value and converts it from a String
 	// This is what the 'by' keyword calls when reading from the value
 	// Everything it does is explained in the 'parameter' documentation

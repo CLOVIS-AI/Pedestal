@@ -30,7 +30,7 @@ sealed interface Result<out O> {
 	 * The request is successful, [value] contains its result.
 	 */
 	data class Success<O>(val value: O) : Result<O> {
-		override fun toString() = "Success($value)"
+		override fun toString() = value.toString()
 
 		override fun <T> map(transform: (O) -> T): Result<T> = Success(transform(value))
 	}
@@ -52,6 +52,10 @@ sealed interface Result<out O> {
 			val kind: Kind,
 			override val message: String,
 		) : Failure {
+
+			init {
+				require(message.isNotBlank()) { "The message of a standard error may not be blank: found '$message'" }
+			}
 
 			override val throwable get() = StandardException()
 

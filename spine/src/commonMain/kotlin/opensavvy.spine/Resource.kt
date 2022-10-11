@@ -67,7 +67,7 @@ sealed class ResourceGroup {
 	 *
 	 * End users should not use this class directly.
 	 */
-	sealed class AbstractResource<O, Context> : ResourceGroup() {
+	sealed class AbstractResource<O : Any, Context : Any> : ResourceGroup() {
 
 		/**
 		 * The direct parent of this resource in the URI hierarchy.
@@ -123,13 +123,13 @@ sealed class ResourceGroup {
 				)
 		}
 
-		protected fun <In, Params : Parameters?> create(
+		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
-			validate: OperationValidator<In, O, Params, Context> = { _, _, _ -> },
+			validate: OperationValidator<In, Out, Params, Context> = { _, _, _ -> },
 		) =
 			Operation(this, Operation.Kind.Create, route, validate)
 
-		protected fun <In, Params : Parameters?> edit(
+		protected fun <In, Params : Parameters> edit(
 			route: Route? = null,
 			validate: OperationValidator<Pair<Id<O>, In>, Unit, Params, Context> = { _, _, _ -> },
 		) = Operation(this, Operation.Kind.Edit, route) { (id, it): Pair<Id<O>, In>, params: Params, context ->
@@ -137,10 +137,14 @@ sealed class ResourceGroup {
 			validate(id to it, params, context)
 		}
 
-		protected fun <In> delete(validate: OperationValidator<Pair<Id<O>, In>, Unit, Nothing?, Context> = { _, _, _ -> }) =
-			Operation(this, Operation.Kind.Delete, route = null) { (id, it): Pair<Id<O>, In>, _: Nothing?, context ->
+		protected fun <In> delete(validate: OperationValidator<Pair<Id<O>, In>, Unit, Parameters.Empty, Context> = { _, _, _ -> }) =
+			Operation(
+				this,
+				Operation.Kind.Delete,
+				route = null
+			) { (id, it): Pair<Id<O>, In>, _: Parameters.Empty, context ->
 				validateId(id, context)
-				validate(id to it, null, context)
+				validate(id to it, Parameters.Empty, context)
 			}
 
 		/**
@@ -175,7 +179,7 @@ sealed class ResourceGroup {
 	 * For example, top-level resources tend to be static: `/users`.
 	 * Static resources may also appear as children of other resources: `/users/{id}/emails`.
 	 */
-	abstract inner class StaticResource<O, GetParams : Parameters?, Context> protected constructor(route: String) :
+	abstract inner class StaticResource<O : Any, GetParams : Parameters, Context : Any> protected constructor(route: String) :
 		AbstractResource<O, Context>() {
 
 		val route = Route.Segment(route)
@@ -218,7 +222,7 @@ sealed class ResourceGroup {
 	/**
 	 * A template for resources identified by IDs.
 	 */
-	abstract inner class DynamicResource<O, Context> protected constructor(
+	abstract inner class DynamicResource<O : Any, Context : Any> protected constructor(
 		/**
 		 * The name of the identifier.
 		 *
@@ -235,7 +239,7 @@ sealed class ResourceGroup {
 		}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
-		val get = Operation<O, Id<O>, O, Nothing?, Context>(this, Operation.Kind.Read) { it, _, context ->
+		val get = Operation<O, Id<O>, O, Parameters.Empty, Context>(this, Operation.Kind.Read) { it, _, context ->
 			validateId(
 				it,
 				context

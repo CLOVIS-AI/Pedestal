@@ -16,21 +16,16 @@ import opensavvy.backbone.Data.Status.Loading.Basic
  *
  * [State] is an asynchronous stream of immutable values.
  * By collecting the [State], it is possible to be notified when the value is updated.
+ *
+ * To create a new [State], see [state][Data.state].
  */
 typealias State<O> = Flow<Data<O>>
 
 /**
  * Builder type for [State].
  *
- * This type is used for conveniently building asynchronous flows in synchronous environments:
- * ```kotlin
- * val ref = /* … */
- * val result = flow {
- *     loading(ref)      // Mark the value as loading
- *     delay(1000)       // Wait for 1 second
- *     completed(ref, 5) // Mark the value as completed with result 5
- * }
- * ```
+ * This type is used for conveniently building asynchronous flows in synchronous environments.
+ * For more information, see [state][Data.state].
  */
 typealias StateBuilder<O> = FlowCollector<Data<O>>
 
@@ -79,12 +74,7 @@ data class Data<O>(
 	val ref: Ref<O>?,
 ) {
 
-	init {
-		if (ref == null)
-			require(data !is Result.Success) { "Data linked to no reference cannot be successful: $this" }
-	}
-
-	override fun toString() = "$data is $status for $ref"
+	override fun toString() = "$ref: $data $status"
 
 	/**
 	 * Whether a piece of [Data] is [Completed] or still [Loading].
@@ -153,8 +143,8 @@ data class Data<O>(
 			 */
 			class Basic(progression: Float? = null) : Loading(progression) {
 				override fun toString() =
-					if (progression != null) "Loading.Basic(progression = $progression)"
-					else "Loading.Basic"
+					if (progression != null) "Loading($percent%)"
+					else "Loading"
 
 				override fun equals(other: Any?): Boolean {
 					if (this === other) return true
@@ -186,19 +176,53 @@ data class Data<O>(
 		//region Creation DSL
 
 		/**
+		 * Builder for [State] instances.
+		 *
+		 * ```kotlin
+		 * val foo = state {
+		 *   val ref = /* … */
+		 *   markLoading(ref, 0f) // 0%
+		 *
+		 *   if (someCheck)
+		 *     markInvalid(ref, "The requested object doesn't match [some check]")
+		 *
+		 *   markCompleted(ref, 5)
+		 * }
+		 * ```
+		 */
+		fun <O> state(block: suspend StateBuilder<O>.() -> Unit): State<O> = flow(block)
+			.catch {
+				when (it) {
+					// The user has requested the cancellation of the flow builder.
+					// It is their responsibility to emit the correct exception in the flow, so we have nothing more to do.
+					is StateBuilderCancellation -> Unit
+
+					// The coroutine was cancelled.
+					// CancellationExceptions MUST be rethrown, or it breaks coroutines
+					// See https://kotlinlang.org/docs/cancellation-and-timeouts.html#cancellation-is-cooperative
+					is CancellationException -> throw CancellationException("A state builder was cancelled", it)
+
+					else -> emit(Data(Result.Failure.Kotlin(it), Completed, ref = null))
+				}
+			}
+
+		/**
+		 * Stops the currently running [state] call.
+		 */
+		class StateBuilderCancellation : RuntimeException("The 'state' builder has been cancelled")
+
+		/**
 		 * Marks [ref] as [successful][Result.Success] and [completed][Completed].
 		 */
-		suspend fun <O> StateBuilder<O>.markCompleted(ref: Ref<O>?, value: O) = emit(Data(Result.Success(value), Completed, ref))
-
-		@Suppress("CanBeParameter", "MemberVisibilityCanBePrivate")
-		class StateBuilderFailure(val failure: Result.Failure): CancellationException("Failure in StateBuilder: ${failure.message}")
+		suspend fun <O> StateBuilder<O>.markCompleted(ref: Ref<O>?, value: O) =
+			emit(Data(Result.Success(value), Completed, ref))
 
 		/**
 		 * Marks [ref] as [failed][Result.Failure] and [completed][Completed].
 		 */
 		suspend fun <O> StateBuilder<O>.markFailed(ref: Ref<O>?, error: Result.Failure): Nothing {
 			emit(Data(error, Completed, ref))
-			throw StateBuilderFailure(error)
+			throw StateBuilderCancellation()
 		}
 
 		/**

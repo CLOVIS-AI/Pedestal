@@ -2,6 +2,7 @@
 
 plugins {
 	kotlin("multiplatform")
+	kotlin("plugin.serialization")
 }
 
 kotlin {
@@ -14,8 +15,9 @@ kotlin {
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
-				api(KotlinX.coroutines.core)
-				api(KotlinX.datetime)
+				api(projects.spine)
+
+				api(Ktor.client.core)
 
 				implementation(projects.logger)
 			}
@@ -25,18 +27,7 @@ kotlin {
 			dependencies {
 				implementation(projects.tester)
 
-				api(KotlinX.coroutines.test)
-			}
-		}
-	}
-}
-
-kover {
-	verify {
-		rule {
-			name = "Minimal code coverage"
-			bound {
-				minValue = 80
+				implementation(KotlinX.coroutines.test)
 			}
 		}
 	}

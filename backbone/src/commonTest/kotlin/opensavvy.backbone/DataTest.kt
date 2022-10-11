@@ -6,7 +6,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.test.runTest
@@ -16,6 +15,7 @@ import opensavvy.backbone.Data.Companion.markLoading
 import opensavvy.backbone.Data.Companion.markNotFound
 import opensavvy.backbone.Data.Companion.markUnauthenticated
 import opensavvy.backbone.Data.Companion.markUnauthorized
+import opensavvy.backbone.Data.Companion.state
 import opensavvy.backbone.Data.Companion.value
 import opensavvy.backbone.Ref.Companion.request
 import opensavvy.backbone.cache.ExpirationCache.Companion.expireAfter
@@ -23,7 +23,6 @@ import opensavvy.backbone.cache.MemoryCache.Companion.cachedInMemory
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.time.Duration.Companion.seconds
 
 class DataTest {
@@ -33,7 +32,7 @@ class DataTest {
 		val loadingNoInfo = Data.Status.Loading.Basic()
 		assertEquals(null, loadingNoInfo.progression)
 		assertEquals(null, loadingNoInfo.percent)
-		assertEquals("Loading.Basic", loadingNoInfo.toString())
+		assertEquals("Loading", loadingNoInfo.toString())
 
 		val loadingStart = Data.Status.Loading.Basic(0f)
 		assertEquals(0f, loadingStart.progression)
@@ -42,26 +41,17 @@ class DataTest {
 		val loadingThird = Data.Status.Loading.Basic(0.33f)
 		assertEquals(0.33f, loadingThird.progression)
 		assertEquals(33, loadingThird.percent)
-		assertEquals("Loading.Basic(progression = 0.33)", loadingThird.toString())
+		assertEquals("Loading(33%)", loadingThird.toString())
 
 		val loadingDone = Data.Status.Loading.Basic(1.0f)
 		assertEquals(1.0f, loadingDone.progression)
 		assertEquals(100, loadingDone.percent)
 	}
 
-	@Test
-	fun dataWithoutReference() {
-		Data(Result.NoData, Data.Status.Loading.Basic(0.5f), ref = null)
-
-		assertFails {
-			Data(Result.Success(5), Data.Status.Loading.Basic(0.5f), ref = null)
-		}
-	}
-
 	private class IntBone(context: CoroutineContext) : Backbone<Int> {
 		override val cache = Cache.Default<Int>().cachedInMemory(context).expireAfter(10.seconds, context)
 
-		override fun directRequest(ref: Ref<Int>): Flow<Data<Int>> = flow {
+		override fun directRequest(ref: Ref<Int>): Flow<Data<Int>> = state {
 			markLoading(ref, 0f)
 			delay(20)
 

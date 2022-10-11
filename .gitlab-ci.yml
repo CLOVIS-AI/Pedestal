@@ -113,6 +113,19 @@ spine:convert-coverage:
   variables:
     module: spine
 
+spine-ktor:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: spine-ktor-server
+
+spine-ktor:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: spine-ktor:test:jvm
+      artifacts: true
+  variables:
+    module: spine-ktor-server
+
 auth:test:jvm:
   extends: [ .test-jvm ]
   variables:
