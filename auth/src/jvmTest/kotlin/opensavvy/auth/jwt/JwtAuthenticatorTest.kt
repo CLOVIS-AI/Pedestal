@@ -1,17 +1,17 @@
 package opensavvy.auth.jwt
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import opensavvy.auth.Account
 import opensavvy.auth.Roles
-import opensavvy.backbone.Cache
-import opensavvy.backbone.Data
-import opensavvy.backbone.Result
+import opensavvy.backbone.BackboneCache
+import opensavvy.backbone.RefState
+import opensavvy.backbone.defaultBackboneCache
 import opensavvy.logger.LogLevel
 import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.loggerFor
+import opensavvy.state.emitSuccessful
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -38,9 +38,9 @@ class JwtAuthenticatorTest {
 	class Accounts : Account.Bone<Role> {
 		override fun fromId(id: String) = Ref(id, this)
 
-		override val cache: Cache<Account<Role>> = Cache.Default()
+		override val cache: BackboneCache<Account<Role>> = defaultBackboneCache()
 
-		override fun directRequest(ref: opensavvy.backbone.Ref<Account<Role>>): Flow<Data<Account<Role>>> = flow {
+		override fun directRequest(ref: opensavvy.backbone.Ref<Account<Role>>): RefState<Account<Role>> = flow {
 			require(ref is Ref) { "$this doesn't support the reference $ref" }
 
 			val account = when (ref.id) {
@@ -50,7 +50,7 @@ class JwtAuthenticatorTest {
 				else -> error("Invalid user id: ${ref.id}")
 			}
 
-			emit(Data(Result.Success(account), Data.Status.Completed, ref))
+			emitSuccessful(ref, account)
 		}
 	}
 

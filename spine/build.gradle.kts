@@ -15,7 +15,7 @@ kotlin {
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
-				api(projects.backbone)
+				api(projects.state)
 				api(KotlinX.serialization.core)
 
 				implementation(projects.logger)
@@ -25,8 +25,9 @@ kotlin {
 		val commonTest by getting {
 			dependencies {
 				implementation(projects.tester)
+				implementation(projects.backbone)
 
-				api(KotlinX.coroutines.test)
+				implementation(KotlinX.coroutines.test)
 				implementation(KotlinX.serialization.json)
 			}
 		}

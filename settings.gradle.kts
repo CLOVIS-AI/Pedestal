@@ -6,10 +6,13 @@ plugins {
 }
 
 include(
+	"state",
+	"cache",
 	"backbone",
 	"spine",
-	"spine-ktor-client",
-	"spine-ktor-server",
+	"spine-ktor",
+	"spine-ktor:spine-ktor-client",
+	"spine-ktor:spine-ktor-server",
 	"logger",
 	"tester",
 	"auth",

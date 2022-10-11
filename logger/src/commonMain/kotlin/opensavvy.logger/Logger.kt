@@ -66,34 +66,34 @@ interface Logger {
 	 */
 	var level: LogLevel
 
-	fun forceTrace(message: String, vararg objects: Any)
-	fun forceDebug(message: String, vararg objects: Any)
-	fun forceInfo(message: String, vararg objects: Any)
-	fun forceWarn(message: String, vararg objects: Any)
-	fun forceError(message: String, vararg objects: Any)
+	fun forceTrace(message: String, vararg objects: Any?)
+	fun forceDebug(message: String, vararg objects: Any?)
+	fun forceInfo(message: String, vararg objects: Any?)
+	fun forceWarn(message: String, vararg objects: Any?)
+	fun forceError(message: String, vararg objects: Any?)
 
 	companion object {
-		inline fun Logger.trace(vararg objects: Any, message: () -> String) {
+		inline fun Logger.trace(vararg objects: Any?, message: () -> String) {
 			if (level.trace)
 				forceTrace(message(), *objects)
 		}
 
-		inline fun Logger.debug(vararg objects: Any, message: () -> String) {
+		inline fun Logger.debug(vararg objects: Any?, message: () -> String) {
 			if (level.debug)
 				forceDebug(message(), *objects)
 		}
 
-		inline fun Logger.info(vararg objects: Any, message: () -> String) {
+		inline fun Logger.info(vararg objects: Any?, message: () -> String) {
 			if (level.info)
 				forceInfo(message(), *objects)
 		}
 
-		inline fun Logger.warn(vararg objects: Any, message: () -> String) {
+		inline fun Logger.warn(vararg objects: Any?, message: () -> String) {
 			if (level.warn)
 				forceWarn(message(), *objects)
 		}
 
-		inline fun Logger.error(vararg objects: Any, message: () -> String) {
+		inline fun Logger.error(vararg objects: Any?, message: () -> String) {
 			if (level.error)
 				forceError(message(), *objects)
 		}

@@ -1,9 +1,9 @@
 package opensavvy.spine
 
-import opensavvy.backbone.Data.Companion.markInvalid
-import opensavvy.backbone.StateBuilder
 import opensavvy.spine.ResourceGroup.AbstractResource
 import opensavvy.spine.Route.Companion.div
+import opensavvy.state.StateBuilder
+import opensavvy.state.ensureValid
 
 /**
  * Common ancestor of [Service] and [AbstractResource].
@@ -80,35 +80,36 @@ sealed class ResourceGroup {
 		 * This function is automatically called to verify all identifiers passed to all endpoints to this resource ([get] and the other functions).
 		 * It can be overridden to add checks for user rights, etc.
 		 */
-		open suspend fun StateBuilder<O>.validateId(id: Id<O>, context: Context) {
-			if (id.service != service.name)
-				markInvalid(
-					ref = null,
-					"The passed identifier refers to the service '${id.service}', but this resource belongs to the service '${service.name}'"
-				)
+		open suspend fun StateBuilder<Id<O>, O>.validateId(id: Id<O>, context: Context) {
+			ensureValid(
+				id,
+				id.service == service.name
+			) { "The passed identifier refers to the service '${id.service}', but this resource belongs to the service '${service.name}'" }
 
 			// Let's check that the resource designated by the ID matches with this resource
 			var resource: ResourceGroup = this@AbstractResource
 			var index = id.resource.segments.lastIndex
 			while (resource is AbstractResource<*, *>) {
-				val segment = id.resource.segments.getOrNull(index) ?: markInvalid(
-					ref = null,
-					"The passed identifier's URI length is too short for this resource: '$id' for resource '${this@AbstractResource}'"
-				)
+				val segment = id.resource.segments.getOrNull(index)
+				ensureValid(
+					id,
+					segment != null
+				) { "The passed identifier's URI length is too short for this resource: '$id' for resource '${this@AbstractResource}'" }
 
-				when (resource) {
+				@Suppress("NAME_SHADOWING") // necessary for smart cast because 'resource' is mutable
+				when (val resource: AbstractResource<*, *> = resource) {
 					is StaticResource<*, *, *> -> {
-						if (segment != resource.route)
-							markInvalid(
-								ref = null,
-								"The passed identifier's segment #$index doesn't match the resource; expected '${resource.route}' but found '$segment'"
-							)
+						ensureValid(
+							id,
+							segment == resource.route
+						) { "The passed identifier's segment #$index doesn't match the resource; expected '${resource.route}' but found '$segment'" }
 					}
 
 					is DynamicResource<*, *> -> {
 						// There are no constraints on what IDs look like.
 						// If we expect an ID, we can't make any verification on the value.
 					}
+
 					// else -> is impossible
 				}
 
@@ -116,35 +117,42 @@ sealed class ResourceGroup {
 				index--
 			}
 
-			if (index != -1)
-				markInvalid(
-					ref = null,
-					"The passed identifier's URI length is too long for this resource: '$id' for resource '${this@AbstractResource}'"
-				)
+			ensureValid(
+				id,
+				index == -1
+			) { "The passed identifier's URI length is too long for this resource: '$id' for resource '${this@AbstractResource}'" }
 		}
 
 		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
-			validate: OperationValidator<In, Out, Params, Context> = { _, _, _ -> },
+			validate: OperationValidator<O, In, Out, Params, Context> = { _, _, _, _ -> },
 		) =
 			Operation(this, Operation.Kind.Create, route, validate)
 
-		protected fun <In, Params : Parameters> edit(
+		protected fun <In : Any, Params : Parameters> edit(
 			route: Route? = null,
-			validate: OperationValidator<Pair<Id<O>, In>, Unit, Params, Context> = { _, _, _ -> },
-		) = Operation(this, Operation.Kind.Edit, route) { (id, it): Pair<Id<O>, In>, params: Params, context ->
+			validate: OperationValidator<O, In, Unit, Params, Context> = { _, _, _, _ -> },
+		) = Operation(this, Operation.Kind.Edit, route) { id: Id<O>, it: In, params: Params, context ->
 			validateId(id, context)
-			validate(id to it, params, context)
+			validate(id, it, params, context)
 		}
 
-		protected fun <In> delete(validate: OperationValidator<Pair<Id<O>, In>, Unit, Parameters.Empty, Context> = { _, _, _ -> }) =
+		protected fun <In : Any, Out : Any, Params : Parameters> action(
+			route: Route,
+			validate: OperationValidator<O, In, Out, Params, Context> = { _, _, _, _ -> },
+		) = Operation(this, Operation.Kind.Action, route) { id: Id<O>, it: In, params: Params, context ->
+			validateId(id, context)
+			validate(id, it, params, context)
+		}
+
+		protected fun <In : Any> delete(validate: OperationValidator<O, In, Unit, Parameters.Empty, Context> = { _, _, _, _ -> }) =
 			Operation(
 				this,
 				Operation.Kind.Delete,
 				route = null
-			) { (id, it): Pair<Id<O>, In>, _: Parameters.Empty, context ->
+			) { id: Id<O>, it: In, _: Parameters.Empty, context ->
 				validateId(id, context)
-				validate(id to it, Parameters.Empty, context)
+				validate(id, it, Parameters.Empty, context)
 			}
 
 		/**
@@ -196,13 +204,14 @@ sealed class ResourceGroup {
 		 *
 		 * You should override this function if the parameters impact the access rights.
 		 */
-		open suspend fun StateBuilder<O>.validateGetParams(params: GetParams, context: Context) {}
+		open suspend fun StateBuilder<Id<O>, O>.validateGetParams(params: GetParams, context: Context) {}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
-		val get = Operation<O, Id<O>, O, GetParams, Context>(this, Operation.Kind.Read) { it, params, context ->
-			validateId(it, context)
-			validateGetParams(params, context)
-		}
+		val get =
+			Operation<O, Unit, O, GetParams, Context>(this, Operation.Kind.Read) { id: Id<O>, _, params, context ->
+				validateId(id, context)
+				validateGetParams(params, context)
+			}
 
 		final override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/$route"
 
@@ -239,9 +248,9 @@ sealed class ResourceGroup {
 		}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
-		val get = Operation<O, Id<O>, O, Parameters.Empty, Context>(this, Operation.Kind.Read) { it, _, context ->
+		val get = Operation<O, Unit, O, Parameters.Empty, Context>(this, Operation.Kind.Read) { id, _, _, context ->
 			validateId(
-				it,
+				id,
 				context
 			)
 		}

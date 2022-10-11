@@ -1,6 +1,5 @@
 package opensavvy.backbone
 
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 
@@ -18,7 +17,7 @@ interface Backbone<O> {
 	 *
 	 * As a convenience, you can use [request] to launch a request through the cache.
 	 */
-	val cache: Cache<O>
+	val cache: BackboneCache<O>
 
 	/**
 	 * Fetches the value associated with a [ref] in an external media (e.g. a remote server, a database).
@@ -28,7 +27,7 @@ interface Backbone<O> {
 	 *
 	 * The returned flow is **short-lived**: it is closed after the request finishes.
 	 */
-	fun directRequest(ref: Ref<O>): Flow<Data<O>>
+	fun directRequest(ref: Ref<O>): RefState<O>
 
 	/**
 	 * Fetches the value associated with all [refs] in an external media (e.g. a remote server, a database).
@@ -43,7 +42,7 @@ interface Backbone<O> {
 	 *
 	 * The default implementation simply calls [directRequest] sequentially.
 	 */
-	fun batchRequests(refs: Set<Ref<O>>): Flow<Data<O>> = flow {
+	fun batchRequests(refs: Set<Ref<O>>): RefState<O> = flow {
 		for (ref in refs) {
 			emitAll(directRequest(ref))
 		}
