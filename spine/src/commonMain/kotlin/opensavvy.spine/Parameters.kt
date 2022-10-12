@@ -98,7 +98,7 @@ abstract class Parameters {
 			ULong::class -> value.toULong() as T
 			Float::class -> value.toFloat() as T
 			Double::class -> value.toDouble() as T
-			else -> throw UnsupportedOperationException("The type ${T::class.qualifiedName ?: T::class.simpleName ?: T::class.toString()} is not currently supported in parameters.")
+			else -> throw UnsupportedOperationException("The type ${T::class.simpleName ?: T::class.toString()} is not currently supported in parameters.")
 		}
 	}
 
@@ -119,7 +119,7 @@ abstract class Parameters {
 			ULong::class -> value.toString()
 			Float::class -> value.toString()
 			Double::class -> value.toString()
-			else -> throw UnsupportedOperationException("The type ${T::class.qualifiedName ?: T::class.simpleName ?: T::class.toString()} is not currently supported in parameters.")
+			else -> throw UnsupportedOperationException("The type ${T::class.simpleName ?: T::class.toString()} is not currently supported in parameters.")
 		}
 
 		data[name] = str
