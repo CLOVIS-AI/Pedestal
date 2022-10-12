@@ -44,6 +44,25 @@ backbone:publish:
   variables:
     module: backbone
 
+spine-ktor:publish:
+  extends: [ .publish ]
+  variables:
+    module: spine-ktor
+
+spine-ktor-client:publish:
+  extends: [ .publish ]
+  variables:
+    module: spine-ktor:spine-ktor-client
+
+spine-ktor-server:publish:
+  extends: [ .publish ]
+  script:
+    - pacman -Syu --noconfirm git jre-openjdk-headless
+    - export JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v java))))
+    - ./gradlew $module:publishKotlinMultiplatformPublicationToGitLabRepository $module:publishJvmPublicationToGitLabRepository
+  variables:
+    module: spine-ktor:spine-ktor-server
+
 .test-jvm:
   image: openjdk:latest
   variables:
