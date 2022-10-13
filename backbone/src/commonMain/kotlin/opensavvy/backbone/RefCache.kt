@@ -8,11 +8,11 @@ import opensavvy.cache.CacheAdapter
 import opensavvy.state.state
 import kotlin.coroutines.CoroutineContext
 
-typealias BackboneCache<O> = Cache<Ref<O>, O>
+typealias RefCache<O> = Cache<Ref<O>, O>
 
-fun <O> defaultBackboneCache() = CacheAdapter<Ref<O>, O> { it.directRequest() }
+fun <O> defaultRefCache() = CacheAdapter<Ref<O>, O> { it.directRequest() }
 
-fun <O> batchingBackboneCache(context: CoroutineContext, workers: Int = 1) =
+fun <O> batchingRefCache(context: CoroutineContext, workers: Int = 1) =
 	BatchingCacheAdapter<Ref<O>, O>(context, workers) { requests ->
 		val results = requests.groupBy { it.backbone }
 			.map { (backbone, refs) -> backbone.batchRequests(refs.toHashSet()) }

@@ -17,7 +17,7 @@ interface Backbone<O> {
 	 *
 	 * As a convenience, you can use [request] to launch a request through the cache.
 	 */
-	val cache: BackboneCache<O>
+	val cache: RefCache<O>
 
 	/**
 	 * Fetches the value associated with a [ref] in an external media (e.g. a remote server, a database).

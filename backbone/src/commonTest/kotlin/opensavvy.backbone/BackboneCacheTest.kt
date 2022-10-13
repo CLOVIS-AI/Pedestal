@@ -16,7 +16,7 @@ import kotlin.test.assertEquals
 class BackboneCacheTest {
 
 	// Id("12") -> 12
-	private class Bone(override val cache: BackboneCache<Int>) : Backbone<Int> {
+	private class Bone(override val cache: RefCache<Int>) : Backbone<Int> {
 		override fun directRequest(ref: Ref<Int>): RefState<Int> = state {
 			ensureValid(ref, ref is Ref.Basic) { "Only basic references are accepted by ${this@Bone}" }
 			val int = ref.id.toIntOrNull()
@@ -29,7 +29,7 @@ class BackboneCacheTest {
 
 	@Test
 	fun default() = runTest {
-		val bone = Bone(defaultBackboneCache())
+		val bone = Bone(defaultRefCache())
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 
@@ -44,7 +44,7 @@ class BackboneCacheTest {
 	fun batching() = runTest {
 		val job = Job()
 
-		val bone = Bone(batchingBackboneCache(coroutineContext + job))
+		val bone = Bone(batchingRefCache(coroutineContext + job))
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 

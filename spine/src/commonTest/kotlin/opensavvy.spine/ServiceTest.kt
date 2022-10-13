@@ -11,7 +11,7 @@ import opensavvy.backbone.Ref
 import opensavvy.backbone.Ref.Companion.request
 import opensavvy.backbone.Ref.Companion.requestValue
 import opensavvy.backbone.RefState
-import opensavvy.backbone.defaultBackboneCache
+import opensavvy.backbone.defaultRefCache
 import opensavvy.spine.Route.Companion.div
 import opensavvy.state.*
 import opensavvy.state.Slice.Companion.failed
@@ -114,7 +114,7 @@ class ServiceTest {
 	}
 
 	private class UserBone : Backbone<User> {
-		override val cache = defaultBackboneCache<User>()
+		override val cache = defaultRefCache<User>()
 
 		private val users = HashMap<String, User>()
 
