@@ -44,6 +44,11 @@ backbone:publish:
   variables:
     module: backbone
 
+spine:publish:
+  extends: [ .publish ]
+  variables:
+    module: spine
+
 spine-ktor:publish:
   extends: [ .publish ]
   variables:
