@@ -75,12 +75,9 @@ sealed class ResourceGroup {
 		abstract val parent: ResourceGroup
 
 		/**
-		 * Verifies that [id] is a valid identifier for this resource.
-		 *
-		 * This function is automatically called to verify all identifiers passed to all endpoints to this resource ([get] and the other functions).
-		 * It can be overridden to add checks for user rights, etc.
+		 * Validates that [id] identifies this resource.
 		 */
-		open suspend fun StateBuilder<Id<O>, O>.validateId(id: Id<O>, context: Context) {
+		suspend fun StateBuilder<Id<O>, O>.validateCorrectId(id: Id<O>) {
 			ensureValid(
 				id,
 				id.service == service.name
@@ -123,6 +120,14 @@ sealed class ResourceGroup {
 			) { "The passed identifier's URI length is too long for this resource: '$id' for resource '${this@AbstractResource}'" }
 		}
 
+		/**
+		 * Custom validation based on [id].
+		 *
+		 * For example, you can override this function to check access rights for read operations.
+		 * By default, this function does nothing.
+		 */
+		open suspend fun StateBuilder<Id<O>, O>.validateId(id: Id<O>, context: Context) {}
+
 		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
 			validate: OperationValidator<O, In, Out, Params, Context> = { _, _, _, _ -> },
@@ -133,6 +138,7 @@ sealed class ResourceGroup {
 			route: Route? = null,
 			validate: OperationValidator<O, In, Unit, Params, Context> = { _, _, _, _ -> },
 		) = Operation(this, Operation.Kind.Edit, route) { id: Id<O>, it: In, params: Params, context ->
+			validateCorrectId(id)
 			validateId(id, context)
 			validate(id, it, params, context)
 		}
@@ -141,6 +147,7 @@ sealed class ResourceGroup {
 			route: Route,
 			validate: OperationValidator<O, In, Out, Params, Context> = { _, _, _, _ -> },
 		) = Operation(this, Operation.Kind.Action, route) { id: Id<O>, it: In, params: Params, context ->
+			validateCorrectId(id)
 			validateId(id, context)
 			validate(id, it, params, context)
 		}
@@ -151,6 +158,7 @@ sealed class ResourceGroup {
 				Operation.Kind.Delete,
 				route = null
 			) { id: Id<O>, it: In, _: Parameters.Empty, context ->
+				validateCorrectId(id)
 				validateId(id, context)
 				validate(id, it, Parameters.Empty, context)
 			}
@@ -209,6 +217,7 @@ sealed class ResourceGroup {
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
 		val get =
 			Operation<O, Unit, O, GetParams, Context>(this, Operation.Kind.Read) { id: Id<O>, _, params, context ->
+				validateCorrectId(id)
 				validateId(id, context)
 				validateGetParams(params, context)
 			}
@@ -249,10 +258,8 @@ sealed class ResourceGroup {
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
 		val get = Operation<O, Unit, O, Parameters.Empty, Context>(this, Operation.Kind.Read) { id, _, _, context ->
-			validateId(
-				id,
-				context
-			)
+			validateCorrectId(id)
+			validateId(id, context)
 		}
 
 		final override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/{$name}"
