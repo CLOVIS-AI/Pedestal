@@ -212,14 +212,14 @@ sealed class ResourceGroup {
 		 *
 		 * You should override this function if the parameters impact the access rights.
 		 */
-		open suspend fun StateBuilder<Id<O>, O>.validateGetParams(params: GetParams, context: Context) {}
+		open suspend fun StateBuilder<Id<O>, O>.validateGetParams(id: Id<O>, params: GetParams, context: Context) {}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
 		val get =
 			Operation<O, Unit, O, GetParams, Context>(this, Operation.Kind.Read) { id: Id<O>, _, params, context ->
 				validateCorrectId(id)
 				validateId(id, context)
-				validateGetParams(params, context)
+				validateGetParams(id, params, context)
 			}
 
 		final override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/$route"
