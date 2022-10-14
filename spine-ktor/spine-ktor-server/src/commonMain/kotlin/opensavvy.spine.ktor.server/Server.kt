@@ -45,7 +45,7 @@ import opensavvy.state.state
 inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params : Parameters, Context : Any> Route.route(
 	operation: Operation<Resource, In, Out, Params, Context>,
 	contextGenerator: ContextGenerator<Context>,
-	crossinline block: suspend ResponseStateBuilder<Resource, In, Out, Params, Context>.() -> Unit,
+	crossinline block: suspend ResponseStateBuilder<In, Out, Params, Context>.() -> Unit,
 ) {
 	val path: String = operation.resource.routeTemplate + (operation.route ?: "")
 
@@ -88,7 +88,6 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 			when (val data = state.status) {
 				is Status.Successful -> call.respond(
 					NetworkResponse(
-						id = state.id ?: error("It's not possible to have a successful result without an ID: $state"),
 						routes = emptyList(), //TODO in #22: advertise the endpoints
 						value = data.value
 					)

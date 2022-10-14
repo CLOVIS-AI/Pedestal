@@ -5,13 +5,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import opensavvy.auth.Account
 import opensavvy.auth.Roles
-import opensavvy.backbone.BackboneCache
-import opensavvy.backbone.RefState
-import opensavvy.backbone.defaultBackboneCache
+import opensavvy.backbone.RefCache
+import opensavvy.backbone.defaultRefCache
 import opensavvy.logger.LogLevel
 import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.loggerFor
-import opensavvy.state.emitSuccessful
+import opensavvy.state.Slice.Companion.successful
+import opensavvy.state.State
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -38,9 +38,9 @@ class JwtAuthenticatorTest {
 	class Accounts : Account.Bone<Role> {
 		override fun fromId(id: String) = Ref(id, this)
 
-		override val cache: BackboneCache<Account<Role>> = defaultBackboneCache()
+		override val cache: RefCache<Account<Role>> = defaultRefCache()
 
-		override fun directRequest(ref: opensavvy.backbone.Ref<Account<Role>>): RefState<Account<Role>> = flow {
+		override fun directRequest(ref: opensavvy.backbone.Ref<Account<Role>>): State<Account<Role>> = flow {
 			require(ref is Ref) { "$this doesn't support the reference $ref" }
 
 			val account = when (ref.id) {
@@ -50,7 +50,7 @@ class JwtAuthenticatorTest {
 				else -> error("Invalid user id: ${ref.id}")
 			}
 
-			emitSuccessful(ref, account)
+			emit(successful(account))
 		}
 	}
 

@@ -75,14 +75,10 @@ sealed class ResourceGroup {
 		abstract val parent: ResourceGroup
 
 		/**
-		 * Verifies that [id] is a valid identifier for this resource.
-		 *
-		 * This function is automatically called to verify all identifiers passed to all endpoints to this resource ([get] and the other functions).
-		 * It can be overridden to add checks for user rights, etc.
+		 * Validates that [id] identifies this resource.
 		 */
-		open suspend fun StateBuilder<Id<O>, O>.validateId(id: Id<O>, context: Context) {
+		suspend fun StateBuilder<O>.validateCorrectId(id: Id) {
 			ensureValid(
-				id,
 				id.service == service.name
 			) { "The passed identifier refers to the service '${id.service}', but this resource belongs to the service '${service.name}'" }
 
@@ -92,7 +88,6 @@ sealed class ResourceGroup {
 			while (resource is AbstractResource<*, *>) {
 				val segment = id.resource.segments.getOrNull(index)
 				ensureValid(
-					id,
 					segment != null
 				) { "The passed identifier's URI length is too short for this resource: '$id' for resource '${this@AbstractResource}'" }
 
@@ -100,7 +95,6 @@ sealed class ResourceGroup {
 				when (val resource: AbstractResource<*, *> = resource) {
 					is StaticResource<*, *, *> -> {
 						ensureValid(
-							id,
 							segment == resource.route
 						) { "The passed identifier's segment #$index doesn't match the resource; expected '${resource.route}' but found '$segment'" }
 					}
@@ -118,39 +112,49 @@ sealed class ResourceGroup {
 			}
 
 			ensureValid(
-				id,
 				index == -1
 			) { "The passed identifier's URI length is too long for this resource: '$id' for resource '${this@AbstractResource}'" }
 		}
 
+		/**
+		 * Custom validation based on [id].
+		 *
+		 * For example, you can override this function to check access rights for read operations.
+		 * By default, this function does nothing.
+		 */
+		open suspend fun StateBuilder<O>.validateId(id: Id, context: Context) {}
+
 		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
-			validate: OperationValidator<O, In, Out, Params, Context> = { _, _, _, _ -> },
+			validate: OperationValidator<In, Pair<Id, Out>, Params, Context> = { _, _, _, _ -> },
 		) =
 			Operation(this, Operation.Kind.Create, route, validate)
 
 		protected fun <In : Any, Params : Parameters> edit(
 			route: Route? = null,
-			validate: OperationValidator<O, In, Unit, Params, Context> = { _, _, _, _ -> },
-		) = Operation(this, Operation.Kind.Edit, route) { id: Id<O>, it: In, params: Params, context ->
+			validate: OperationValidator<In, Unit, Params, Context> = { _, _, _, _ -> },
+		) = Operation(this, Operation.Kind.Edit, route) { id: Id, it: In, params: Params, context ->
+			validateCorrectId(id)
 			validateId(id, context)
 			validate(id, it, params, context)
 		}
 
 		protected fun <In : Any, Out : Any, Params : Parameters> action(
 			route: Route,
-			validate: OperationValidator<O, In, Out, Params, Context> = { _, _, _, _ -> },
-		) = Operation(this, Operation.Kind.Action, route) { id: Id<O>, it: In, params: Params, context ->
+			validate: OperationValidator<In, Out, Params, Context> = { _, _, _, _ -> },
+		) = Operation(this, Operation.Kind.Action, route) { id: Id, it: In, params: Params, context ->
+			validateCorrectId(id)
 			validateId(id, context)
 			validate(id, it, params, context)
 		}
 
-		protected fun <In : Any> delete(validate: OperationValidator<O, In, Unit, Parameters.Empty, Context> = { _, _, _, _ -> }) =
+		protected fun <In : Any> delete(validate: OperationValidator<In, Unit, Parameters.Empty, Context> = { _, _, _, _ -> }) =
 			Operation(
 				this,
 				Operation.Kind.Delete,
 				route = null
-			) { id: Id<O>, it: In, _: Parameters.Empty, context ->
+			) { id: Id, it: In, _: Parameters.Empty, context ->
+				validateCorrectId(id)
 				validateId(id, context)
 				validate(id, it, Parameters.Empty, context)
 			}
@@ -168,7 +172,7 @@ sealed class ResourceGroup {
 		 * - for resource `/users/{user}`: `idOf("52f8")` generates the ID `/users/52f8`
 		 * - for resource `/users/{user}/{pet}`: `idOf("52f8", "a32b")` generates the ID `/users/52f8/a32b`
 		 */
-		fun idOf(vararg dynamic: String): Id<O> = idOf(dynamic.asSequence().map { Route.Segment(it) }.iterator())
+		fun idOf(vararg dynamic: String): Id = idOf(dynamic.asSequence().map { Route.Segment(it) }.iterator())
 
 		/**
 		 * Instantiates an [Id] for this resource.
@@ -178,7 +182,7 @@ sealed class ResourceGroup {
 		 * Implementations of this method should consume the number of dynamic elements they need from the [dynamic] iterator
 		 * and ignore any other value (calling this function with an iterator that has too many elements is correct).
 		 */
-		abstract fun idOf(dynamic: Iterator<Route.Segment>): Id<O>
+		abstract fun idOf(dynamic: Iterator<Route.Segment>): Id
 	}
 
 	/**
@@ -204,13 +208,14 @@ sealed class ResourceGroup {
 		 *
 		 * You should override this function if the parameters impact the access rights.
 		 */
-		open suspend fun StateBuilder<Id<O>, O>.validateGetParams(params: GetParams, context: Context) {}
+		open suspend fun StateBuilder<O>.validateGetParams(id: Id, params: GetParams, context: Context) {}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
 		val get =
-			Operation<O, Unit, O, GetParams, Context>(this, Operation.Kind.Read) { id: Id<O>, _, params, context ->
+			Operation<O, Unit, O, GetParams, Context>(this, Operation.Kind.Read) { id: Id, _, params, context ->
+				validateCorrectId(id)
 				validateId(id, context)
-				validateGetParams(params, context)
+				validateGetParams(id, params, context)
 			}
 
 		final override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/$route"
@@ -218,7 +223,7 @@ sealed class ResourceGroup {
 		final override val parent get() = this@ResourceGroup
 		final override val service get() = this@ResourceGroup.service
 
-		final override fun idOf(dynamic: Iterator<Route.Segment>): Id<O> {
+		final override fun idOf(dynamic: Iterator<Route.Segment>): Id {
 			val parentId = when (val parent = parent) {
 				is AbstractResource<*, *> -> parent.idOf(dynamic)
 				is Service -> parent.idOf()
@@ -249,10 +254,8 @@ sealed class ResourceGroup {
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
 		val get = Operation<O, Unit, O, Parameters.Empty, Context>(this, Operation.Kind.Read) { id, _, _, context ->
-			validateId(
-				id,
-				context
-			)
+			validateCorrectId(id)
+			validateId(id, context)
 		}
 
 		final override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/{$name}"
@@ -260,7 +263,7 @@ sealed class ResourceGroup {
 		final override val parent get() = this@ResourceGroup
 		final override val service get() = this@ResourceGroup.service
 
-		final override fun idOf(dynamic: Iterator<Route.Segment>): Id<O> {
+		final override fun idOf(dynamic: Iterator<Route.Segment>): Id {
 			val parentId = when (val parent = parent) {
 				is AbstractResource<*, *> -> parent.idOf(dynamic)
 				is Service -> parent.idOf()

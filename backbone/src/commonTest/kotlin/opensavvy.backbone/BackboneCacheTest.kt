@@ -7,7 +7,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runTest
 import opensavvy.backbone.Ref.Companion.expire
 import opensavvy.backbone.Ref.Companion.requestValue
-import opensavvy.state.emitSuccessful
+import opensavvy.state.Slice.Companion.successful
+import opensavvy.state.State
 import opensavvy.state.ensureValid
 import opensavvy.state.state
 import kotlin.test.Test
@@ -16,12 +17,12 @@ import kotlin.test.assertEquals
 class BackboneCacheTest {
 
 	// Id("12") -> 12
-	private class Bone(override val cache: BackboneCache<Int>) : Backbone<Int> {
-		override fun directRequest(ref: Ref<Int>): RefState<Int> = state {
-			ensureValid(ref, ref is Ref.Basic) { "Only basic references are accepted by ${this@Bone}" }
+	private class Bone(override val cache: RefCache<Int>) : Backbone<Int> {
+		override fun directRequest(ref: Ref<Int>): State<Int> = state {
+			ensureValid(ref is Ref.Basic) { "Only basic references are accepted by ${this@Bone}" }
 			val int = ref.id.toIntOrNull()
-			ensureValid(ref, int != null) { "The reference $ref does not refer to a valid integer" }
-			emitSuccessful(ref, int)
+			ensureValid(int != null) { "The reference $ref does not refer to a valid integer" }
+			emit(successful(int))
 		}
 
 		fun of(int: Int) = Ref.Basic(int.toString(), this)
@@ -29,7 +30,7 @@ class BackboneCacheTest {
 
 	@Test
 	fun default() = runTest {
-		val bone = Bone(defaultBackboneCache())
+		val bone = Bone(defaultRefCache())
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 
@@ -44,7 +45,7 @@ class BackboneCacheTest {
 	fun batching() = runTest {
 		val job = Job()
 
-		val bone = Bone(batchingBackboneCache(coroutineContext + job))
+		val bone = Bone(batchingRefCache(coroutineContext + job))
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 

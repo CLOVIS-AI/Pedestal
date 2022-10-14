@@ -34,7 +34,7 @@ import opensavvy.state.State
  * The first element of the chain, and therefore the one responsible for actually starting the request, is [CacheAdapter] or [BatchingCacheAdapter].
  * Note that both have a few implementation differences, it is not recommended to use them directly without chaining under another implementation.
  */
-interface Cache<I : Identifier<T>, T> {
+interface Cache<I : Identifier, T> {
 
 	/**
 	 * Gets the value associated with an [id] in this cache.
@@ -43,7 +43,7 @@ interface Cache<I : Identifier<T>, T> {
 	 * such as inside the body of a UI component.
 	 * You can then subscribe to the [State] to access the actual values.
 	 */
-	operator fun get(id: I): State<I, T>
+	operator fun get(id: I): State<T>
 
 	/**
 	 * Forces the cache to accept [value] as a more recent value for the given [id] than whatever it was previously storing.

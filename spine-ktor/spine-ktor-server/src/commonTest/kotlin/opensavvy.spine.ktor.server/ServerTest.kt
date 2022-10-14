@@ -13,7 +13,7 @@ import opensavvy.spine.Parameters
 import opensavvy.spine.Route
 import opensavvy.spine.Route.Companion.div
 import opensavvy.spine.ktor.client.request
-import opensavvy.state.emitSuccessful
+import opensavvy.state.Slice.Companion.successful
 import opensavvy.state.ensureFound
 import opensavvy.state.firstResultOrThrow
 import org.junit.Test
@@ -56,7 +56,7 @@ class ServerTest {
 				val result = users
 					.filter { parameters.includeArchived || !it.archived }
 					.map { it.id }
-				emitSuccessful(api.users.get.idOf(), result)
+				emit(successful(result))
 			}
 
 			route(api.users.create, context) {
@@ -64,36 +64,36 @@ class ServerTest {
 				val newId = api.users.id.idOf((nextId++).toString())
 				val new = User(newId, name, archived = false)
 				users += new
-				emitSuccessful(new.id, new)
+				emit(successful(newId to new))
 			}
 
 			route(api.users.id.get, context) {
 				val user = users.find { it.id == id }
-				ensureFound(id, user != null) { "Could not find the user $id" }
-				emitSuccessful(id, user)
+				ensureFound(user != null) { "Could not find the user $id" }
+				emit(successful(user))
 			}
 
 			route(api.users.id.archive, context) {
 				val userIndex = users.indexOfFirst { it.id == id }
-				ensureFound(id, userIndex >= 0) { "Could not find user $id" }
+				ensureFound(userIndex >= 0) { "Could not find user $id" }
 				val user = users.removeAt(userIndex)
 				users.add(user.copy(archived = true))
-				emitSuccessful(id, user)
+				emit(successful(user))
 			}
 
 			route(api.users.id.unarchive, context) {
 				val userIndex = users.indexOfFirst { it.id == id }
-				ensureFound(id, userIndex >= 0) { "Could not find user $id" }
+				ensureFound(userIndex >= 0) { "Could not find user $id" }
 				val user = users.removeAt(userIndex)
 				users.add(user.copy(archived = false))
-				emitSuccessful(id, user)
+				emit(successful(user))
 			}
 
 			route(api.users.id.delete, context) {
 				val userIndex = users.indexOfFirst { it.id == id }
-				ensureFound(id, userIndex >= 0) { "Could not find user $id" }
+				ensureFound(userIndex >= 0) { "Could not find user $id" }
 				val user = users.removeAt(userIndex)
-				emitSuccessful(id, user)
+				emit(successful(user))
 			}
 		}
 
@@ -135,15 +135,15 @@ class ServerTest {
 					.onEach { log.debug(it) { "Received event for" } }
 					.firstResultOrThrow()
 
-			assertEquals(User(Id("test", Route / "users" / "0"), "first", archived = false), first)
-			assertEquals(User(Id("test", Route / "users" / "1"), "second", archived = false), second)
+			assertEquals(User(Id("test", Route / "users" / "0"), "first", archived = false), first.second)
+			assertEquals(User(Id("test", Route / "users" / "1"), "second", archived = false), second.second)
 
 			val params = User.SearchParams().apply { includeArchived = true }
 			val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
 				.onEach { log.debug(it) { "Received event for" } }
 				.firstResultOrThrow()
 
-			assertEquals(listOf(first.id, second.id), results)
+			assertEquals(listOf(first.first, second.first), results)
 		}
 
 		//endregion

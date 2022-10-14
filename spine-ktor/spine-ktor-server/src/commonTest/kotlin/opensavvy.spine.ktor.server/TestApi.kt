@@ -10,7 +10,7 @@ import opensavvy.spine.Service
 //region API objects declaration
 
 @Serializable
-data class User(val id: Id<User>, val name: String, val archived: Boolean) {
+data class User(val id: Id, val name: String, val archived: Boolean) {
 
 	init {
 		checkUsername(name)
@@ -40,7 +40,7 @@ data class User(val id: Id<User>, val name: String, val archived: Boolean) {
 
 class TestApi : Service("test") {
 
-	inner class Users : StaticResource<List<Id<User>>, User.SearchParams, Unit>("users") {
+	inner class Users : StaticResource<List<Id>, User.SearchParams, Unit>("users") {
 		inner class Unique : DynamicResource<User, Unit>("user") {
 
 			val archive = action<Unit, Unit, Parameters.Empty>(Route / "archive")

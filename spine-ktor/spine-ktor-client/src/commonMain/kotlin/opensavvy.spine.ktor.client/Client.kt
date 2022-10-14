@@ -11,7 +11,12 @@ import opensavvy.spine.ResourceGroup.AbstractResource
 import opensavvy.spine.ktor.NetworkResponse
 import opensavvy.spine.ktor.toHttp
 import opensavvy.spine.ktor.toSpine
-import opensavvy.state.*
+import opensavvy.state.Progression.Companion.done
+import opensavvy.state.Slice.Companion.failed
+import opensavvy.state.Slice.Companion.pending
+import opensavvy.state.Slice.Companion.successful
+import opensavvy.state.State
+import opensavvy.state.state
 
 /**
  * Executes a [HttpClient] request, with the information declared in an [Operation].
@@ -40,18 +45,18 @@ import opensavvy.state.*
  */
 inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params : Parameters, Context : Any> HttpClient.request(
 	operation: Operation<Resource, In, Out, Params, Context>,
-	id: Id<Resource>,
+	id: Id,
 	input: In,
 	parameters: Params,
 	context: Context,
 	contentType: ContentType = ContentType.Application.Json,
 	crossinline configuration: HttpRequestBuilder.() -> Unit = {},
-): State<Id<Out>, Out> = state {
-	emitPending(id = null, 0.0)
+): State<Out> = state {
+	emit(pending(0.0))
 
 	operation.validate(this, id, input, parameters, context)
 
-	emitPending(id = null, 0.1)
+	emit(pending(0.1))
 
 	val result = request {
 		method = operation.kind.toHttp()
@@ -80,14 +85,14 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 		configuration()
 	}
 
-	emitPending(id = null, 0.9)
+	emit(pending(0.9))
 
 	if (result.status.isSuccess()) {
 		val response: NetworkResponse<Out> = result.body()
-		emitSuccessful(response.id, response.value)
+		emit(successful(response.value))
 	} else {
 		val body = result.body<String>().ifBlank { "${result.status} with no provided body" }
 		val kind = result.status.toSpine()
-		emitFailed(id = null, kind, body, Progression.done())
+		emit(failed(kind, body, progression = done()))
 	}
 }

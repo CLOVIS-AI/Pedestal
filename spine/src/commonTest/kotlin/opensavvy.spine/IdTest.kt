@@ -8,7 +8,7 @@ class IdTest {
 
 	@Test
 	fun test() {
-		val id = Id<Int>(service = "v2", resource = Route / "int" / "35eb")
+		val id = Id(service = "v2", resource = Route / "int" / "35eb")
 
 		assertEquals("v2/int/35eb", id.toString())
 	}

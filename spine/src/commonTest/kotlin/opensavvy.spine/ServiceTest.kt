@@ -10,12 +10,10 @@ import opensavvy.backbone.Backbone
 import opensavvy.backbone.Ref
 import opensavvy.backbone.Ref.Companion.request
 import opensavvy.backbone.Ref.Companion.requestValue
-import opensavvy.backbone.RefState
-import opensavvy.backbone.defaultBackboneCache
+import opensavvy.backbone.defaultRefCache
 import opensavvy.spine.Route.Companion.div
 import opensavvy.state.*
 import opensavvy.state.Slice.Companion.failed
-import opensavvy.state.Slice.Companion.mapIdentifier
 import opensavvy.state.Slice.Companion.successful
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -49,9 +47,9 @@ private data class User(val name: String, val admin: Boolean) {
 private class Context(val user: Ref<User>)
 
 private class Api : Service("v2") {
-	inner class Departments : StaticResource<List<Id<Department>>, Department.SearchParams, Context>("departments") {
+	inner class Departments : StaticResource<List<Id>, Department.SearchParams, Context>("departments") {
 		inner class Unique : DynamicResource<Department, Context>("department") {
-			inner class Users : StaticResource<List<Id<User>>, Parameters.Empty, Context>("users")
+			inner class Users : StaticResource<List<Id>, Parameters.Empty, Context>("users")
 
 			val users = Users()
 		}
@@ -59,17 +57,16 @@ private class Api : Service("v2") {
 		val id = Unique()
 	}
 
-	inner class Users : StaticResource<List<Id<User>>, Parameters.Empty, Context>("users") {
+	inner class Users : StaticResource<List<Id>, Parameters.Empty, Context>("users") {
 		inner class Unique : DynamicResource<User, Context>("user") {
-			inner class Departments : StaticResource<List<Id<Department>>, Parameters.Empty, Context>("departments")
+			inner class Departments : StaticResource<List<Id>, Parameters.Empty, Context>("departments")
 
 			val join = action<Unit, Unit, Parameters.Empty>(Route / "join")
 
 			val leave = action<Unit, Unit, Parameters.Empty>(Route / "leave")
 
-			val rename = edit<User.Rename, Parameters.Empty>(Route / "name") { id, newName, _, _ ->
+			val rename = edit<User.Rename, Parameters.Empty>(Route / "name") { _, newName, _, _ ->
 				ensureValid(
-					id.unit,
 					newName.name.isNotBlank()
 				) { "A user's name may not be empty: '${newName.name}'" }
 			}
@@ -77,13 +74,10 @@ private class Api : Service("v2") {
 			val departments = Departments()
 		}
 
-		val create = create { id, it: User.New, _: Parameters.Empty, context: Context ->
-			ensureValid(id.unit, it.name.isNotBlank()) { "A user's name may not be empty: '${it.name}'" }
-			ensureValid(
-				id.unit,
-				it.name.length < 100
-			) { "A user's name may not be longer than 100 characters, found ${it.name.length} characters: '${it.name}'" }
-			ensureAuthorized(id = null, context.user.requestValue().admin) { "Only admins can create new users" }
+		val create = create<User.New, User, Parameters.Empty> { _, it, _, context: Context ->
+			ensureValid(it.name.isNotBlank()) { "A user's name may not be empty: '${it.name}'" }
+			ensureValid(it.name.length < 100) { "A user's name may not be longer than 100 characters, found ${it.name.length} characters: '${it.name}'" }
+			ensureAuthorized(context.user.requestValue().admin) { "Only admins can create new users" }
 		}
 
 		val id = Unique()
@@ -114,7 +108,7 @@ class ServiceTest {
 	}
 
 	private class UserBone : Backbone<User> {
-		override val cache = defaultBackboneCache<User>()
+		override val cache = defaultRefCache<User>()
 
 		private val users = HashMap<String, User>()
 
@@ -123,13 +117,13 @@ class ServiceTest {
 			users["1"] = User("Admin", admin = true)
 		}
 
-		override fun directRequest(ref: Ref<User>): RefState<User> = flow {
-			ensureValid(ref, ref is Ref.Basic) { "The reference type ${ref::class} is not supported by UserBone" }
+		override fun directRequest(ref: Ref<User>): State<User> = state {
+			ensureValid(ref is Ref.Basic) { "The reference type ${ref::class} is not supported by UserBone" }
 
 			val result = users[ref.id]
-			ensureFound(ref, result != null) { "No user has the ID $ref" }
+			ensureFound(result != null) { "No user has the ID $ref" }
 
-			emitSuccessful(ref, result)
+			emit(successful(result))
 		}
 	}
 
@@ -145,19 +139,18 @@ class ServiceTest {
 
 		val id1 = endpoint.idOf("0")
 		assertEquals(
-			successful(id1, User("Employee", false)),
+			successful(User("Employee", false)),
 			state {
 				endpoint.validate(this, id1, Unit, Parameters.Empty, employee)
-				emitAll(employee.user.request().mapIdentifier { endpoint.idOf((it as Ref.Basic).id) })
+				emitAll(employee.user.request())
 			}.firstResult()
 		)
 
 		// Scenario 2: access with an invalid service ID
 
-		val id2 = Id<User>("this-is-not-the-correct-service-name", Route / "users" / "0")
+		val id2 = Id("this-is-not-the-correct-service-name", Route / "users" / "0")
 		assertEquals(
 			failed(
-				id2,
 				Status.StandardFailure.Kind.Invalid,
 				"The passed identifier refers to the service 'this-is-not-the-correct-service-name', but this resource belongs to the service 'v2'"
 			),
@@ -168,10 +161,9 @@ class ServiceTest {
 
 		// Scenario 3: access with an invalid ID (too short)
 
-		val id3 = Id<User>("v2", Route / "users") // should be /users/0
+		val id3 = Id("v2", Route / "users") // should be /users/0
 		assertEquals(
 			failed(
-				id3,
 				Status.StandardFailure.Kind.Invalid,
 				"The passed identifier's URI length is too short for this resource: 'v2/users' for resource 'v2/users/{user}'"
 			),
@@ -182,10 +174,9 @@ class ServiceTest {
 
 		// Scenario 4: access with an invalid ID (wrong resource)
 
-		val id4 = Id<User>("v2", Route / "departments" / "0") // should be /users/0
+		val id4 = Id("v2", Route / "departments" / "0") // should be /users/0
 		assertEquals(
 			failed(
-				id4,
 				Status.StandardFailure.Kind.Invalid,
 				"The passed identifier's segment #0 doesn't match the resource; expected 'users' but found 'departments'"
 			),
@@ -196,10 +187,9 @@ class ServiceTest {
 
 		// Scenario 5: access with an invalid ID (too long)
 
-		val id5 = Id<User>("v2", Route / "departments" / "users" / "0") // should be /users/0
+		val id5 = Id("v2", Route / "departments" / "users" / "0") // should be /users/0
 		assertEquals(
 			failed(
-				id5,
 				Status.StandardFailure.Kind.Invalid,
 				"The passed identifier's URI length is too long for this resource: 'v2/departments/users/0' for resource 'v2/users/{user}'"
 			),
