@@ -15,12 +15,12 @@ import opensavvy.state.Slice.Companion.valueOrThrow
  *
  * To create an instance of [State], see the [state] builder.
  */
-typealias State<I, T> = Flow<Slice<I, T>>
+typealias State<T> = Flow<Slice<T>>
 
 /**
  * Skips the loading events in [State].
  */
-fun <I : Identifier<T>, T> State<I, T>.skipLoading() = filter { it.progression !is Progression.Loading }
+fun <T> State<T>.skipLoading() = filter { it.progression !is Progression.Loading }
 
 /**
  * Returns the first non-loading element of this [State].
@@ -28,7 +28,7 @@ fun <I : Identifier<T>, T> State<I, T>.skipLoading() = filter { it.progression !
  * Because this transforms a flow into a single value, the reactivity is lost.
  * Only use this method in contexts where being notified on new values is not important.
  */
-suspend fun <I : Identifier<T>, T> State<I, T>.firstResult() = skipLoading().first()
+suspend fun <T> State<T>.firstResult() = skipLoading().first()
 
 /**
  * Returns the first non-loading element's [valueOrNull] of this [State].
@@ -36,7 +36,7 @@ suspend fun <I : Identifier<T>, T> State<I, T>.firstResult() = skipLoading().fir
  * Because this transforms a flow into a single value, the reactivity is lost.
  * Only use this method in contexts where being notified on new values is not important.
  */
-suspend fun <I : Identifier<T>, T : Any> State<I, T>.firstResultOrNull() = firstResult().valueOrNull
+suspend fun <T : Any> State<T>.firstResultOrNull() = firstResult().valueOrNull
 
 /**
  * Returns the first non-loading element's [valueOrThrow] of this [State].
@@ -44,4 +44,4 @@ suspend fun <I : Identifier<T>, T : Any> State<I, T>.firstResultOrNull() = first
  * Because this transforms a flow into a single value, the reactivity is lost.
  * Only use this method in contexts where being notified on new values is not important.
  */
-suspend fun <I : Identifier<T>, T> State<I, T>.firstResultOrThrow() = firstResult().valueOrThrow
+suspend fun <T> State<T>.firstResultOrThrow() = firstResult().valueOrThrow

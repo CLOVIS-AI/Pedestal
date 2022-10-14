@@ -5,7 +5,7 @@ import opensavvy.spine.Id
 import opensavvy.spine.ResourceGroup
 import opensavvy.spine.Route
 
-fun <O : Any> ApplicationCall.generateId(resource: ResourceGroup.AbstractResource<O, *>): Id<O> {
+fun <O : Any> ApplicationCall.generateId(resource: ResourceGroup.AbstractResource<O, *>): Id {
 	val values = ArrayList<String>()
 
 	var cursor: ResourceGroup = resource

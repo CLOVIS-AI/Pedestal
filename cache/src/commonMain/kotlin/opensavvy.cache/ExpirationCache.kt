@@ -26,7 +26,7 @@ import kotlin.time.Duration.Companion.minutes
  *      .expireAfter(5.minutes, Job())
  * ```
  */
-class ExpirationCache<I : Identifier<T>, T>(
+class ExpirationCache<I : Identifier, T>(
 	/**
 	 * The previous cache layer, from which values will be expired.
 	 */
@@ -83,7 +83,7 @@ class ExpirationCache<I : Identifier<T>, T>(
 		}
 	}
 
-	override fun get(id: I): State<I, T> = upstream[id]
+	override fun get(id: I): State<T> = upstream[id]
 		.onEach { markAsUpdatedNow(id) }
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
@@ -113,7 +113,7 @@ class ExpirationCache<I : Identifier<T>, T>(
 		 *
 		 * @see ExpirationCache
 		 */
-		fun <I : Identifier<T>, T> Cache<I, T>.expireAfter(duration: Duration, context: CoroutineContext) =
+		fun <I : Identifier, T> Cache<I, T>.expireAfter(duration: Duration, context: CoroutineContext) =
 			ExpirationCache(this, duration, context)
 	}
 }

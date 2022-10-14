@@ -3,10 +3,10 @@
 package opensavvy.cache
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
 import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
@@ -15,6 +15,8 @@ import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.Logger.Companion.info
 import opensavvy.logger.loggerFor
 import opensavvy.state.*
+import opensavvy.state.Slice.Companion.pending
+import opensavvy.state.Slice.Companion.successful
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
@@ -25,7 +27,7 @@ class CacheTest {
 		level = LogLevel.TRACE
 	}
 
-	private data class IntId(val id: Int) : Identifier<Int> {
+	private data class IntId(val id: Int) : Identifier {
 		override fun toString() = "Id($id)"
 	}
 
@@ -33,10 +35,10 @@ class CacheTest {
 		state {
 			log.debug(it) { "Requesting" }
 			delay(100L)
-			emitPending(it, 0.2)
+			emit(pending(0.2))
 			delay(10L)
-			ensureValid(it, it.id >= 0) { "Only positive integers are allowed: found ${it.id}" }
-			emitSuccessful(it, it.id)
+			ensureValid(it.id >= 0) { "Only positive integers are allowed: found ${it.id}" }
+			emit(successful(it.id))
 		}
 	}
 
@@ -184,17 +186,20 @@ class CacheTest {
 		job.cancel()
 	}
 
+	@OptIn(FlowPreview::class)
 	@Test
 	fun batching() = runTest {
 		val job = Job()
 		val cache = BatchingCacheAdapter<IntId, Int>(coroutineContext + job) { ids ->
-			state {
-				for (id in ids) {
-					emitPending(id)
-					delay(10L)
-					emitSuccessful(id, id.id)
+			ids.asFlow()
+				.map { ref ->
+					state {
+						emit(pending())
+						delay(10L)
+						emit(successful(ref.id))
+					}.map { ref to it }
 				}
-			}
+				.flattenConcat()
 		}
 			.cachedInMemory(coroutineContext + job)
 			.expireAfter(1.seconds, coroutineContext + job)

@@ -31,7 +31,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  *     .expireAfter(2.minutes)
  * ```
  */
-class MemoryCache<I : Identifier<T>, T>(
+class MemoryCache<I : Identifier, T>(
 	private val upstream: Cache<I, T>,
 	context: CoroutineContext = EmptyCoroutineContext,
 ) : Cache<I, T> {
@@ -49,7 +49,7 @@ class MemoryCache<I : Identifier<T>, T>(
 	 * - 'expire' removed the cached value
 	 */
 
-	private val cache = HashMap<I, MutableStateFlow<Slice<I, T>?>>()
+	private val cache = HashMap<I, MutableStateFlow<Slice<T>?>>()
 	private val cacheLock = Semaphore(1)
 
 	private val jobs = HashMap<I, Job>()
@@ -61,7 +61,7 @@ class MemoryCache<I : Identifier<T>, T>(
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
 
-	override fun get(id: I): State<I, T> = flow {
+	override fun get(id: I): State<T> = flow {
 		val cached = cacheLock.withPermit { getUnsafe(id) }
 			.onEach { slice ->
 				if (slice == null) {
@@ -104,7 +104,7 @@ class MemoryCache<I : Identifier<T>, T>(
 
 		cacheLock.withPermit {
 			for ((id, value) in values) {
-				getUnsafe(id).value = successful(id, value)
+				getUnsafe(id).value = successful(value)
 			}
 		}
 
@@ -168,6 +168,6 @@ class MemoryCache<I : Identifier<T>, T>(
 	}
 
 	companion object {
-		fun <I : Identifier<T>, T> Cache<I, T>.cachedInMemory(context: CoroutineContext) = MemoryCache(this, context)
+		fun <I : Identifier, T> Cache<I, T>.cachedInMemory(context: CoroutineContext) = MemoryCache(this, context)
 	}
 }

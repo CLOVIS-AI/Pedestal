@@ -5,8 +5,6 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import opensavvy.state.Slice.Companion.failed
-import opensavvy.state.Slice.Companion.pending
-import opensavvy.state.Slice.Companion.successful
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -16,7 +14,7 @@ import kotlin.contracts.contract
  * This type is used for conveniently building asynchronous flows in synchronous environments.
  * Instances are generally built using the [state] builder.
  */
-typealias StateBuilder<I, T> = FlowCollector<Slice<I, T>>
+typealias StateBuilder<T> = FlowCollector<Slice<T>>
 
 /**
  * Builder for [State].
@@ -30,7 +28,7 @@ typealias StateBuilder<I, T> = FlowCollector<Slice<I, T>>
  * }
  * ```
  */
-fun <I : Identifier<T>, T> state(block: suspend StateBuilder<I, T>.() -> Unit) = flow(block)
+fun <T> state(block: suspend StateBuilder<T>.() -> Unit) = flow(block)
 	.catch {
 		when (it) {
 			// The user has requested the cancellation of the flow builder.
@@ -42,21 +40,23 @@ fun <I : Identifier<T>, T> state(block: suspend StateBuilder<I, T>.() -> Unit) =
 			// See https://kotlinlang.org/docs/cancellation-and-timeouts.html#cancellation-is-cooperative
 			is CancellationException -> throw CancellationException("A state builder was cancelled", it)
 
-			is Status.StandardFailure -> emitFailed(
-				id = null,
-				kind = it.kind,
-				message = it.message ?: "Caught a downstream error",
-				progression = Progression.done(),
-				cause = it.cause
+			is Status.StandardFailure -> emit(
+				failed(
+					it.kind,
+					it.message ?: "Caught a downstream error",
+					it.cause,
+					Progression.done()
+				)
 			)
 
 			// All other exceptions are caught into the Kind.Unknown standard failure.
-			else -> emitFailed(
-				id = null,
-				Status.StandardFailure.Kind.Unknown,
-				"Unknown error caught in the state builder",
-				progression = Progression.done(),
-				cause = it
+			else -> emit(
+				failed(
+					Status.StandardFailure.Kind.Unknown,
+					"Unknown error caught in the state builder",
+					it,
+					Progression.done()
+				)
 			)
 		}
 	}
@@ -66,72 +66,6 @@ fun <I : Identifier<T>, T> state(block: suspend StateBuilder<I, T>.() -> Unit) =
  */
 class StateBuilderCancellation : RuntimeException("The 'state' builder has been cancelled")
 
-//region Pending markers
-
-/**
- * Emits a [pending] slice with the given [progression].
- */
-suspend fun <I : Identifier<T>, T> StateBuilder<I, T>.emitPending(id: I?, progression: Progression.Loading) {
-	emit(pending(id, progression))
-}
-
-/**
- * Emits a [pending] slice with an [Unquantified][Progression.Loading.Unquantified] progression.
- */
-suspend fun <I : Identifier<T>, T> StateBuilder<I, T>.emitPending(id: I?) {
-	emitPending(id, Progression.loading())
-}
-
-/**
- * Emits a [pending] slice with a [Quantified][Progression.Loading.Quantified] [progression].
- */
-suspend fun <I : Identifier<T>, T> StateBuilder<I, T>.emitPending(id: I?, progression: Double) {
-	emitPending(id, Progression.loading(progression))
-}
-
-//endregion
-//region Successful markers
-
-/**
- * Emits a [successful] slice with the given [value].
- */
-suspend fun <I : Identifier<T>, T> StateBuilder<I, T>.emitSuccessful(
-	id: I,
-	value: T,
-	progression: Progression = Progression.done(),
-) {
-	emit(successful(id, value, progression))
-}
-
-//endregion
-//region Failed markers
-
-/**
- * Emits a [failed] slice with the given [exception] and [message].
- */
-suspend fun <I : Identifier<T>, T> StateBuilder<I, T>.emitFailed(
-	id: I?,
-	exception: RuntimeException,
-	message: String,
-	progression: Progression,
-) {
-	emit(failed(id, exception, message, progression))
-}
-
-/**
- * Emits a [failed] slice with the given [kind] and [message].
- */
-suspend fun <I : Identifier<T>, T> StateBuilder<I, T>.emitFailed(
-	id: I?,
-	kind: Status.StandardFailure.Kind,
-	message: String,
-	progression: Progression,
-	cause: Throwable? = null,
-) {
-	emit(failed(id, kind, message, cause, progression))
-}
-
-//endregion
 //region Predicate checkers
 
 /**
@@ -141,8 +75,7 @@ suspend fun <I : Identifier<T>, T> StateBuilder<I, T>.emitFailed(
  * Otherwise, emits an [Invalid][Status.StandardFailure.Kind.Invalid] slice and cancels the [state] builder.
  */
 @OptIn(ExperimentalContracts::class)
-suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureValid(
-	id: I?,
+suspend inline fun <T> StateBuilder<T>.ensureValid(
 	condition: Boolean,
 	lazyMessage: () -> String,
 ) {
@@ -151,7 +84,7 @@ suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureValid(
 	}
 
 	if (!condition) {
-		emitFailed(id, Status.StandardFailure.Kind.Invalid, lazyMessage(), progression = Progression.done())
+		emit(failed(Status.StandardFailure.Kind.Invalid, lazyMessage(), progression = Progression.done()))
 		throw StateBuilderCancellation()
 	}
 }
@@ -163,8 +96,7 @@ suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureValid(
  * Otherwise, emits an [Unauthenticated][Status.StandardFailure.Kind.Unauthenticated] slice and cancels the [state] builder.
  */
 @OptIn(ExperimentalContracts::class)
-suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureAuthenticated(
-	id: I?,
+suspend inline fun <T> StateBuilder<T>.ensureAuthenticated(
 	condition: Boolean,
 	lazyMessage: () -> String,
 ) {
@@ -173,7 +105,7 @@ suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureAuthenticated
 	}
 
 	if (!condition) {
-		emitFailed(id, Status.StandardFailure.Kind.Unauthenticated, lazyMessage(), progression = Progression.done())
+		emit(failed(Status.StandardFailure.Kind.Unauthenticated, lazyMessage(), progression = Progression.done()))
 		throw StateBuilderCancellation()
 	}
 }
@@ -185,8 +117,7 @@ suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureAuthenticated
  * Otherwise, emits an [Unauthorized][Status.StandardFailure.Kind.Unauthorized] slice and cancels the [state] builder.
  */
 @OptIn(ExperimentalContracts::class)
-suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureAuthorized(
-	id: I?,
+suspend inline fun <T> StateBuilder<T>.ensureAuthorized(
 	condition: Boolean,
 	lazyMessage: () -> String,
 ) {
@@ -195,7 +126,7 @@ suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureAuthorized(
 	}
 
 	if (!condition) {
-		emitFailed(id, Status.StandardFailure.Kind.Unauthorized, lazyMessage(), progression = Progression.done())
+		emit(failed(Status.StandardFailure.Kind.Unauthorized, lazyMessage(), progression = Progression.done()))
 		throw StateBuilderCancellation()
 	}
 }
@@ -207,8 +138,7 @@ suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureAuthorized(
  * Otherwise, emits an [NotFound][Status.StandardFailure.Kind.NotFound] slice and cancels the [state] builder.
  */
 @OptIn(ExperimentalContracts::class)
-suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureFound(
-	id: I?,
+suspend inline fun <T> StateBuilder<T>.ensureFound(
 	condition: Boolean,
 	lazyMessage: () -> String,
 ) {
@@ -217,7 +147,7 @@ suspend inline fun <I : Identifier<T>, T> StateBuilder<I, T>.ensureFound(
 	}
 
 	if (!condition) {
-		emitFailed(id, Status.StandardFailure.Kind.NotFound, lazyMessage(), progression = Progression.done())
+		emit(failed(Status.StandardFailure.Kind.NotFound, lazyMessage(), progression = Progression.done()))
 		throw StateBuilderCancellation()
 	}
 }

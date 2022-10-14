@@ -5,10 +5,7 @@ import opensavvy.backbone.Backbone.Companion.request
 import opensavvy.backbone.Ref.Companion.directRequest
 import opensavvy.backbone.Ref.Companion.request
 import opensavvy.state.Identifier
-import opensavvy.state.State
 import opensavvy.state.firstResultOrThrow
-
-typealias RefState<O> = State<Ref<O>, O>
 
 /**
  * A reference to a specific [object][O].
@@ -22,7 +19,7 @@ typealias RefState<O> = State<Ref<O>, O>
  *
  * @param O The object this reference refers to.
  */
-interface Ref<O> : Identifier<O> {
+interface Ref<O> : Identifier {
 
 	/**
 	 * The [Backbone] responsible for this reference.

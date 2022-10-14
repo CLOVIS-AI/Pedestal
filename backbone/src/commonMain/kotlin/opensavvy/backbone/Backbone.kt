@@ -1,7 +1,6 @@
 package opensavvy.backbone
 
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
+import opensavvy.state.State
 
 /**
  * A common interface for API endpoints.
@@ -27,7 +26,7 @@ interface Backbone<O> {
 	 *
 	 * The returned flow is **short-lived**: it is closed after the request finishes.
 	 */
-	fun directRequest(ref: Ref<O>): RefState<O>
+	fun directRequest(ref: Ref<O>): State<O>
 
 	/**
 	 * Fetches the value associated with all [refs] in an external media (e.g. a remote server, a database).
@@ -42,11 +41,9 @@ interface Backbone<O> {
 	 *
 	 * The default implementation simply calls [directRequest] sequentially.
 	 */
-	fun batchRequests(refs: Set<Ref<O>>): RefState<O> = flow {
-		for (ref in refs) {
-			emitAll(directRequest(ref))
-		}
-	}
+	fun batchRequests(refs: Set<Ref<O>>): Map<Ref<O>, State<O>> = refs
+		.map { it to directRequest(it) }
+		.associate { it }
 
 	companion object {
 		/**

@@ -5,11 +5,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import opensavvy.logger.Logger.Companion.error
+import opensavvy.logger.loggerFor
 import opensavvy.state.*
 import opensavvy.state.Slice.Companion.pending
 import kotlin.coroutines.CoroutineContext
@@ -23,7 +26,7 @@ import kotlin.coroutines.coroutineContext
  *
  * Unlike [CacheAdapter], this class is able to group requests together.
  */
-class BatchingCacheAdapter<I : Identifier<T>, T>(
+class BatchingCacheAdapter<I : Identifier, T>(
 	context: CoroutineContext,
 	/**
 	 * The number of workers batching the requests.
@@ -34,15 +37,17 @@ class BatchingCacheAdapter<I : Identifier<T>, T>(
 	 * Increasing the number of workers may increase latency.
 	 */
 	workers: Int = 1,
-	val queryBatch: (Set<I>) -> State<I, T>,
+	val queryBatch: (Set<I>) -> Flow<Pair<I, Slice<T>>>,
 ) : Cache<I, T> {
 
-	private val requests: SendChannel<Pair<I, CompletableDeferred<StateFlow<Slice<I, T>>>>>
+	private val log = loggerFor(this)
+
+	private val requests: SendChannel<Pair<I, CompletableDeferred<StateFlow<Slice<T>>>>>
 
 	init {
 		require(workers > 0) { "There must be at least 1 worker: found $workers" }
 
-		val requests = Channel<Pair<I, CompletableDeferred<StateFlow<Slice<I, T>>>>>()
+		val requests = Channel<Pair<I, CompletableDeferred<StateFlow<Slice<T>>>>>()
 		this.requests = requests
 
 		val scope = CoroutineScope(context)
@@ -53,14 +58,14 @@ class BatchingCacheAdapter<I : Identifier<T>, T>(
 		}
 	}
 
-	private suspend fun worker(requests: ReceiveChannel<Pair<I, CompletableDeferred<StateFlow<Slice<I, T>>>>>) {
+	private suspend fun worker(requests: ReceiveChannel<Pair<I, CompletableDeferred<StateFlow<Slice<T>>>>>) {
 		while (coroutineContext.isActive) {
 			val batch = HashSet<I>()
 
 			// Store the results
 			// We have to store lists of Deferred in case multiple requests to the same Ref happen to be in the same
 			// batch.
-			val results = HashMap<I, MutableList<CompletableDeferred<StateFlow<Slice<I, T>>>>>()
+			val results = HashMap<I, MutableList<CompletableDeferred<StateFlow<Slice<T>>>>>()
 
 			run {
 				// Suspend until a first request arrives
@@ -81,11 +86,11 @@ class BatchingCacheAdapter<I : Identifier<T>, T>(
 					.add(promise)
 			}
 
-			val states = HashMap<I, MutableStateFlow<Slice<I, T>>>()
+			val states = HashMap<I, MutableStateFlow<Slice<T>>>()
 
 			// Tell all clients that their request is starting
 			for ((id, promises) in results) {
-				val state = MutableStateFlow(pending(id, Progression.loading(0.0)))
+				val state: MutableStateFlow<Slice<T>> = MutableStateFlow(pending(Progression.loading(0.0)))
 
 				for (promise in promises) {
 					promise.complete(state)
@@ -96,17 +101,22 @@ class BatchingCacheAdapter<I : Identifier<T>, T>(
 
 			// The channel is now empty, request all of them
 			queryBatch(batch)
-				.collect {
-					val state = states[it.id]
-						?: error("Could not find the state for the reference ${it.id}, this means we received an update for a reference we did not ask for.")
+				.collect { (id, it) ->
+					val state = states[id]
 
-					state.value = it
+					if (state != null)
+						state.value = it
+					else
+						log.error(
+							id,
+							it
+						) { "Could not find the state for the reference $id, this means we received an update for a reference we did not ask for. It has been ignored." }
 				}
 		}
 	}
 
-	override fun get(id: I): State<I, T> = state {
-		val promise = CompletableDeferred<StateFlow<Slice<I, T>>>()
+	override fun get(id: I): State<T> = state {
+		val promise = CompletableDeferred<StateFlow<Slice<T>>>()
 
 		requests.send(id to promise)
 

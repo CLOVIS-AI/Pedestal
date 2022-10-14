@@ -11,52 +11,47 @@ import kotlin.test.assertEquals
 
 class StateBuilderTest {
 
-	private data class IntId(val id: Int) : Identifier<Int>
-
 	@Test
 	fun success() = runTest {
 		val data = state {
-			emitSuccessful(IntId(0), 0)
+			emit(successful(0))
 		}
 
-		assertEquals(successful(IntId(0), 0), data.firstResult())
+		assertEquals(successful(0), data.firstResult())
 	}
 
 	@Test
 	fun ensure() = runTest {
-		val data = state {
-			ensureValid(IntId(0), condition = false) { "this is always invalid" }
+		val data = state<Int> {
+			ensureValid(false) { "this is always invalid" }
 		}
 
 		assertEquals(
-			failed(IntId(0), Status.StandardFailure.Kind.Invalid, "this is always invalid"),
+			failed(Status.StandardFailure.Kind.Invalid, "this is always invalid"),
 			data.firstResult()
 		)
 	}
 
 	@Test
 	fun throwStandard() = runTest {
-		val data = state {
+		val data = state<Int> {
 			throw Status.StandardFailure(Status.StandardFailure.Kind.Invalid, "this is always invalid")
-			@Suppress("UNREACHABLE_CODE") emitSuccessful(IntId(0), 0)
 		}
 
 		assertEquals(
-			failed(id = null, Status.StandardFailure.Kind.Invalid, "this is always invalid"),
+			failed(Status.StandardFailure.Kind.Invalid, "this is always invalid"),
 			data.firstResult()
 		)
 	}
 
 	@Test
 	fun throwOther() = runTest {
-		val data = state {
+		val data = state<Int> {
 			error("some error")
-			@Suppress("UNREACHABLE_CODE") emitSuccessful(IntId(0), 0)
 		}
 
 		assertEquals(
 			failed(
-				id = null,
 				Status.StandardFailure.Kind.Unknown,
 				"Unknown error caught in the state builder"
 			), data.firstResult()
