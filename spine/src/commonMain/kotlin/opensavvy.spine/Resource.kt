@@ -77,7 +77,7 @@ sealed class ResourceGroup {
 		/**
 		 * Validates that [id] identifies this resource.
 		 */
-		suspend fun StateBuilder<O>.validateCorrectId(id: Id) {
+		suspend fun StateBuilder<Nothing>.validateCorrectId(id: Id) {
 			ensureValid(
 				id.service == service.name
 			) { "The passed identifier refers to the service '${id.service}', but this resource belongs to the service '${service.name}'" }
@@ -122,7 +122,7 @@ sealed class ResourceGroup {
 		 * For example, you can override this function to check access rights for read operations.
 		 * By default, this function does nothing.
 		 */
-		open suspend fun StateBuilder<O>.validateId(id: Id, context: Context) {}
+		open suspend fun StateBuilder<Nothing>.validateId(id: Id, context: Context) {}
 
 		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,

@@ -47,7 +47,14 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 	contextGenerator: ContextGenerator<Context>,
 	crossinline block: suspend ResponseStateBuilder<In, Out, Params, Context>.() -> Unit,
 ) {
-	val path: String = operation.resource.routeTemplate + (operation.route ?: "")
+	val path = buildString {
+		append(operation.resource.routeTemplate)
+
+		for (segment in operation.route?.segments ?: emptyList()) {
+			append('/')
+			append(segment.segment)
+		}
+	}
 
 	val method = operation.kind.toHttp()
 	route(path, method) {
