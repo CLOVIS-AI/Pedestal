@@ -78,7 +78,7 @@ class ServerTest {
 				ensureFound(userIndex >= 0) { "Could not find user $id" }
 				val user = users.removeAt(userIndex)
 				users.add(user.copy(archived = true))
-				emit(successful(user))
+				emit(successful(Unit))
 			}
 
 			route(api.users.id.unarchive, context) {
@@ -86,14 +86,14 @@ class ServerTest {
 				ensureFound(userIndex >= 0) { "Could not find user $id" }
 				val user = users.removeAt(userIndex)
 				users.add(user.copy(archived = false))
-				emit(successful(user))
+				emit(successful(Unit))
 			}
 
 			route(api.users.id.delete, context) {
 				val userIndex = users.indexOfFirst { it.id == id }
 				ensureFound(userIndex >= 0) { "Could not find user $id" }
-				val user = users.removeAt(userIndex)
-				emit(successful(user))
+				users.removeAt(userIndex)
+				emit(successful(Unit))
 			}
 		}
 
