@@ -118,3 +118,24 @@ data class Slice<out T>(
 
 	}
 }
+
+//region Error management
+
+/**
+ * Maps a successful slice from [I] to [O] using [transform].
+ *
+ * If the slice is not successful, it is kept unchanged.
+ */
+inline fun <I, O> Slice<I>.mapSuccess(transform: (I) -> O): Slice<O> {
+	val (status, progression) = this
+
+	val newStatus: Status<O> = when (status) {
+		is Status.Failed -> status
+		is Status.Pending -> status
+		is Status.Successful -> Status.Successful(transform(status.value))
+	}
+
+	return Slice(newStatus, progression)
+}
+
+//endregion
