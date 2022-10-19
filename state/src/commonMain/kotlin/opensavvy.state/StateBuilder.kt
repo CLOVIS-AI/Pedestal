@@ -43,9 +43,27 @@ fun <T> state(block: suspend StateBuilder<T>.() -> Unit) = flow(block)
 			is Status.StandardFailure -> emit(
 				failed(
 					it.kind,
-					it.message ?: "Caught a downstream error",
+					it.message ?: "Caught an error without message",
 					it.cause,
 					Progression.done()
+				)
+			)
+
+			is IllegalArgumentException -> emit(
+				failed(
+					Status.StandardFailure.Kind.Invalid,
+					it.message ?: "Caught an IllegalArgumentException without message",
+					cause = it,
+					Progression.done(),
+				)
+			)
+
+			is IllegalStateException -> emit(
+				failed(
+					Status.StandardFailure.Kind.Invalid,
+					it.message ?: "Caught an IllegalStateException without message",
+					cause = it,
+					Progression.done(),
 				)
 			)
 
@@ -53,7 +71,7 @@ fun <T> state(block: suspend StateBuilder<T>.() -> Unit) = flow(block)
 			else -> emit(
 				failed(
 					Status.StandardFailure.Kind.Unknown,
-					"Unknown error caught in the state builder",
+					it.message ?: "Unknown error caught in the state builder",
 					it,
 					Progression.done()
 				)

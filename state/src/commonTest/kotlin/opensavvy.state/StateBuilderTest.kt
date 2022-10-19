@@ -47,13 +47,41 @@ class StateBuilderTest {
 	@Test
 	fun throwOther() = runTest {
 		val data = state<Int> {
-			error("some error")
+			throw RuntimeException("some error")
 		}
 
 		assertEquals(
 			failed(
 				Status.StandardFailure.Kind.Unknown,
-				"Unknown error caught in the state builder"
+				"some error"
+			), data.firstResult()
+		)
+	}
+
+	@Test
+	fun throwIllegalArgumentException() = runTest {
+		val data = state<Int> {
+			require(false) { "some error" }
+		}
+
+		assertEquals(
+			failed(
+				Status.StandardFailure.Kind.Invalid,
+				"some error"
+			), data.firstResult()
+		)
+	}
+
+	@Test
+	fun throwIllegalStateException() = runTest {
+		val data = state<Int> {
+			check(false) { "some error" }
+		}
+
+		assertEquals(
+			failed(
+				Status.StandardFailure.Kind.Invalid,
+				"some error"
 			), data.firstResult()
 		)
 	}
