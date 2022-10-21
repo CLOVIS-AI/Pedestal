@@ -5,6 +5,8 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import opensavvy.logger.Logger.Companion.warn
+import opensavvy.logger.loggerFor
 import opensavvy.spine.Operation
 import opensavvy.spine.Parameters
 import opensavvy.spine.ktor.NetworkResponse
@@ -12,6 +14,10 @@ import opensavvy.spine.ktor.toHttp
 import opensavvy.state.Status
 import opensavvy.state.firstResult
 import opensavvy.state.state
+
+object Server {
+	val log = loggerFor(this)
+}
 
 /**
  * Builds a route to match the specified [operation].
@@ -104,11 +110,15 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 				is Status.Pending -> error("The server did not find any value to return, this should not be possible")
 
 				is Status.StandardFailure -> {
+					Server.log.warn(data.kind, data.message, data.cause?.stackTraceToString()) { "Failed request" }
 					val code = data.kind.toHttp()
 					call.respond(code, data.message ?: "No message")
 				}
 
-				is Status.Failed -> call.respond(HttpStatusCode.InternalServerError, data.message ?: "No message")
+				is Status.Failed -> {
+					Server.log.warn(data.message, data.stackTraceToString()) { "Failed request" }
+					call.respond(HttpStatusCode.InternalServerError, data.message ?: "No message")
+				}
 			}
 		}
 	}
