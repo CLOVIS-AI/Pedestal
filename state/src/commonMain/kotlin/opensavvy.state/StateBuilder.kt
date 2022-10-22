@@ -92,7 +92,7 @@ private class StateBuilderCancellation : RuntimeException("The 'state' builder h
  * If no [state] builder is active, acts as a [CancellationException].
  */
 @Suppress("UnusedReceiverParameter") // used for namespacing
-fun <T> StateBuilder<T>.cancel(): Nothing {
+fun <T> StateBuilder<T>.shortCircuit(): Nothing {
 	throw StateBuilderCancellation()
 }
 
@@ -113,7 +113,7 @@ suspend inline fun <T> StateBuilder<T>.ensureValid(
 
 	if (!condition) {
 		emit(failed(Status.StandardFailure.Kind.Invalid, lazyMessage(), progression = Progression.done()))
-		cancel()
+		shortCircuit()
 	}
 }
 
@@ -134,7 +134,7 @@ suspend inline fun <T> StateBuilder<T>.ensureAuthenticated(
 
 	if (!condition) {
 		emit(failed(Status.StandardFailure.Kind.Unauthenticated, lazyMessage(), progression = Progression.done()))
-		cancel()
+		shortCircuit()
 	}
 }
 
@@ -155,7 +155,7 @@ suspend inline fun <T> StateBuilder<T>.ensureAuthorized(
 
 	if (!condition) {
 		emit(failed(Status.StandardFailure.Kind.Unauthorized, lazyMessage(), progression = Progression.done()))
-		cancel()
+		shortCircuit()
 	}
 }
 
@@ -176,7 +176,7 @@ suspend inline fun <T> StateBuilder<T>.ensureFound(
 
 	if (!condition) {
 		emit(failed(Status.StandardFailure.Kind.NotFound, lazyMessage(), progression = Progression.done()))
-		cancel()
+		shortCircuit()
 	}
 }
 
