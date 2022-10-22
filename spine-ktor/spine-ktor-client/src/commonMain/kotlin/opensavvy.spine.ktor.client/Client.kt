@@ -3,6 +3,7 @@ package opensavvy.spine.ktor.client
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import opensavvy.spine.Id
 import opensavvy.spine.Operation
@@ -50,6 +51,7 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 	parameters: Params,
 	context: Context,
 	contentType: ContentType = ContentType.Application.Json,
+	crossinline onResponse: (HttpResponse) -> Unit = {},
 	crossinline configuration: HttpRequestBuilder.() -> Unit = {},
 ): State<Out> = state {
 	emit(pending(0.0))
@@ -85,7 +87,11 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 		configuration()
 	}
 
-	emit(pending(0.9))
+	emit(pending(0.90))
+
+	onResponse(result)
+
+	emit(pending(0.95))
 
 	if (result.status.isSuccess()) {
 		val response: NetworkResponse<Out> = result.body()
