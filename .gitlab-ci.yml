@@ -192,19 +192,6 @@ spine-ktor:convert-coverage:
     module: spine-ktor:spine-ktor-server
     module_path: spine-ktor/spine-ktor-server
 
-auth:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: auth
-
-auth:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: auth:test:jvm
-      artifacts: true
-  variables:
-    module: auth
-
 dokka:
   image: openjdk:latest
   needs: [ ]
