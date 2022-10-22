@@ -43,9 +43,27 @@ fun <T> state(block: suspend StateBuilder<T>.() -> Unit) = flow(block)
 			is Status.StandardFailure -> emit(
 				failed(
 					it.kind,
-					it.message ?: "Caught a downstream error",
+					it.message ?: "Caught an error without message",
 					it.cause,
 					Progression.done()
+				)
+			)
+
+			is IllegalArgumentException -> emit(
+				failed(
+					Status.StandardFailure.Kind.Invalid,
+					it.message ?: "Caught an IllegalArgumentException without message",
+					cause = it,
+					Progression.done(),
+				)
+			)
+
+			is IllegalStateException -> emit(
+				failed(
+					Status.StandardFailure.Kind.Invalid,
+					it.message ?: "Caught an IllegalStateException without message",
+					cause = it,
+					Progression.done(),
 				)
 			)
 
@@ -53,7 +71,7 @@ fun <T> state(block: suspend StateBuilder<T>.() -> Unit) = flow(block)
 			else -> emit(
 				failed(
 					Status.StandardFailure.Kind.Unknown,
-					"Unknown error caught in the state builder",
+					it.message ?: "Unknown error caught in the state builder",
 					it,
 					Progression.done()
 				)
@@ -64,9 +82,19 @@ fun <T> state(block: suspend StateBuilder<T>.() -> Unit) = flow(block)
 /**
  * Exception used internally by the [state] function to provide cancellation functionality.
  */
-class StateBuilderCancellation : RuntimeException("The 'state' builder has been cancelled")
+private class StateBuilderCancellation : RuntimeException("The 'state' builder has been cancelled")
 
 //region Predicate checkers
+
+/**
+ * Stops the currently running [state] builder.
+ *
+ * If no [state] builder is active, acts as a [CancellationException].
+ */
+@Suppress("UnusedReceiverParameter") // used for namespacing
+fun <T> StateBuilder<T>.cancel(): Nothing {
+	throw StateBuilderCancellation()
+}
 
 /**
  * Ensures that [condition] is `true`.
@@ -85,7 +113,7 @@ suspend inline fun <T> StateBuilder<T>.ensureValid(
 
 	if (!condition) {
 		emit(failed(Status.StandardFailure.Kind.Invalid, lazyMessage(), progression = Progression.done()))
-		throw StateBuilderCancellation()
+		cancel()
 	}
 }
 
@@ -106,7 +134,7 @@ suspend inline fun <T> StateBuilder<T>.ensureAuthenticated(
 
 	if (!condition) {
 		emit(failed(Status.StandardFailure.Kind.Unauthenticated, lazyMessage(), progression = Progression.done()))
-		throw StateBuilderCancellation()
+		cancel()
 	}
 }
 
@@ -127,7 +155,7 @@ suspend inline fun <T> StateBuilder<T>.ensureAuthorized(
 
 	if (!condition) {
 		emit(failed(Status.StandardFailure.Kind.Unauthorized, lazyMessage(), progression = Progression.done()))
-		throw StateBuilderCancellation()
+		cancel()
 	}
 }
 
@@ -148,7 +176,7 @@ suspend inline fun <T> StateBuilder<T>.ensureFound(
 
 	if (!condition) {
 		emit(failed(Status.StandardFailure.Kind.NotFound, lazyMessage(), progression = Progression.done()))
-		throw StateBuilderCancellation()
+		cancel()
 	}
 }
 
