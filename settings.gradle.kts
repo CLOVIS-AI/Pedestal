@@ -15,7 +15,6 @@ include(
 	"spine-ktor:spine-ktor-server",
 	"logger",
 	"tester",
-	"auth",
 )
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
