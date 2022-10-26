@@ -148,11 +148,14 @@ sealed class ResourceGroup {
 			validate(id, it, params, context)
 		}
 
-		protected fun <In : Any> delete(validate: OperationValidator<In, Unit, Parameters.Empty, Context> = { _, _, _, _ -> }) =
+		protected fun <In : Any> delete(
+			route: Route? = null,
+			validate: OperationValidator<In, Unit, Parameters.Empty, Context> = { _, _, _, _ -> },
+		) =
 			Operation(
 				this,
 				Operation.Kind.Delete,
-				route = null
+				route = route
 			) { id: Id, it: In, _: Parameters.Empty, context ->
 				validateCorrectId(id)
 				validateId(id, context)
