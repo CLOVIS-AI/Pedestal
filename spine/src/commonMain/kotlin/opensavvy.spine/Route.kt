@@ -31,8 +31,8 @@ data class Route(val segments: List<Segment>) {
 	data class Segment(val segment: String) {
 		init {
 			for (char in segment) {
-				if (!char.isLetterOrDigit() && char != '-' && char != '.' && char != '_' && char != '~')
-					throw IllegalArgumentException("A route segment can only be composed of letter, digits, and the characters '-', '.', '_' and '~'; found character '$char' in segment '$segment'")
+				if (char == '&' || char == '/' || char == '?')
+					throw IllegalArgumentException("A route segment cannot be composed of the characters '&', '/', or '?'; found character '$char' in segment '$segment'")
 			}
 		}
 
