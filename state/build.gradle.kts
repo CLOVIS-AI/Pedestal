@@ -15,6 +15,7 @@ kotlin {
 		val commonMain by getting {
 			dependencies {
 				api(KotlinX.coroutines.core)
+				api("io.arrow-kt:arrow-core:_")
 
 				implementation(projects.logger)
 			}
