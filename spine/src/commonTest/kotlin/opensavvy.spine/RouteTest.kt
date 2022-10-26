@@ -20,7 +20,6 @@ class RouteTest {
 		assertEquals("test", (Route / "test").toString())
 		assertEquals("test35-7_12~.", (Route / "test35-7_12~.").toString())
 
-		assertFails { Route / "test with a space" }
 		assertFails { Route / "test/with/slashes" }
 	}
 
