@@ -8,6 +8,9 @@ import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.state.Identifier
+import opensavvy.state.Progression
+import opensavvy.state.ProgressionReporter.Companion.progressionReporter
+import opensavvy.state.ProgressionReporter.Companion.report
 import opensavvy.state.slice.Slice
 import opensavvy.state.slice.successful
 import kotlin.coroutines.CoroutineContext
@@ -48,7 +51,7 @@ class MemoryCache<I : Identifier, T>(
 	 * - 'expire' removed the cached value
 	 */
 
-	private val cache = HashMap<I, MutableStateFlow<Slice<T>?>>()
+	private val cache = HashMap<I, MutableStateFlow<Pair<Slice<T>, Progression>?>>()
 	private val cacheLock = Semaphore(1)
 
 	private val jobs = HashMap<I, Job>()
@@ -73,13 +76,16 @@ class MemoryCache<I : Identifier, T>(
 						if (job == null || !job.isActive) {
 							// No one is currently making the request, I'm taking the responsibility to do it
 
-							jobs[id] = scope.launch(CoroutineName("${this@MemoryCache} for $id")) {
+							val reporter = progressionReporter()
+
+							jobs[id] = scope.launch(CoroutineName("${this@MemoryCache} for $id") + reporter) {
 								log.trace(id) { "Subscribing to the previous layer for" }
 
 								val state = cacheLock.withPermit { getUnsafe(id) }
 
 								upstream[id]
-									.onEach { log.trace(it) { "Event for" } }
+									.zip(reporter.progress) { value, progress -> value to progress }
+									.onEach { log.trace(it) { "Event" } }
 									.onEach { state.value = it }
 									.collect()
 							}
@@ -89,7 +95,10 @@ class MemoryCache<I : Identifier, T>(
 			}
 			.filterNotNull() // 'null' is an internal value, it shouldn't be returned to downstream users
 
-		emitAll(cached)
+		cached.collect { (slice, progression) ->
+			report(progression)
+			emit(slice)
+		}
 	}
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
@@ -103,7 +112,7 @@ class MemoryCache<I : Identifier, T>(
 
 		cacheLock.withPermit {
 			for ((id, value) in values) {
-				getUnsafe(id).value = successful(value)
+				getUnsafe(id).value = successful(value) to Progression.done()
 			}
 		}
 
