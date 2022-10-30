@@ -1,7 +1,12 @@
 package opensavvy.cache
 
+import arrow.core.continuations.EffectScope
+import arrow.core.continuations.either
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import opensavvy.state.Failure
 import opensavvy.state.Identifier
-import opensavvy.state.State
+import opensavvy.state.slice.Slice
 
 /**
  * Cache implementation aimed to be the first link in a cache chain.
@@ -10,9 +15,10 @@ import opensavvy.state.State
  * and the underlying network APIs.
  */
 class CacheAdapter<I : Identifier, T>(
-	val query: (I) -> State<T>,
+	val query: suspend (I) -> Slice<T>,
 ) : Cache<I, T> {
-	override fun get(id: I) = query(id)
+
+	override fun get(id: I): Flow<Slice<T>> = flow { emit(query(id)) }
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
 		// This cache layer has no state, nothing to do
@@ -24,5 +30,10 @@ class CacheAdapter<I : Identifier, T>(
 
 	override suspend fun expireAll() {
 		// This cache layer has no state, nothing to do
+	}
+
+	companion object {
+		fun <I : Identifier, T> cache(transform: suspend EffectScope<Failure>.(I) -> T) =
+			CacheAdapter<I, T> { either { transform(it) } }
 	}
 }

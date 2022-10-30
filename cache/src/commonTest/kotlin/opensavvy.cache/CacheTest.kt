@@ -2,12 +2,11 @@
 
 package opensavvy.cache
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
+import opensavvy.cache.BatchingCacheAdapter.Companion.batchingCache
+import opensavvy.cache.CacheAdapter.Companion.cache
 import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.LogLevel
@@ -15,8 +14,9 @@ import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.Logger.Companion.info
 import opensavvy.logger.loggerFor
 import opensavvy.state.*
-import opensavvy.state.Slice.Companion.pending
-import opensavvy.state.Slice.Companion.successful
+import opensavvy.state.Progression.Companion.loading
+import opensavvy.state.ProgressionReporter.Companion.report
+import opensavvy.state.slice.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
@@ -31,15 +31,13 @@ class CacheTest {
 		override fun toString() = "Id($id)"
 	}
 
-	private fun adapter() = CacheAdapter<IntId, Int> {
-		state {
-			log.debug(it) { "Requesting" }
-			delay(100L)
-			emit(pending(0.2))
-			delay(10L)
-			ensureValid(it.id >= 0) { "Only positive integers are allowed: found ${it.id}" }
-			emit(successful(it.id))
-		}
+	private fun adapter() = cache<IntId, Int> {
+		log.debug(it) { "Requesting" }
+		delay(100)
+		report(loading(0.2))
+		delay(10)
+		ensureValid(it.id >= 0) { "Only positive integers are allowed: found ${it.id}" }
+		it.id
 	}
 
 	private suspend fun testCache(cache: Cache<IntId, Int>) {
@@ -48,36 +46,36 @@ class CacheTest {
 		val one = cache[IntId(1)]
 		val minus = cache[IntId(-1)]
 
-		assertEquals(0, zero.firstResultOrNull())
-		assertEquals(1, one.firstResultOrNull())
-		assertEquals(null, minus.firstResultOrNull())
+		assertEquals(0, zero.firstValueOrNull())
+		assertEquals(1, one.firstValueOrNull())
+		assertEquals(null, minus.firstValueOrNull())
 	}
 
 	private suspend fun testUpdateExpire(cache: Cache<IntId, Int>) {
 		log.info { "Checking normal behavior" }
-		assertEquals(0, cache[IntId(0)].firstResultOrThrow())
+		assertEquals(0, cache[IntId(0)].firstValueOrThrow())
 
 		log.info { "Overwriting with a different value" }
 		cache.update(IntId(0), 5)
-		assertEquals(5, cache[IntId(0)].firstResultOrThrow())
+		assertEquals(5, cache[IntId(0)].firstValueOrThrow())
 
 		log.info { "Expiring the value re-downloads and replaces our fake value" }
 		cache.expire(IntId(0))
-		assertEquals(0, cache[IntId(0)].firstResultOrThrow())
+		assertEquals(0, cache[IntId(0)].firstValueOrThrow())
 	}
 
 	private suspend fun testAutoExpiration(cache: Cache<IntId, Int>) {
 		log.info { "Adding 5 to the cache to make updates visible" }
-		assertEquals(0, cache[IntId(0)].firstResultOrThrow())
+		assertEquals(0, cache[IntId(0)].firstValueOrThrow())
 		cache.update(IntId(0), 5)
-		assertEquals(5, cache[IntId(0)].firstResultOrThrow())
+		assertEquals(5, cache[IntId(0)].firstValueOrThrow())
 
 		log.info { "Waiting for the cache to correct itself" }
 		assertEquals(0,
 		             cache[IntId(0)]
 			             .onEach { log.debug(it) { "Found new value" } }
 			             .drop(1) // Skip the bad value we inserted
-			             .firstResultOrThrow()
+			             .firstValueOrThrow()
 		)
 	}
 
@@ -90,140 +88,127 @@ class CacheTest {
 
 	@Test
 	fun infiniteMemoryCache() = runTest {
-		val job = Job()
 		val cache = adapter()
-			.cachedInMemory(coroutineContext + job)
+			.cachedInMemory(coroutineContext)
 
 		testCache(cache)
 
-		job.cancel()
+		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun infiniteMemoryCacheUpdateExpire() = runTest {
-		val job = Job()
 		val cache = adapter()
-			.cachedInMemory(coroutineContext + job)
+			.cachedInMemory(coroutineContext)
 
 		testUpdateExpire(cache)
 
-		job.cancel()
+		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expiringDefaultCache() = runTest {
-		val job = Job()
 		val cache = adapter()
-			.expireAfter(1.seconds, coroutineContext + job)
+			.expireAfter(1.seconds, coroutineContext)
 
 		testCache(cache)
 
-		job.cancel()
+		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expiringMemoryCache() = runTest {
-		val job = Job()
 		val cache = adapter()
-			.cachedInMemory(coroutineContext + job)
-			.expireAfter(1.seconds, coroutineContext + job)
+			.cachedInMemory(coroutineContext)
+			.expireAfter(1.seconds, coroutineContext)
 
 		testCache(cache)
 
-		job.cancel()
+		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expiringMemoryCacheUpdateExpire() = runTest {
-		val job = Job()
 		val cache = adapter()
-			.cachedInMemory(coroutineContext + job)
-			.expireAfter(1.seconds, coroutineContext + job)
+			.cachedInMemory(coroutineContext)
+			.expireAfter(1.seconds, coroutineContext)
 
 		testUpdateExpire(cache)
 
-		job.cancel()
+		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expiringMemoryCacheExpirationLayer() = runTest {
-		val job = Job()
 		val cache = adapter()
-			.cachedInMemory(coroutineContext + job)
-			.expireAfter(1.seconds, coroutineContext + job)
+			.cachedInMemory(coroutineContext)
+			.expireAfter(1.seconds, coroutineContext)
 
 		testAutoExpiration(cache)
 
-		job.cancel()
+		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expireAll() = runTest {
-		val job = Job()
 		val cache = adapter()
-			.cachedInMemory(coroutineContext + job)
-			.expireAfter(1.seconds, coroutineContext + job)
+			.cachedInMemory(coroutineContext)
+			.expireAfter(1.seconds, coroutineContext)
 
 		log.info { "Initial values" }
 		val id0 = IntId(0)
 		val id1 = IntId(1)
-		assertEquals(0, cache[id0].firstResultOrThrow())
-		assertEquals(1, cache[id1].firstResultOrThrow())
+		assertEquals(0, cache[id0].firstValueOrThrow())
+		assertEquals(1, cache[id1].firstValueOrThrow())
 
 		log.info { "Adding 5" }
 		cache.update(
 			id0 to 5,
 			id1 to 6,
 		)
-		assertEquals(5, cache[id0].firstResultOrThrow())
-		assertEquals(6, cache[id1].firstResultOrThrow())
+		assertEquals(5, cache[id0].firstValueOrThrow())
+		assertEquals(6, cache[id1].firstValueOrThrow())
 
 		log.info { "Expiring all values" }
 		cache.expireAll()
-		assertEquals(0, cache[id0].firstResultOrThrow())
-		assertEquals(1, cache[id1].firstResultOrThrow())
+		assertEquals(0, cache[id0].firstValueOrThrow())
+		assertEquals(1, cache[id1].firstValueOrThrow())
 
-		job.cancel()
+		currentCoroutineContext().cancelChildren()
 	}
 
-	@OptIn(FlowPreview::class)
 	@Test
 	fun batching() = runTest {
-		val job = Job()
-		val cache = BatchingCacheAdapter<IntId, Int>(coroutineContext + job) { ids ->
-			ids.asFlow()
-				.map { ref ->
-					state {
-						emit(pending())
-						delay(10L)
-						emit(successful(ref.id))
-					}.map { ref to it }
-				}
-				.flattenConcat()
+		val cache = batchingCache<IntId, Int>(coroutineContext) { ids ->
+			for (ref in ids) {
+				report(loading())
+				delay(10)
+				emit(ref to successful(ref.id))
+			}
 		}
-			.cachedInMemory(coroutineContext + job)
-			.expireAfter(1.seconds, coroutineContext + job)
+			.cachedInMemory(coroutineContext)
+			.expireAfter(1.seconds, coroutineContext)
 
 		log.info { "Initial values" }
 		val id0 = IntId(0)
 		val id1 = IntId(1)
-		assertEquals(0, cache[id0].firstResultOrThrow())
-		assertEquals(1, cache[id1].firstResultOrThrow())
+		assertEquals(0, cache[id0].firstValueOrThrow())
+		assertEquals(1, cache[id1].firstValueOrThrow())
 
 		log.info { "Adding 5" }
 		cache.update(
 			id0 to 5,
 			id1 to 6,
 		)
-		assertEquals(5, cache[id0].firstResultOrThrow())
-		assertEquals(6, cache[id1].firstResultOrThrow())
+		assertEquals(5, cache[id0].firstValueOrThrow())
+		assertEquals(6, cache[id1].firstValueOrThrow())
 
 		log.info { "Expiring all values" }
 		cache.expireAll()
-		assertEquals(0, cache[id0].firstResultOrThrow())
-		assertEquals(1, cache[id1].firstResultOrThrow())
+		assertEquals(0, cache[id0].firstValueOrThrow())
+		assertEquals(1, cache[id1].firstValueOrThrow())
 
-		job.cancel()
+		currentCoroutineContext().cancelChildren()
 	}
 
 }

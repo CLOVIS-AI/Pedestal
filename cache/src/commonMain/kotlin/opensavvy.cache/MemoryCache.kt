@@ -8,9 +8,8 @@ import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.state.Identifier
-import opensavvy.state.Slice
-import opensavvy.state.Slice.Companion.successful
-import opensavvy.state.State
+import opensavvy.state.slice.Slice
+import opensavvy.state.slice.successful
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -61,7 +60,7 @@ class MemoryCache<I : Identifier, T>(
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
 
-	override fun get(id: I): State<T> = flow {
+	override fun get(id: I): Flow<Slice<T>> = flow {
 		val cached = cacheLock.withPermit { getUnsafe(id) }
 			.onEach { slice ->
 				if (slice == null) {
