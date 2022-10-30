@@ -1,11 +1,13 @@
 package opensavvy.backbone
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import opensavvy.backbone.Backbone.Companion.request
 import opensavvy.backbone.Ref.Companion.directRequest
 import opensavvy.backbone.Ref.Companion.request
 import opensavvy.state.Identifier
-import opensavvy.state.firstResultOrThrow
+import opensavvy.state.firstValueOrNull
+import opensavvy.state.firstValueOrThrow
 
 /**
  * A reference to a specific [object][O].
@@ -39,7 +41,7 @@ interface Ref<O> : Identifier {
 		 *
 		 * This is a convenience method around [Backbone.directRequest].
 		 */
-		fun <O> Ref<O>.directRequest() = backbone.directRequest(this)
+		suspend fun <O> Ref<O>.directRequest() = backbone.directRequest(this)
 
 		/**
 		 * Requests the referenced data, returning a value from the cache if one is stored.
@@ -58,13 +60,33 @@ interface Ref<O> : Identifier {
 		}
 
 		/**
-		 * Queries the value behind the reference, throws an exception if anything goes wrong.
+		 * Queries the value behind the reference, without reactivity.
 		 *
 		 * This method can be used to easily access the value behind a reference.
 		 * However, because it returns a single value and not a [Flow], it is not possible to be notified when the value
 		 * is modified.
 		 * This method should therefore only be used in non-reactive contexts (tests, to write the value to the terminal, etc).
 		 */
-		suspend fun <O> Ref<O>.requestValue() = request().firstResultOrThrow()
+		suspend fun <O> Ref<O>.requestValue() = request().first()
+
+		/**
+		 * Queries the value behind the reference or returns `null` if it is a failure, without reactivity.
+		 *
+		 * This method can be used to easily access the value behind a reference.
+		 * However, because it returns a single value and not a [Flow], it is not possible to be notified when the value
+		 * is modified.
+		 * This method should therefore only be used in non-reactive contexts (tests, to write the value to the terminal, etc).
+		 */
+		suspend fun <O : Any> Ref<O>.requestValueOrNull() = request().firstValueOrNull()
+
+		/**
+		 * Queries the value behind the reference or throws an exception if it is a failure, without reactivity.
+		 *
+		 * This method can be used to easily access the value behind a reference.
+		 * However, because it returns a single value and not a [Flow], it is not possible to be notified when the value
+		 * is modified.
+		 * This method should therefore only be used in non-reactive contexts (tests, to write the value to the terminal, etc).
+		 */
+		suspend fun <O> Ref<O>.requestValueOrThrow() = request().firstValueOrThrow()
 	}
 }
