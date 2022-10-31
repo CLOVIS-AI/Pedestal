@@ -1,14 +1,15 @@
 package opensavvy.spine
 
-import opensavvy.state.StateBuilder
+import arrow.core.continuations.EffectScope
+import opensavvy.state.Failure
 
-typealias OperationValidator<In, Out, Params, Context> = suspend StateBuilder<Out>.(Id, In, parameters: Params, context: Context) -> Unit
+typealias OperationValidator<In, Params, Context> = suspend EffectScope<Failure>.(Id, In, parameters: Params, context: Context) -> Unit
 
 class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Context : Any>(
 	val resource: ResourceGroup.AbstractResource<Resource, Context>,
 	val kind: Kind,
 	val route: Route? = null,
-	val validate: OperationValidator<In, Out, Params, Context>,
+	val validate: OperationValidator<In, Params, Context>,
 ) {
 
 	/**

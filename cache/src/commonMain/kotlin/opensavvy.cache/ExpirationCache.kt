@@ -1,6 +1,7 @@
 package opensavvy.cache
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -11,7 +12,7 @@ import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.state.Identifier
-import opensavvy.state.State
+import opensavvy.state.slice.Slice
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
@@ -83,7 +84,7 @@ class ExpirationCache<I : Identifier, T>(
 		}
 	}
 
-	override fun get(id: I): State<T> = upstream[id]
+	override fun get(id: I): Flow<Slice<T>> = upstream[id]
 		.onEach { markAsUpdatedNow(id) }
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {

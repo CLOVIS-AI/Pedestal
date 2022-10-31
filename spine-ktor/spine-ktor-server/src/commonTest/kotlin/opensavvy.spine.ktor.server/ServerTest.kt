@@ -4,8 +4,6 @@ import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.testing.*
-import kotlinx.coroutines.flow.onEach
-import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.Logger.Companion.info
 import opensavvy.logger.loggerFor
 import opensavvy.spine.Id
@@ -13,9 +11,9 @@ import opensavvy.spine.Parameters
 import opensavvy.spine.Route
 import opensavvy.spine.Route.Companion.div
 import opensavvy.spine.ktor.client.request
-import opensavvy.state.Slice.Companion.successful
-import opensavvy.state.ensureFound
-import opensavvy.state.firstResultOrThrow
+import opensavvy.state.slice.ensureFound
+import opensavvy.state.slice.successful
+import opensavvy.state.slice.valueOrThrow
 import org.junit.Test
 import org.slf4j.event.Level
 import kotlin.test.assertEquals
@@ -56,7 +54,7 @@ class ServerTest {
 				val result = users
 					.filter { parameters.includeArchived || !it.archived }
 					.map { it.id }
-				emit(successful(result))
+				result
 			}
 
 			route(api.users.create, context) {
@@ -64,13 +62,13 @@ class ServerTest {
 				val newId = api.users.id.idOf((nextId++).toString())
 				val new = User(newId, name, archived = false)
 				users += new
-				emit(successful(newId to new))
+				newId to new
 			}
 
 			route(api.users.id.get, context) {
 				val user = users.find { it.id == id }
 				ensureFound(user != null) { "Could not find the user $id" }
-				emit(successful(user))
+				user
 			}
 
 			route(api.users.id.archive, context) {
@@ -78,7 +76,6 @@ class ServerTest {
 				ensureFound(userIndex >= 0) { "Could not find user $id" }
 				val user = users.removeAt(userIndex)
 				users.add(user.copy(archived = true))
-				emit(successful(Unit))
 			}
 
 			route(api.users.id.unarchive, context) {
@@ -86,14 +83,12 @@ class ServerTest {
 				ensureFound(userIndex >= 0) { "Could not find user $id" }
 				val user = users.removeAt(userIndex)
 				users.add(user.copy(archived = false))
-				emit(successful(Unit))
 			}
 
 			route(api.users.id.delete, context) {
 				val userIndex = users.indexOfFirst { it.id == id }
 				ensureFound(userIndex >= 0) { "Could not find user $id" }
 				users.removeAt(userIndex)
-				emit(successful(Unit))
 			}
 		}
 
@@ -116,10 +111,8 @@ class ServerTest {
 		run {
 			val params = User.SearchParams().apply { includeArchived = true }
 			val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
-				.onEach { log.debug(it) { "Received event for" } }
-				.firstResultOrThrow()
 
-			assertEquals(emptyList(), results)
+			assertEquals(successful(emptyList()), results)
 		}
 
 		log.info { "Step 2: creating two users" }
@@ -127,21 +120,18 @@ class ServerTest {
 		run {
 			val first =
 				client.request(api.users.create, api.users.create.idOf(), User.New("first"), Parameters.Empty, Unit)
-					.onEach { log.debug(it) { "Received event for" } }
-					.firstResultOrThrow()
+					.valueOrThrow
 
 			val second =
 				client.request(api.users.create, api.users.create.idOf(), User.New("second"), Parameters.Empty, Unit)
-					.onEach { log.debug(it) { "Received event for" } }
-					.firstResultOrThrow()
+					.valueOrThrow
 
 			assertEquals(User(Id("test", Route / "users" / "0"), "first", archived = false), first.second)
 			assertEquals(User(Id("test", Route / "users" / "1"), "second", archived = false), second.second)
 
 			val params = User.SearchParams().apply { includeArchived = true }
 			val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
-				.onEach { log.debug(it) { "Received event for" } }
-				.firstResultOrThrow()
+				.valueOrThrow
 
 			assertEquals(listOf(first.first, second.first), results)
 		}

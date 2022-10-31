@@ -1,15 +1,16 @@
 package opensavvy.spine.ktor.server
 
+import arrow.core.continuations.EffectScope
 import io.ktor.server.application.*
 import opensavvy.spine.Id
 import opensavvy.spine.Parameters
-import opensavvy.state.StateBuilder
+import opensavvy.state.Failure
 
 /**
  * Information available in [route].
  */
-class ResponseStateBuilder<In, Out, Params : Parameters?, Context>(
-	builder: StateBuilder<Out>,
+class ResponseStateBuilder<In, Params : Parameters?, Context>(
+	builder: EffectScope<Failure>,
 
 	/**
 	 * The identifier of the resource being requested.
@@ -35,4 +36,4 @@ class ResponseStateBuilder<In, Out, Params : Parameters?, Context>(
 	 * The current request's context.
 	 */
 	val context: Context,
-) : StateBuilder<Out> by builder
+) : EffectScope<Failure> by builder

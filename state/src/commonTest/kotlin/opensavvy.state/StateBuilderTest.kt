@@ -2,88 +2,70 @@
 
 package opensavvy.state
 
+import arrow.core.Either
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import opensavvy.state.Slice.Companion.failed
-import opensavvy.state.Slice.Companion.successful
+import opensavvy.state.slice.ensureValid
+import opensavvy.state.slice.failed
+import opensavvy.state.slice.slice
+import opensavvy.state.slice.successful
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 class StateBuilderTest {
 
 	@Test
 	fun success() = runTest {
-		val data = state {
-			emit(successful(0))
-		}
+		val data = slice { 0 }
 
-		assertEquals(successful(0), data.firstResult())
+		assertEquals(successful(0), data)
 	}
 
 	@Test
 	fun ensure() = runTest {
-		val data = state<Int> {
+		val data = slice {
 			ensureValid(false) { "this is always invalid" }
+			0
 		}
 
 		assertEquals(
-			failed(Status.StandardFailure.Kind.Invalid, "this is always invalid"),
-			data.firstResult()
+			failed("this is always invalid", Failure.Kind.Invalid),
+			data
 		)
 	}
 
 	@Test
 	fun throwStandard() = runTest {
-		val data = state<Int> {
-			throw Status.StandardFailure(Status.StandardFailure.Kind.Invalid, "this is always invalid")
+		val data = slice {
+			throw Failure(Failure.Kind.Invalid, "this is always invalid").toException()
+			@Suppress("UNREACHABLE_CODE") 0
 		}
 
 		assertEquals(
-			failed(Status.StandardFailure.Kind.Invalid, "this is always invalid"),
-			data.firstResult()
-		)
-	}
-
-	@Test
-	fun throwOther() = runTest {
-		val data = state<Int> {
-			throw RuntimeException("some error")
-		}
-
-		assertEquals(
-			failed(
-				Status.StandardFailure.Kind.Unknown,
-				"some error"
-			), data.firstResult()
+			failed("this is always invalid", Failure.Kind.Invalid),
+			data
 		)
 	}
 
 	@Test
 	fun throwIllegalArgumentException() = runTest {
-		val data = state<Int> {
+		val data = slice {
 			require(false) { "some error" }
+			0
 		}
 
-		assertEquals(
-			failed(
-				Status.StandardFailure.Kind.Invalid,
-				"some error"
-			), data.firstResult()
-		)
+		assertIs<Either.Left<*>>(data)
 	}
 
 	@Test
 	fun throwIllegalStateException() = runTest {
-		val data = state<Int> {
+		val data = slice {
 			check(false) { "some error" }
+			0
 		}
 
-		assertEquals(
-			failed(
-				Status.StandardFailure.Kind.Invalid,
-				"some error"
-			), data.firstResult()
-		)
+		assertIs<Either.Left<*>>(data)
 	}
 
 }

@@ -23,6 +23,7 @@ include:
     - ./gradlew $module:publishKotlinMultiplatformPublicationToGitLabRepository $module:publishJvmPublicationToGitLabRepository $module:publishJsPublicationToGitLabRepository
   only:
     - tags
+  interruptible: false
 
 logger:publish:
   extends: [ .publish ]
@@ -95,6 +96,7 @@ spine-ktor-server:publish:
     - merge_requests
     - main
     - tags
+  interruptible: true
 
 .test-jvm-convert-coverage:
   image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.8
@@ -111,6 +113,7 @@ spine-ktor-server:publish:
     - merge_requests
     - main
     - tags
+  interruptible: true
 
 logger:test:jvm:
   extends: [ .test-jvm ]
@@ -202,6 +205,7 @@ dokka:
     paths:
       - documentation
     expose_as: "Documentation"
+  interruptible: true
 
 pages:
   image: alpine:latest
@@ -218,3 +222,4 @@ pages:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
     - when: never
+  interruptible: false

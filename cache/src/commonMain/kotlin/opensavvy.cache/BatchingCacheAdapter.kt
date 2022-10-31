@@ -5,18 +5,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import opensavvy.logger.Logger.Companion.error
 import opensavvy.logger.loggerFor
-import opensavvy.state.*
-import opensavvy.state.Slice.Companion.pending
+import opensavvy.state.Identifier
+import opensavvy.state.slice.Slice
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+
+private typealias CacheStorage<T> = CompletableDeferred<StateFlow<Slice<T>?>>
 
 /**
  * Cache implementation aimed to be the first link in a cache chain.
@@ -42,12 +41,12 @@ class BatchingCacheAdapter<I : Identifier, T>(
 
 	private val log = loggerFor(this)
 
-	private val requests: SendChannel<Pair<I, CompletableDeferred<StateFlow<Slice<T>>>>>
+	private val requests: SendChannel<Pair<I, CacheStorage<T>>>
 
 	init {
 		require(workers > 0) { "There must be at least 1 worker: found $workers" }
 
-		val requests = Channel<Pair<I, CompletableDeferred<StateFlow<Slice<T>>>>>()
+		val requests = Channel<Pair<I, CacheStorage<T>>>()
 		this.requests = requests
 
 		val scope = CoroutineScope(context)
@@ -58,14 +57,14 @@ class BatchingCacheAdapter<I : Identifier, T>(
 		}
 	}
 
-	private suspend fun worker(requests: ReceiveChannel<Pair<I, CompletableDeferred<StateFlow<Slice<T>>>>>) {
+	private suspend fun worker(requests: ReceiveChannel<Pair<I, CacheStorage<T>>>) {
 		while (coroutineContext.isActive) {
 			val batch = HashSet<I>()
 
 			// Store the results
 			// We have to store lists of Deferred in case multiple requests to the same Ref happen to be in the same
 			// batch.
-			val results = HashMap<I, MutableList<CompletableDeferred<StateFlow<Slice<T>>>>>()
+			val results = HashMap<I, MutableList<CacheStorage<T>>>()
 
 			run {
 				// Suspend until a first request arrives
@@ -86,11 +85,11 @@ class BatchingCacheAdapter<I : Identifier, T>(
 					.add(promise)
 			}
 
-			val states = HashMap<I, MutableStateFlow<Slice<T>>>()
+			val states = HashMap<I, MutableStateFlow<Slice<T>?>>()
 
 			// Tell all clients that their request is starting
 			for ((id, promises) in results) {
-				val state: MutableStateFlow<Slice<T>> = MutableStateFlow(pending(Progression.loading(0.0)))
+				val state: MutableStateFlow<Slice<T>?> = MutableStateFlow(null)
 
 				for (promise in promises) {
 					promise.complete(state)
@@ -115,12 +114,12 @@ class BatchingCacheAdapter<I : Identifier, T>(
 		}
 	}
 
-	override fun get(id: I): State<T> = state {
-		val promise = CompletableDeferred<StateFlow<Slice<T>>>()
+	override fun get(id: I): Flow<Slice<T>> = flow {
+		val promise = CompletableDeferred<StateFlow<Slice<T>?>>()
 
 		requests.send(id to promise)
 
-		emitAll(promise.await())
+		emitAll(promise.await().filterNotNull())
 	}
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
@@ -133,5 +132,17 @@ class BatchingCacheAdapter<I : Identifier, T>(
 
 	override suspend fun expireAll() {
 		// This cache layer has no state, nothing to do
+	}
+
+	companion object {
+		fun <I : Identifier, T> batchingCache(
+			context: CoroutineContext,
+			workers: Int = 1,
+			transform: suspend FlowCollector<Pair<I, Slice<T>>>.(Set<I>) -> Unit,
+		) = BatchingCacheAdapter<I, T>(context, workers) {
+			flow {
+				transform(it)
+			}
+		}
 	}
 }

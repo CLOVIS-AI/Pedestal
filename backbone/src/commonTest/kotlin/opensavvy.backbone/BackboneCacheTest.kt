@@ -6,11 +6,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runTest
 import opensavvy.backbone.Ref.Companion.expire
-import opensavvy.backbone.Ref.Companion.requestValue
-import opensavvy.state.Slice.Companion.successful
-import opensavvy.state.State
-import opensavvy.state.ensureValid
-import opensavvy.state.state
+import opensavvy.backbone.Ref.Companion.requestValueOrThrow
+import opensavvy.state.slice.ensureValid
+import opensavvy.state.slice.slice
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -18,11 +16,11 @@ class BackboneCacheTest {
 
 	// Id("12") -> 12
 	private class Bone(override val cache: RefCache<Int>) : Backbone<Int> {
-		override fun directRequest(ref: Ref<Int>): State<Int> = state {
+		override suspend fun directRequest(ref: Ref<Int>) = slice {
 			ensureValid(ref is Ref.Basic) { "Only basic references are accepted by ${this@Bone}" }
 			val int = ref.id.toIntOrNull()
 			ensureValid(int != null) { "The reference $ref does not refer to a valid integer" }
-			emit(successful(int))
+			int
 		}
 
 		fun of(int: Int) = Ref.Basic(int.toString(), this)
@@ -34,11 +32,11 @@ class BackboneCacheTest {
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 
-		assertEquals(5, id5.requestValue())
-		assertEquals(2, id2.requestValue())
+		assertEquals(5, id5.requestValueOrThrow())
+		assertEquals(2, id2.requestValueOrThrow())
 
 		id2.expire()
-		assertEquals(2, id2.requestValue())
+		assertEquals(2, id2.requestValueOrThrow())
 	}
 
 	@Test
@@ -49,11 +47,11 @@ class BackboneCacheTest {
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 
-		assertEquals(5, id5.requestValue())
-		assertEquals(2, id2.requestValue())
+		assertEquals(5, id5.requestValueOrThrow())
+		assertEquals(2, id2.requestValueOrThrow())
 
 		id2.expire()
-		assertEquals(2, id2.requestValue())
+		assertEquals(2, id2.requestValueOrThrow())
 
 		job.cancel()
 	}

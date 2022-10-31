@@ -1,7 +1,8 @@
 package opensavvy.cache
 
+import kotlinx.coroutines.flow.Flow
 import opensavvy.state.Identifier
-import opensavvy.state.State
+import opensavvy.state.slice.Slice
 
 /**
  * Stores information temporarily to avoid unneeded network requests.
@@ -43,7 +44,7 @@ interface Cache<I : Identifier, T> {
 	 * such as inside the body of a UI component.
 	 * You can then subscribe to the [State] to access the actual values.
 	 */
-	operator fun get(id: I): State<T>
+	operator fun get(id: I): Flow<Slice<T>>
 
 	/**
 	 * Forces the cache to accept [value] as a more recent value for the given [id] than whatever it was previously storing.
