@@ -1,6 +1,5 @@
 package opensavvy.spine.ktor.server
 
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -11,9 +10,10 @@ import opensavvy.spine.Operation
 import opensavvy.spine.Parameters
 import opensavvy.spine.ktor.NetworkResponse
 import opensavvy.spine.ktor.toHttp
-import opensavvy.state.Status
-import opensavvy.state.firstResult
-import opensavvy.state.state
+import opensavvy.state.slice.slice
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 
 object Server {
 	val log = loggerFor(this)
@@ -51,7 +51,7 @@ object Server {
 inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params : Parameters, Context : Any> Route.route(
 	operation: Operation<Resource, In, Out, Params, Context>,
 	contextGenerator: ContextGenerator<Context>,
-	crossinline block: suspend ResponseStateBuilder<In, Out, Params, Context>.() -> Unit,
+	crossinline block: suspend ResponseStateBuilder<In, Params, Context>.() -> Out,
 ) {
 	val path = buildString {
 		append(operation.resource.routeTemplate)
@@ -91,35 +91,25 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 				else -> call.receive()
 			}
 
-			val state = state {
+			slice {
 				operation.validate(this, id, body, params, context)
 
 				val responseBuilder = ResponseStateBuilder(this, id, body, params, call, context)
 				responseBuilder.block()
-			}.firstResult() // How can we send loading events via HTTP?
-
-			when (val data = state.status) {
-				is Status.Successful -> call.respond(
-					NetworkResponse(
-						routes = emptyList(), //TODO in #22: advertise the endpoints
-						value = data.value
+			}.fold(
+				ifLeft = {
+					Server.log.warn(it.kind, it.message, it.cause?.stackTraceToString()) { "Failed request" }
+					call.respond(it.kind.toHttp(), it.message)
+				},
+				ifRight = {
+					call.respond(
+						NetworkResponse(
+							routes = emptyList(), //TODO in #22: advertise the endpoints
+							value = it,
+						)
 					)
-				)
-
-				// This should not be possible (it only happens for loading events, and we ignored them)
-				is Status.Pending -> error("The server did not find any value to return, this should not be possible")
-
-				is Status.StandardFailure -> {
-					Server.log.warn(data.kind, data.message, data.cause?.stackTraceToString()) { "Failed request" }
-					val code = data.kind.toHttp()
-					call.respond(code, data.message ?: "No message")
 				}
-
-				is Status.Failed -> {
-					Server.log.warn(data.message, data.stackTraceToString()) { "Failed request" }
-					call.respond(HttpStatusCode.InternalServerError, data.message ?: "No message")
-				}
-			}
+			)
 		}
 	}
 }

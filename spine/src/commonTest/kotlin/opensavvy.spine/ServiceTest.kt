@@ -8,13 +8,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
 import opensavvy.backbone.Backbone
 import opensavvy.backbone.Ref
-import opensavvy.backbone.Ref.Companion.request
 import opensavvy.backbone.Ref.Companion.requestValue
 import opensavvy.backbone.defaultRefCache
 import opensavvy.spine.Route.Companion.div
 import opensavvy.state.*
-import opensavvy.state.Slice.Companion.failed
-import opensavvy.state.Slice.Companion.successful
+import opensavvy.state.slice.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -66,9 +64,7 @@ private class Api : Service("v2") {
 			val leave = action<Unit, Unit, Parameters.Empty>(Route / "leave")
 
 			val rename = edit<User.Rename, Parameters.Empty>(Route / "name") { _, newName, _, _ ->
-				ensureValid(
-					newName.name.isNotBlank()
-				) { "A user's name may not be empty: '${newName.name}'" }
+				ensureValid(newName.name.isNotBlank()) { "A user's name may not be empty: '${newName.name}'" }
 			}
 
 			val departments = Departments()
@@ -77,7 +73,7 @@ private class Api : Service("v2") {
 		val create = create<User.New, User, Parameters.Empty> { _, it, _, context: Context ->
 			ensureValid(it.name.isNotBlank()) { "A user's name may not be empty: '${it.name}'" }
 			ensureValid(it.name.length < 100) { "A user's name may not be longer than 100 characters, found ${it.name.length} characters: '${it.name}'" }
-			ensureAuthorized(context.user.requestValue().admin) { "Only admins can create new users" }
+			ensureAuthorized(context.user.requestValue().bind().admin) { "Only admins can create new users" }
 		}
 
 		val id = Unique()
@@ -117,13 +113,13 @@ class ServiceTest {
 			users["1"] = User("Admin", admin = true)
 		}
 
-		override fun directRequest(ref: Ref<User>): State<User> = state {
+		override suspend fun directRequest(ref: Ref<User>) = slice {
 			ensureValid(ref is Ref.Basic) { "The reference type ${ref::class} is not supported by UserBone" }
 
 			val result = users[ref.id]
 			ensureFound(result != null) { "No user has the ID $ref" }
 
-			emit(successful(result))
+			result
 		}
 	}
 
@@ -140,10 +136,10 @@ class ServiceTest {
 		val id1 = endpoint.idOf("0")
 		assertEquals(
 			successful(User("Employee", false)),
-			state {
+			slice {
 				endpoint.validate(this, id1, Unit, Parameters.Empty, employee)
-				emitAll(employee.user.request())
-			}.firstResult()
+				employee.user.requestValue().bind()
+			}
 		)
 
 		// Scenario 2: access with an invalid service ID
@@ -151,12 +147,12 @@ class ServiceTest {
 		val id2 = Id("this-is-not-the-correct-service-name", Route / "users" / "0")
 		assertEquals(
 			failed(
-				Status.StandardFailure.Kind.Invalid,
-				"The passed identifier refers to the service 'this-is-not-the-correct-service-name', but this resource belongs to the service 'v2'"
+				"The passed identifier refers to the service 'this-is-not-the-correct-service-name', but this resource belongs to the service 'v2'",
+				Failure.Kind.Invalid
 			),
-			state {
+			slice {
 				endpoint.validate(this, id2, Unit, Parameters.Empty, employee)
-			}.firstResult()
+			}
 		)
 
 		// Scenario 3: access with an invalid ID (too short)
@@ -164,12 +160,12 @@ class ServiceTest {
 		val id3 = Id("v2", Route / "users") // should be /users/0
 		assertEquals(
 			failed(
-				Status.StandardFailure.Kind.Invalid,
-				"The passed identifier's URI length is too short for this resource: 'v2/users' for resource 'v2/users/{user}'"
+				"The passed identifier's URI length is too short for this resource: 'v2/users' for resource 'v2/users/{user}'",
+				Failure.Kind.Invalid
 			),
-			state {
+			slice {
 				endpoint.validate(this, id3, Unit, Parameters.Empty, employee)
-			}.firstResult()
+			}
 		)
 
 		// Scenario 4: access with an invalid ID (wrong resource)
@@ -177,12 +173,12 @@ class ServiceTest {
 		val id4 = Id("v2", Route / "departments" / "0") // should be /users/0
 		assertEquals(
 			failed(
-				Status.StandardFailure.Kind.Invalid,
-				"The passed identifier's segment #0 doesn't match the resource; expected 'users' but found 'departments'"
+				"The passed identifier's segment #0 doesn't match the resource; expected 'users' but found 'departments'",
+				Failure.Kind.Invalid
 			),
-			state {
+			slice {
 				endpoint.validate(this, id4, Unit, Parameters.Empty, employee)
-			}.firstResult()
+			}
 		)
 
 		// Scenario 5: access with an invalid ID (too long)
@@ -190,12 +186,12 @@ class ServiceTest {
 		val id5 = Id("v2", Route / "departments" / "users" / "0") // should be /users/0
 		assertEquals(
 			failed(
-				Status.StandardFailure.Kind.Invalid,
-				"The passed identifier's URI length is too long for this resource: 'v2/departments/users/0' for resource 'v2/users/{user}'"
+				"The passed identifier's URI length is too long for this resource: 'v2/departments/users/0' for resource 'v2/users/{user}'",
+				Failure.Kind.Invalid
 			),
-			state {
+			slice {
 				endpoint.validate(this, id5, Unit, Parameters.Empty, employee)
-			}.firstResult()
+			}
 		)
 	}
 
@@ -207,9 +203,12 @@ class ServiceTest {
 
 		val admin = Context(Ref.Basic("1", bone))
 
-		assertEquals(emptyList(), state {
-			endpoint.validate(this, endpoint.idOf(), User.New("Third user"), Parameters.Empty, admin)
-		}.skipLoading().toList())
+		assertEquals(
+			successful(Unit),
+			slice {
+				endpoint.validate(this, endpoint.idOf(), User.New("Third user"), Parameters.Empty, admin)
+			}
+		)
 	}
 
 	@Test
@@ -221,9 +220,12 @@ class ServiceTest {
 		val admin = Context(Ref.Basic("1", bone))
 
 		val id = endpoint.idOf("0")
-		assertEquals(emptyList(), state {
-			endpoint.validate(this, id, User.Rename("Another name"), Parameters.Empty, admin)
-		}.skipLoading().toList())
+		assertEquals(
+			successful(Unit),
+			slice {
+				endpoint.validate(this, id, User.Rename("Another name"), Parameters.Empty, admin)
+			}
+		)
 	}
 
 }

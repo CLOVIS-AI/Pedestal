@@ -12,12 +12,11 @@ import opensavvy.spine.ResourceGroup.AbstractResource
 import opensavvy.spine.ktor.NetworkResponse
 import opensavvy.spine.ktor.toHttp
 import opensavvy.spine.ktor.toSpine
-import opensavvy.state.Progression.Companion.done
-import opensavvy.state.Slice.Companion.failed
-import opensavvy.state.Slice.Companion.pending
-import opensavvy.state.Slice.Companion.successful
-import opensavvy.state.State
-import opensavvy.state.state
+import opensavvy.state.Failure
+import opensavvy.state.Progression.Companion.loading
+import opensavvy.state.ProgressionReporter.Companion.report
+import opensavvy.state.ProgressionReporter.Companion.transformQuantifiedProgress
+import opensavvy.state.slice.slice
 
 /**
  * Executes a [HttpClient] request, with the information declared in an [Operation].
@@ -44,7 +43,7 @@ import opensavvy.state.state
  * @param configuration Additional configuration passed to Ktor's `request` function.
  * This configuration is applied after the parameters from this request are applied, it is possible to override data set by this function.
  */
-inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params : Parameters, Context : Any> HttpClient.request(
+suspend inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params : Parameters, Context : Any> HttpClient.request(
 	operation: Operation<Resource, In, Out, Params, Context>,
 	id: Id,
 	input: In,
@@ -53,12 +52,14 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 	contentType: ContentType = ContentType.Application.Json,
 	crossinline onResponse: (HttpResponse) -> Unit = {},
 	crossinline configuration: HttpRequestBuilder.() -> Unit = {},
-): State<Out> = state {
-	emit(pending(0.0))
+) = slice {
+	report(loading(0.0))
 
-	operation.validate(this, id, input, parameters, context)
+	transformQuantifiedProgress({ loading(it.normalized / 10) }) {
+		operation.validate(this@slice, id, input, parameters, context)
+	}
 
-	emit(pending(0.1))
+	report(loading(0.1))
 
 	val result = request {
 		method = operation.kind.toHttp()
@@ -87,18 +88,18 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 		configuration()
 	}
 
-	emit(pending(0.90))
+	report(loading(0.90))
 
 	onResponse(result)
 
-	emit(pending(0.95))
+	report(loading(0.95))
 
 	if (result.status.isSuccess()) {
 		val response: NetworkResponse<Out> = result.body()
-		emit(successful(response.value))
+		response.value
 	} else {
 		val body = result.body<String>().ifBlank { "${result.status} with no provided body" }
 		val kind = result.status.toSpine()
-		emit(failed(kind, body, progression = done()))
+		shift(Failure(kind, body))
 	}
 }

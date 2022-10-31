@@ -1,9 +1,10 @@
 package opensavvy.spine
 
+import arrow.core.continuations.EffectScope
 import opensavvy.spine.ResourceGroup.AbstractResource
 import opensavvy.spine.Route.Companion.div
-import opensavvy.state.StateBuilder
-import opensavvy.state.ensureValid
+import opensavvy.state.Failure
+import opensavvy.state.slice.ensureValid
 
 /**
  * Common ancestor of [Service] and [AbstractResource].
@@ -77,7 +78,7 @@ sealed class ResourceGroup {
 		/**
 		 * Validates that [id] identifies this resource.
 		 */
-		suspend fun StateBuilder<Nothing>.validateCorrectId(id: Id) {
+		suspend fun EffectScope<Failure>.validateCorrectId(id: Id) {
 			ensureValid(
 				id.service == service.name
 			) { "The passed identifier refers to the service '${id.service}', but this resource belongs to the service '${service.name}'" }
@@ -122,36 +123,37 @@ sealed class ResourceGroup {
 		 * For example, you can override this function to check access rights for read operations.
 		 * By default, this function does nothing.
 		 */
-		open suspend fun StateBuilder<Nothing>.validateId(id: Id, context: Context) {}
+		open suspend fun EffectScope<Failure>.validateId(id: Id, context: Context) {}
 
 		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
-			validate: OperationValidator<In, Pair<Id, Out>, Params, Context> = { _, _, _, _ -> },
-		) =
-			Operation(this, Operation.Kind.Create, route, validate)
+			validate: OperationValidator<In, Params, Context> = { _, _, _, _ -> },
+		): Operation<O, In, Pair<Id, Out>, Params, Context> = Operation(this, Operation.Kind.Create, route, validate)
 
 		protected fun <In : Any, Params : Parameters> edit(
 			route: Route? = null,
-			validate: OperationValidator<In, Unit, Params, Context> = { _, _, _, _ -> },
-		) = Operation(this, Operation.Kind.Edit, route) { id: Id, it: In, params: Params, context ->
-			validateCorrectId(id)
-			validateId(id, context)
-			validate(id, it, params, context)
-		}
+			validate: OperationValidator<In, Params, Context> = { _, _, _, _ -> },
+		): Operation<O, In, Unit, Params, Context> =
+			Operation(this, Operation.Kind.Edit, route) { id: Id, it: In, params: Params, context ->
+				validateCorrectId(id)
+				validateId(id, context)
+				validate(id, it, params, context)
+			}
 
 		protected fun <In : Any, Out : Any, Params : Parameters> action(
 			route: Route,
-			validate: OperationValidator<In, Out, Params, Context> = { _, _, _, _ -> },
-		) = Operation(this, Operation.Kind.Action, route) { id: Id, it: In, params: Params, context ->
-			validateCorrectId(id)
-			validateId(id, context)
-			validate(id, it, params, context)
-		}
+			validate: OperationValidator<In, Params, Context> = { _, _, _, _ -> },
+		): Operation<O, In, Out, Params, Context> =
+			Operation(this, Operation.Kind.Action, route) { id: Id, it: In, params: Params, context ->
+				validateCorrectId(id)
+				validateId(id, context)
+				validate(id, it, params, context)
+			}
 
 		protected fun <In : Any> delete(
 			route: Route? = null,
-			validate: OperationValidator<In, Unit, Parameters.Empty, Context> = { _, _, _, _ -> },
-		) =
+			validate: OperationValidator<In, Parameters.Empty, Context> = { _, _, _, _ -> },
+		): Operation<O, In, Unit, Parameters.Empty, Context> =
 			Operation(
 				this,
 				Operation.Kind.Delete,
@@ -211,7 +213,7 @@ sealed class ResourceGroup {
 		 *
 		 * You should override this function if the parameters impact the access rights.
 		 */
-		open suspend fun StateBuilder<O>.validateGetParams(id: Id, params: GetParams, context: Context) {}
+		open suspend fun EffectScope<Failure>.validateGetParams(id: Id, params: GetParams, context: Context) {}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
 		val get =
