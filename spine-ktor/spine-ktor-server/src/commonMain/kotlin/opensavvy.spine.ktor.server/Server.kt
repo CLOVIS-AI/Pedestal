@@ -92,7 +92,7 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 			}
 
 			slice {
-				operation.validate(this, id, body, params, context)
+				operation.validate(id, body, params, context).bind()
 
 				val responseBuilder = ResponseStateBuilder(this, id, body, params, call, context)
 				responseBuilder.block()
