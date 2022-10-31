@@ -6,14 +6,20 @@
 # Note that environment variables can be set in several places
 # See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
-- test
-- publish
+  - test
+  - publish
 
 sast:
   stage: test
 
 include:
-- template: Security/SAST.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
 
 .publish:
   image: archlinux:base
@@ -21,8 +27,8 @@ include:
     - pacman -Syu --noconfirm git jre-openjdk-headless
     - export JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v java))))
     - ./gradlew $module:publishKotlinMultiplatformPublicationToGitLabRepository $module:publishJvmPublicationToGitLabRepository $module:publishJsPublicationToGitLabRepository
-  only:
-    - tags
+  rules:
+    - if: $CI_COMMIT_TAG
   interruptible: false
 
 logger:publish:
@@ -92,10 +98,6 @@ spine-ktor-server:publish:
     reports:
       junit: $module_path/build/test-results/jvmTest/**.xml
     when: always
-  only:
-    - merge_requests
-    - main
-    - tags
   interruptible: true
 
 .test-jvm-convert-coverage:
@@ -109,10 +111,6 @@ spine-ktor-server:publish:
       coverage_report:
         coverage_format: cobertura
         path: cobertura.xml
-  only:
-    - merge_requests
-    - main
-    - tags
   interruptible: true
 
 logger:test:jvm:
