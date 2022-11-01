@@ -2,14 +2,16 @@ package opensavvy.spine
 
 import arrow.core.continuations.EffectScope
 import opensavvy.state.Failure
+import opensavvy.state.slice.slice
+import kotlin.js.JsName
 
-typealias OperationValidator<In, Params, Context> = suspend EffectScope<Failure>.(Id, In, parameters: Params, context: Context) -> Unit
+typealias OperationValidator<In, Params, Context> = suspend Operation.ValidatorScope<In, Params, Context>.() -> Unit
 
 class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Context : Any>(
 	val resource: ResourceGroup.AbstractResource<Resource, Context>,
 	val kind: Kind,
 	val route: Route? = null,
-	val validate: OperationValidator<In, Params, Context>,
+	@JsName("_validate") private val validate: OperationValidator<In, Params, Context>,
 ) {
 
 	/**
@@ -18,6 +20,11 @@ class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Contex
 	 * This is simply syntax sugar for calling [resource].[idOf][ResourceGroup.AbstractResource.idOf].
 	 */
 	fun idOf(vararg dynamic: String) = resource.idOf(*dynamic)
+
+	suspend fun validate(id: Id, body: In, parameters: Params, context: Context) = slice {
+		val scope = ValidatorScope(this, id, body, parameters, context)
+		scope.validate()
+	}
 
 	/**
 	 * The various kinds of operations that can be executed on a [ResourceGroup.AbstractResource] instance.
@@ -60,4 +67,16 @@ class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Contex
 		 */
 		Delete,
 	}
+
+	class ValidatorScope<In : Any, Params : Parameters, Context> internal constructor(
+		private val scope: EffectScope<Failure>,
+
+		val id: Id,
+
+		val body: In,
+
+		val parameters: Params,
+
+		val context: Context,
+	) : EffectScope<Failure> by scope
 }

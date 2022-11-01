@@ -56,7 +56,7 @@ suspend inline fun <Resource : Any, reified In : Any, reified Out : Any, reified
 	report(loading(0.0))
 
 	transformQuantifiedProgress({ loading(it.normalized / 10) }) {
-		operation.validate(this@slice, id, input, parameters, context)
+		operation.validate(id, input, parameters, context).bind()
 	}
 
 	report(loading(0.1))
