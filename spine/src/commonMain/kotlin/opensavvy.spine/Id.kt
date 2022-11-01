@@ -13,3 +13,9 @@ data class Id(
 
 	override fun toString() = "$service/$resource"
 }
+
+@Serializable
+data class Identified<T>(
+	val id: Id,
+	val value: T,
+)

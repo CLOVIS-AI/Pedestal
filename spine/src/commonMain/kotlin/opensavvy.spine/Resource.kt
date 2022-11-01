@@ -128,7 +128,7 @@ sealed class ResourceGroup {
 		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
 			validate: OperationValidator<In, Params, Context> = { },
-		): Operation<O, In, Pair<Id, Out>, Params, Context> = Operation(this, Operation.Kind.Create, route, validate)
+		): Operation<O, In, Identified<Out>, Params, Context> = Operation(this, Operation.Kind.Create, route, validate)
 
 		protected fun <In : Any, Params : Parameters> edit(
 			route: Route? = null,

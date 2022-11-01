@@ -7,6 +7,7 @@ import io.ktor.server.testing.*
 import opensavvy.logger.Logger.Companion.info
 import opensavvy.logger.loggerFor
 import opensavvy.spine.Id
+import opensavvy.spine.Identified
 import opensavvy.spine.Parameters
 import opensavvy.spine.Route
 import opensavvy.spine.Route.Companion.div
@@ -62,7 +63,7 @@ class ServerTest {
 				val newId = api.users.id.idOf((nextId++).toString())
 				val new = User(newId, name, archived = false)
 				users += new
-				newId to new
+				Identified(newId, new)
 			}
 
 			route(api.users.id.get, context) {
@@ -126,14 +127,14 @@ class ServerTest {
 				client.request(api.users.create, api.users.create.idOf(), User.New("second"), Parameters.Empty, Unit)
 					.valueOrThrow
 
-			assertEquals(User(Id("test", Route / "users" / "0"), "first", archived = false), first.second)
-			assertEquals(User(Id("test", Route / "users" / "1"), "second", archived = false), second.second)
+			assertEquals(User(Id("test", Route / "users" / "0"), "first", archived = false), first.value)
+			assertEquals(User(Id("test", Route / "users" / "1"), "second", archived = false), second.value)
 
 			val params = User.SearchParams().apply { includeArchived = true }
 			val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
 				.valueOrThrow
 
-			assertEquals(listOf(first.first, second.first), results)
+			assertEquals(listOf(first.id, second.id), results)
 		}
 
 		//endregion
