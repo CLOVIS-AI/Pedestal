@@ -74,7 +74,7 @@ class SliceTest {
 
 		val actual = actualAsync.await()
 		assertEquals(18.right(), actual)
-		assertEquals(18, actual.valueOrNull)
+		assertEquals(18, actual.orNull())
 		assertEquals(18, actual.valueOrThrow)
 
 		assertEquals(expectedLoading, actualLoading)
