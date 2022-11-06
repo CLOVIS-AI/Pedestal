@@ -7,7 +7,6 @@ import kotlinx.coroutines.sync.withPermit
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
-import opensavvy.state.Identifier
 import opensavvy.state.Progression
 import opensavvy.state.ProgressionReporter.Companion.progressionReporter
 import opensavvy.state.ProgressionReporter.Companion.report
@@ -33,7 +32,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  *     .expireAfter(2.minutes)
  * ```
  */
-class MemoryCache<I : Identifier, T>(
+class MemoryCache<I, T>(
 	private val upstream: Cache<I, T>,
 	context: CoroutineContext = EmptyCoroutineContext,
 ) : Cache<I, T> {
@@ -176,6 +175,6 @@ class MemoryCache<I : Identifier, T>(
 	}
 
 	companion object {
-		fun <I : Identifier, T> Cache<I, T>.cachedInMemory(context: CoroutineContext) = MemoryCache(this, context)
+		fun <I, T> Cache<I, T>.cachedInMemory(context: CoroutineContext) = MemoryCache(this, context)
 	}
 }

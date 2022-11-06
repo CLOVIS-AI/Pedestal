@@ -11,7 +11,6 @@ import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
-import opensavvy.state.Identifier
 import opensavvy.state.slice.Slice
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -27,7 +26,7 @@ import kotlin.time.Duration.Companion.minutes
  *      .expireAfter(5.minutes, Job())
  * ```
  */
-class ExpirationCache<I : Identifier, T>(
+class ExpirationCache<I, T>(
 	/**
 	 * The previous cache layer, from which values will be expired.
 	 */
@@ -114,7 +113,7 @@ class ExpirationCache<I : Identifier, T>(
 		 *
 		 * @see ExpirationCache
 		 */
-		fun <I : Identifier, T> Cache<I, T>.expireAfter(duration: Duration, context: CoroutineContext) =
+		fun <I, T> Cache<I, T>.expireAfter(duration: Duration, context: CoroutineContext) =
 			ExpirationCache(this, duration, context)
 	}
 }

@@ -27,7 +27,7 @@ class CacheTest {
 		level = LogLevel.TRACE
 	}
 
-	private data class IntId(val id: Int) : Identifier {
+	private data class IntId(val id: Int) {
 		override fun toString() = "Id($id)"
 	}
 

@@ -3,7 +3,6 @@ package opensavvy.backbone
 import opensavvy.backbone.Backbone.Companion.request
 import opensavvy.backbone.Ref.Companion.directRequest
 import opensavvy.backbone.Ref.Companion.request
-import opensavvy.state.Identifier
 
 /**
  * A reference to a specific [object][O].
@@ -17,7 +16,7 @@ import opensavvy.state.Identifier
  *
  * @param O The object this reference refers to.
  */
-interface Ref<O> : Identifier {
+interface Ref<O> {
 
 	/**
 	 * The [Backbone] responsible for this reference.

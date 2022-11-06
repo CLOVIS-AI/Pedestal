@@ -1,7 +1,6 @@
 package opensavvy.cache
 
 import kotlinx.coroutines.flow.Flow
-import opensavvy.state.Identifier
 import opensavvy.state.slice.Slice
 
 /**
@@ -35,14 +34,14 @@ import opensavvy.state.slice.Slice
  * The first element of the chain, and therefore the one responsible for actually starting the request, is [CacheAdapter] or [BatchingCacheAdapter].
  * Note that both have a few implementation differences, it is not recommended to use them directly without chaining under another implementation.
  */
-interface Cache<I : Identifier, T> {
+interface Cache<I, T> {
 
 	/**
 	 * Gets the value associated with an [id] in this cache.
 	 *
-	 * This function returns a [State] instance synchronously: it is safe to call in synchronous-only areas of the program,
+	 * This function returns a [Flow] instance synchronously: it is safe to call in synchronous-only areas of the program,
 	 * such as inside the body of a UI component.
-	 * You can then subscribe to the [State] to access the actual values.
+	 * You can then subscribe to the [Flow] to access the actual values.
 	 */
 	operator fun get(id: I): Flow<Slice<T>>
 

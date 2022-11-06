@@ -5,7 +5,6 @@ import arrow.core.continuations.either
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import opensavvy.state.Failure
-import opensavvy.state.Identifier
 import opensavvy.state.slice.Slice
 
 /**
@@ -14,7 +13,7 @@ import opensavvy.state.slice.Slice
  * This is not a valid implementation of a cache (it doesn't do any caching), and only serves as a link between caches
  * and the underlying network APIs.
  */
-class CacheAdapter<I : Identifier, T>(
+class CacheAdapter<I, T>(
 	val query: suspend (I) -> Slice<T>,
 ) : Cache<I, T> {
 
@@ -33,7 +32,7 @@ class CacheAdapter<I : Identifier, T>(
 	}
 
 	companion object {
-		fun <I : Identifier, T> cache(transform: suspend EffectScope<Failure>.(I) -> T) =
+		fun <I, T> cache(transform: suspend EffectScope<Failure>.(I) -> T) =
 			CacheAdapter<I, T> { either { transform(it) } }
 	}
 }
