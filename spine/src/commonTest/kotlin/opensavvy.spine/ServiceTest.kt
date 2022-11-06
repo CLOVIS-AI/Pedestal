@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.runTest
 import opensavvy.backbone.Backbone
 import opensavvy.backbone.Ref
-import opensavvy.backbone.Ref.Companion.requestValue
+import opensavvy.backbone.Ref.Companion.request
 import opensavvy.backbone.defaultRefCache
 import opensavvy.spine.Route.Companion.div
 import opensavvy.state.*
@@ -73,7 +73,7 @@ private class Api : Service("v2") {
 		val create = create<User.New, User, Parameters.Empty> {
 			ensureValid(body.name.isNotBlank()) { "A user's name may not be empty: '${body.name}'" }
 			ensureValid(body.name.length < 100) { "A user's name may not be longer than 100 characters, found ${body.name.length} characters: '${body.name}'" }
-			ensureAuthorized(context.user.requestValue().bind().admin) { "Only admins can create new users" }
+			ensureAuthorized(context.user.request().firstValue().bind().admin) { "Only admins can create new users" }
 		}
 
 		val id = Unique()
@@ -138,7 +138,7 @@ class ServiceTest {
 			successful(User("Employee", false)),
 			slice {
 				endpoint.validate(id1, Unit, Parameters.Empty, employee).bind()
-				employee.user.requestValue().bind()
+				employee.user.request().firstValue().bind()
 			}
 		)
 
