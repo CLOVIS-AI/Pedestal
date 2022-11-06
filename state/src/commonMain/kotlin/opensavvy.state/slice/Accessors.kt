@@ -9,8 +9,7 @@ import opensavvy.state.Failure
  * This function breaks the functional error handling paradigm, it shouldn't be used in regular code.
  * It is useful in tests.
  */
-val <T> Slice<T>.valueOrThrow: T
-	get() = when (this) {
-		is Either.Left -> throw value.toException()
-		is Either.Right -> value
-	}
+fun <T> Slice<T>.orThrow(): T = when (this) {
+	is Either.Left -> throw value.toException()
+	is Either.Right -> value
+}
