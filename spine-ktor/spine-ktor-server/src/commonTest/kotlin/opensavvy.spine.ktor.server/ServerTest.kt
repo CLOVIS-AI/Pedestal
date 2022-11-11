@@ -13,8 +13,8 @@ import opensavvy.spine.Route
 import opensavvy.spine.Route.Companion.div
 import opensavvy.spine.ktor.client.request
 import opensavvy.state.slice.ensureFound
+import opensavvy.state.slice.orThrow
 import opensavvy.state.slice.successful
-import opensavvy.state.slice.valueOrThrow
 import org.junit.Test
 import org.slf4j.event.Level
 import kotlin.test.assertEquals
@@ -121,18 +121,18 @@ class ServerTest {
 		run {
 			val first =
 				client.request(api.users.create, api.users.create.idOf(), User.New("first"), Parameters.Empty, Unit)
-					.valueOrThrow
+					.orThrow()
 
 			val second =
 				client.request(api.users.create, api.users.create.idOf(), User.New("second"), Parameters.Empty, Unit)
-					.valueOrThrow
+					.orThrow()
 
 			assertEquals(User(Id("test", Route / "users" / "0"), "first", archived = false), first.value)
 			assertEquals(User(Id("test", Route / "users" / "1"), "second", archived = false), second.value)
 
 			val params = User.SearchParams().apply { includeArchived = true }
 			val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
-				.valueOrThrow
+				.orThrow()
 
 			assertEquals(listOf(first.id, second.id), results)
 		}
