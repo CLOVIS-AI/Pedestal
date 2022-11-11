@@ -93,6 +93,18 @@ abstract class ProgressionReporter : AbstractCoroutineContextElement(Key) {
 		fun progressionReporter() = StateFlowReporter()
 
 		/**
+		 * Creates a [ProgressionReporter] instance that calls the provided [callback] every time a new progression
+		 * event is received.
+		 */
+		fun callbackReporter(
+			callback: suspend (Progression) -> Unit,
+		) = object : ProgressionReporter() {
+			override suspend fun emit(progression: Progression) {
+				callback(progression)
+			}
+		}
+
+		/**
 		 * Declares [block] as a subtask of the current coroutine.
 		 *
 		 * Inside [block], all progression events are passed to [transform] before being transmitted to the parent coroutine.
