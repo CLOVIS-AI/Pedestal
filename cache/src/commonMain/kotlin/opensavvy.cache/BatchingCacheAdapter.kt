@@ -10,7 +10,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import opensavvy.logger.Logger.Companion.error
 import opensavvy.logger.loggerFor
-import opensavvy.state.Identifier
 import opensavvy.state.slice.Slice
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -25,7 +24,7 @@ private typealias CacheStorage<T> = CompletableDeferred<StateFlow<Slice<T>?>>
  *
  * Unlike [CacheAdapter], this class is able to group requests together.
  */
-class BatchingCacheAdapter<I : Identifier, T>(
+class BatchingCacheAdapter<I, T>(
 	context: CoroutineContext,
 	/**
 	 * The number of workers batching the requests.
@@ -135,7 +134,7 @@ class BatchingCacheAdapter<I : Identifier, T>(
 	}
 
 	companion object {
-		fun <I : Identifier, T> batchingCache(
+		fun <I, T> batchingCache(
 			context: CoroutineContext,
 			workers: Int = 1,
 			transform: suspend FlowCollector<Pair<I, Slice<T>>>.(Set<I>) -> Unit,

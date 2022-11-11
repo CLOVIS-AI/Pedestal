@@ -20,7 +20,7 @@ import kotlin.test.assertNotEquals
 
 class SliceTest {
 
-	private data class IntId(val id: Int) : Identifier {
+	private data class IntId(val id: Int) {
 
 		suspend fun request() = slice {
 			val id = this@IntId
