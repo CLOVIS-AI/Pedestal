@@ -90,6 +90,8 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 				else -> call.receive()
 			}
 
+			call.advertiseEndpointsFor(operation, id)
+
 			slice {
 				operation.validate(id, body, params, context).bind()
 

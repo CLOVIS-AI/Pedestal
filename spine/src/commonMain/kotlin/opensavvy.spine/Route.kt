@@ -106,5 +106,11 @@ data class Route(val segments: List<Segment>) {
 		@Suppress("RemoveRedundantQualifierName") // could be declared on Companion, but I think it's easier to read this way
 		operator fun Route.Companion.div(id: String) = Route(listOf(Segment(id)))
 
+		/**
+		 * Shorthand to create a top-level route named [id] (its parent is the [Root]).
+		 */
+		@Suppress("RemoveRedundantQualifierName") // could be declared on Companion, but I think it's easier to read this way
+		operator fun Route.Companion.div(id: Segment) = Route(listOf(id))
+
 	}
 }
