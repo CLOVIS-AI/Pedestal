@@ -75,6 +75,9 @@ sealed class ResourceGroup {
 		 */
 		abstract val parent: ResourceGroup
 
+		protected val _operations = ArrayList<Operation<*, *, *, *, Context>>()
+		val operations: List<Operation<*, *, *, *, Context>> get() = _operations
+
 		/**
 		 * Validates that [id] identifies this resource.
 		 */
@@ -128,37 +131,35 @@ sealed class ResourceGroup {
 		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
 			validate: OperationValidator<In, Params, Context> = { },
-		): Operation<O, In, Identified<Out>, Params, Context> = Operation(this, Operation.Kind.Create, route, validate)
+		) = Operation<O, In, Identified<Out>, Params, Context>(this, Operation.Kind.Create, route, validate)
+			.apply { _operations += this }
 
 		protected fun <In : Any, Params : Parameters> edit(
 			route: Route? = null,
 			validate: OperationValidator<In, Params, Context> = { },
-		): Operation<O, In, Unit, Params, Context> =
-			Operation(this, Operation.Kind.Edit, route) {
-				validateCorrectId(id)
-				validateId(id, context)
-				Operation.ValidatorScope(this, id, body, parameters, context).validate()
-			}
+		) = Operation<O, In, Unit, Params, Context>(this, Operation.Kind.Edit, route) {
+			validateCorrectId(id)
+			validateId(id, context)
+			Operation.ValidatorScope(this, id, body, parameters, context).validate()
+		}.apply { _operations += this }
 
 		protected fun <In : Any, Out : Any, Params : Parameters> action(
 			route: Route,
 			validate: OperationValidator<In, Params, Context> = { },
-		): Operation<O, In, Out, Params, Context> =
-			Operation(this, Operation.Kind.Action, route) {
-				validateCorrectId(id)
-				validateId(id, context)
-				Operation.ValidatorScope(this, id, body, parameters, context).validate()
-			}
+		) = Operation<O, In, Out, Params, Context>(this, Operation.Kind.Action, route) {
+			validateCorrectId(id)
+			validateId(id, context)
+			Operation.ValidatorScope(this, id, body, parameters, context).validate()
+		}.apply { _operations += this }
 
 		protected fun <In : Any> delete(
 			route: Route? = null,
 			validate: OperationValidator<In, Parameters.Empty, Context> = { },
-		): Operation<O, In, Unit, Parameters.Empty, Context> =
-			Operation(this, Operation.Kind.Delete, route) {
-				validateCorrectId(id)
-				validateId(id, context)
-				Operation.ValidatorScope(this, id, body, parameters, context).validate()
-			}
+		) = Operation<O, In, Unit, Parameters.Empty, Context>(this, Operation.Kind.Delete, route) {
+			validateCorrectId(id)
+			validateId(id, context)
+			Operation.ValidatorScope(this, id, body, parameters, context).validate()
+		}.apply { _operations += this }
 
 		/**
 		 * Instantiates an [Id] for this resource.
@@ -217,7 +218,7 @@ sealed class ResourceGroup {
 				validateCorrectId(id)
 				validateId(id, context)
 				validateGetParams(id, parameters, context)
-			}
+			}.apply { _operations += this }
 
 		final override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/$route"
 
@@ -257,7 +258,7 @@ sealed class ResourceGroup {
 		val get = Operation<O, Unit, O, Parameters.Empty, Context>(this, Operation.Kind.Read) {
 			validateCorrectId(id)
 			validateId(id, context)
-		}
+		}.apply { _operations += this }
 
 		final override val routeTemplate get() = "${this@ResourceGroup.routeTemplate}/{$name}"
 

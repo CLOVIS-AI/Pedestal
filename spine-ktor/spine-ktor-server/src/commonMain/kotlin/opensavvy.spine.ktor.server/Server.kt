@@ -8,7 +8,6 @@ import opensavvy.logger.Logger.Companion.warn
 import opensavvy.logger.loggerFor
 import opensavvy.spine.Operation
 import opensavvy.spine.Parameters
-import opensavvy.spine.ktor.NetworkResponse
 import opensavvy.spine.ktor.toHttp
 import opensavvy.state.slice.slice
 import kotlin.collections.component1
@@ -91,6 +90,8 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 				else -> call.receive()
 			}
 
+			call.advertiseEndpointsFor(operation, id)
+
 			slice {
 				operation.validate(id, body, params, context).bind()
 
@@ -102,12 +103,7 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 					call.respond(it.kind.toHttp(), it.message)
 				},
 				ifRight = {
-					call.respond(
-						NetworkResponse(
-							routes = emptyList(), //TODO in #22: advertise the endpoints
-							value = it,
-						)
-					)
+					call.respond(it)
 				}
 			)
 		}

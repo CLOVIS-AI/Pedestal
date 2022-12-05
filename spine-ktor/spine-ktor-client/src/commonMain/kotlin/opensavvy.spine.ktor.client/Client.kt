@@ -9,7 +9,6 @@ import opensavvy.spine.Id
 import opensavvy.spine.Operation
 import opensavvy.spine.Parameters
 import opensavvy.spine.ResourceGroup.AbstractResource
-import opensavvy.spine.ktor.NetworkResponse
 import opensavvy.spine.ktor.toHttp
 import opensavvy.spine.ktor.toSpine
 import opensavvy.state.Failure
@@ -95,8 +94,7 @@ suspend inline fun <Resource : Any, reified In : Any, reified Out : Any, reified
 	report(loading(0.95))
 
 	if (result.status.isSuccess()) {
-		val response: NetworkResponse<Out> = result.body()
-		response.value
+		result.body<Out>()
 	} else {
 		val body = result.body<String>().ifBlank { "${result.status} with no provided body" }
 		val kind = result.status.toSpine()
