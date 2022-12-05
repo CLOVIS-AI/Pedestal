@@ -21,59 +21,26 @@ workflow:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
 
-.publish:
+publish:
   image: archlinux:base
+  stage: publish
   script:
     - pacman -Syu --noconfirm git jre-openjdk-headless
     - export JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v java))))
-    - ./gradlew $module:publishKotlinMultiplatformPublicationToGitLabRepository $module:publishJvmPublicationToGitLabRepository $module:publishJsPublicationToGitLabRepository
+    - >
+      ./gradlew 
+      logger:publishAllPublicationsToGitLabRepository
+      state:publishAllPublicationsToGitLabRepository
+      cache:publishAllPublicationsToGitLabRepository
+      backbone:publishAllPublicationsToGitLabRepository
+      logger:publishAllPublicationsToGitLabRepository
+      spine:publishAllPublicationsToGitLabRepository
+      spine-ktor:publishAllPublicationsToGitLabRepository
+      spine-ktor:spine-ktor-client:publishAllPublicationsToGitLabRepository
+      spine-ktor:spine-ktor-server:publishAllPublicationsToGitLabRepository
   rules:
     - if: $CI_COMMIT_TAG
   interruptible: false
-
-logger:publish:
-  extends: [ .publish ]
-  variables:
-    module: logger
-
-state:publish:
-  extends: [ .publish ]
-  variables:
-    module: state
-
-cache:publish:
-  extends: [ .publish ]
-  variables:
-    module: cache
-
-backbone:publish:
-  extends: [ .publish ]
-  variables:
-    module: backbone
-
-spine:publish:
-  extends: [ .publish ]
-  variables:
-    module: spine
-
-spine-ktor:publish:
-  extends: [ .publish ]
-  variables:
-    module: spine-ktor
-
-spine-ktor-client:publish:
-  extends: [ .publish ]
-  variables:
-    module: spine-ktor:spine-ktor-client
-
-spine-ktor-server:publish:
-  extends: [ .publish ]
-  script:
-    - pacman -Syu --noconfirm git jre-openjdk-headless
-    - export JAVA_HOME=$(dirname $(dirname $(readlink -f $(command -v java))))
-    - ./gradlew $module:publishKotlinMultiplatformPublicationToGitLabRepository $module:publishJvmPublicationToGitLabRepository
-  variables:
-    module: spine-ktor:spine-ktor-server
 
 .test-jvm:
   image: openjdk:latest
