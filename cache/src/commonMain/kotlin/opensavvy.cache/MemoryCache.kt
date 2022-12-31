@@ -95,7 +95,7 @@ class MemoryCache<I, T>(
 	}
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
-		log.trace(values) { "updateAll" }
+		log.trace(values) { "update" }
 
 		jobsLock.withPermit {
 			for ((id, _) in values) {
@@ -113,7 +113,7 @@ class MemoryCache<I, T>(
 	}
 
 	override suspend fun expire(ids: Collection<I>) {
-		log.trace(ids) { "expireAll" }
+		log.trace(ids) { "expire" }
 
 		jobsLock.withPermit {
 			for (id in ids) {
