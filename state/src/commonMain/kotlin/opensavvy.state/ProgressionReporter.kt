@@ -102,6 +102,8 @@ abstract class ProgressionReporter : AbstractCoroutineContextElement(Key) {
 			override suspend fun emit(progression: Progression) {
 				callback(progression)
 			}
+
+			override fun toString() = "ProgressionReporter.Callback@${hashCode().toString(16)}"
 		}
 
 		/**
