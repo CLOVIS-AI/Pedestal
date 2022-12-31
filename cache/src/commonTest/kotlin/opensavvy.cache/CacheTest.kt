@@ -16,6 +16,8 @@ import opensavvy.logger.loggerFor
 import opensavvy.state.*
 import opensavvy.state.Progression.Companion.loading
 import opensavvy.state.ProgressionReporter.Companion.report
+import opensavvy.state.progressive.ProgressiveSlice
+import opensavvy.state.progressive.firstValue
 import opensavvy.state.slice.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -182,9 +184,9 @@ class CacheTest {
 	fun batching() = runTest {
 		val cache = batchingCache<IntId, Int>(coroutineContext) { ids ->
 			for (ref in ids) {
-				report(loading())
+				emit(ref to ProgressiveSlice.Empty(loading()))
 				delay(10)
-				emit(ref to successful(ref.id))
+				emit(ref to ProgressiveSlice.Success(ref.id))
 			}
 		}
 			.cachedInMemory(coroutineContext)

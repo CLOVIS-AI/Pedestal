@@ -3,8 +3,9 @@ package opensavvy.cache
 import arrow.core.continuations.EffectScope
 import arrow.core.continuations.either
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import opensavvy.state.Failure
+import opensavvy.state.progressive.ProgressiveSlice
+import opensavvy.state.progressive.captureProgress
 import opensavvy.state.slice.Slice
 
 /**
@@ -17,7 +18,7 @@ class CacheAdapter<I, T>(
 	val query: suspend (I) -> Slice<T>,
 ) : Cache<I, T> {
 
-	override fun get(id: I): Flow<Slice<T>> = flow { emit(query(id)) }
+	override fun get(id: I): Flow<ProgressiveSlice<T>> = captureProgress { query(id) }
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
 		// This cache layer has no state, nothing to do

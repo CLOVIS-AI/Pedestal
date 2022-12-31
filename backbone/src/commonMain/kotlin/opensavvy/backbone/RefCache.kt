@@ -1,10 +1,13 @@
 package opensavvy.backbone
 
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import opensavvy.backbone.Ref.Companion.directRequest
 import opensavvy.cache.BatchingCacheAdapter
 import opensavvy.cache.Cache
 import opensavvy.cache.CacheAdapter
+import opensavvy.state.progressive.captureProgress
 import kotlin.coroutines.CoroutineContext
 
 typealias RefCache<O> = Cache<Ref<O>, O>
@@ -25,7 +28,10 @@ fun <O> batchingRefCache(context: CoroutineContext, workers: Int = 1) =
 			for ((backbone, refs) in backbones) {
 				val results = backbone.batchRequests(refs.toHashSet())
 				for ((ref, result) in results) {
-					emit(ref to result())
+					emitAll(
+						captureProgress { result() }
+							.map { ref to it }
+					)
 				}
 			}
 		}

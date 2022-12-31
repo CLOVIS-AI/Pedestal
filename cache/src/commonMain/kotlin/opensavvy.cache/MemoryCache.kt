@@ -7,11 +7,8 @@ import kotlinx.coroutines.sync.withPermit
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
-import opensavvy.state.Progression
 import opensavvy.state.ProgressionReporter.Companion.progressionReporter
-import opensavvy.state.ProgressionReporter.Companion.report
-import opensavvy.state.slice.Slice
-import opensavvy.state.slice.successful
+import opensavvy.state.progressive.ProgressiveSlice
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -50,7 +47,7 @@ class MemoryCache<I, T>(
 	 * - 'expire' removed the cached value
 	 */
 
-	private val cache = HashMap<I, MutableStateFlow<Pair<Slice<T>, Progression>?>>()
+	private val cache = HashMap<I, MutableStateFlow<ProgressiveSlice<T>?>>()
 	private val cacheLock = Semaphore(1)
 
 	private val jobs = HashMap<I, Job>()
@@ -62,7 +59,7 @@ class MemoryCache<I, T>(
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
 
-	override fun get(id: I): Flow<Slice<T>> = flow {
+	override fun get(id: I): Flow<ProgressiveSlice<T>> = flow {
 		val cached = cacheLock.withPermit { getUnsafe(id) }
 			.onEach { slice ->
 				if (slice == null) {
@@ -83,7 +80,6 @@ class MemoryCache<I, T>(
 								val state = cacheLock.withPermit { getUnsafe(id) }
 
 								upstream[id]
-									.zip(reporter.progress) { value, progress -> value to progress }
 									.onEach { log.trace(it) { "Event" } }
 									.onEach { state.value = it }
 									.collect()
@@ -94,10 +90,7 @@ class MemoryCache<I, T>(
 			}
 			.filterNotNull() // 'null' is an internal value, it shouldn't be returned to downstream users
 
-		cached.collect { (slice, progression) ->
-			report(progression)
-			emit(slice)
-		}
+		emitAll(cached)
 	}
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
@@ -111,7 +104,7 @@ class MemoryCache<I, T>(
 
 		cacheLock.withPermit {
 			for ((id, value) in values) {
-				getUnsafe(id).value = successful(value) to Progression.done()
+				getUnsafe(id).value = ProgressiveSlice.Success(value)
 			}
 		}
 
