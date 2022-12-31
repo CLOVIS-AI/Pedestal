@@ -67,30 +67,34 @@ class MemoryCache<I, T>(
 					// However, multiple subscribers may see this event at the same time.
 					// One of the subscribers becomes responsible for making the request
 
-					jobsLock.withPermit {
-						val job = jobs[id]
-						if (job == null || !job.isActive) {
-							// No one is currently making the request, I'm taking the responsibility to do it
-
-							val reporter = progressionReporter()
-
-							jobs[id] = scope.launch(CoroutineName("${this@MemoryCache} for $id") + reporter) {
-								log.trace(id) { "Subscribing to the previous layer for" }
-
-								val state = cacheLock.withPermit { getUnsafe(id) }
-
-								upstream[id]
-									.onEach { log.trace(it) { "Event" } }
-									.onEach { state.value = it }
-									.collect()
-							}
-						}
-					}
+					attemptTakeResponsibilityPingUpstream(id)
 				}
 			}
 			.filterNotNull() // 'null' is an internal value, it shouldn't be returned to downstream users
 
 		emitAll(cached)
+	}
+
+	private suspend fun attemptTakeResponsibilityPingUpstream(id: I) {
+		jobsLock.withPermit {
+			val job = jobs[id]
+			if (job == null || !job.isActive) {
+				// No one is currently making the request, I'm taking the responsibility to do it
+
+				val reporter = progressionReporter()
+
+				jobs[id] = scope.launch(CoroutineName("${this@MemoryCache} for $id") + reporter) {
+					log.trace(id) { "Subscribing to the previous layer for" }
+
+					val state = cacheLock.withPermit { getUnsafe(id) }
+
+					upstream[id]
+						.onEach { log.trace(it) { "Event" } }
+						.onEach { state.value = it }
+						.collect()
+				}
+			} // else: someone else has taken the responsibility to start the request, I don't need to do anything
+		}
 	}
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
@@ -130,8 +134,9 @@ class MemoryCache<I, T>(
 					// No one cares about the value, we can free it
 					cache.remove(id)
 				} else {
-					// At least one person is subscribed to the value, let's notify them that it's out-of-date
-					cached.value = null
+					// At least one person is subscribed to the value, but we just cancelled ongoing requests,
+					// let's start a new one
+					attemptTakeResponsibilityPingUpstream(id)
 				}
 			}
 		}
@@ -155,8 +160,9 @@ class MemoryCache<I, T>(
 					// No one cares about the value, we can free it
 					toRemove += id
 				} else {
-					// At least one person is subscribed to the value, let's notify them that it's out-of-date
-					cached.value = null
+					// At least one person is subscribed to the value, but we just cancelled ongoing requests,
+					// let's start a new one
+					attemptTakeResponsibilityPingUpstream(id)
 				}
 			}
 
