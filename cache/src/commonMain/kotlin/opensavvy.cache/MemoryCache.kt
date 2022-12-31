@@ -8,6 +8,7 @@ import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.state.progressive.ProgressiveSlice
+import opensavvy.state.progressive.copy
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -72,7 +73,7 @@ class MemoryCache<I, T>(
 			.filterNotNull() // 'null' is an internal value, it shouldn't be returned to downstream users
 
 		emitAll(cached)
-	}
+	}.onEach { log.trace(it) { "Emit value for $id ->" } }
 
 	private suspend fun attemptTakeResponsibilityPingUpstream(id: I) {
 		jobsLock.withPermit {
@@ -86,7 +87,17 @@ class MemoryCache<I, T>(
 					val state = cacheLock.withPermit { getUnsafe(id) }
 
 					upstream[id]
-						.onEach { log.trace(it) { "Event" } }
+						.onEach { log.trace(it) { "Prev value for $id ->" } }
+						.map {
+							val previousValue = state.value
+
+							// If the previous cache layer says it's a new value, but we remember what the previous
+							// result was, we return the previous value with the new progress information
+							if (it is ProgressiveSlice.Empty && previousValue != null)
+								previousValue.copy(progress = it.progress)
+							else
+								it
+						}
 						.onEach { state.value = it }
 						.collect()
 				}

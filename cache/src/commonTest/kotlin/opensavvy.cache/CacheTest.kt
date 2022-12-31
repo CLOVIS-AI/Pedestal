@@ -214,4 +214,42 @@ class CacheTest {
 		currentCoroutineContext().cancelChildren()
 	}
 
+	@Test
+	fun concurrent() = runTest {
+		val cache = adapter()
+			.cachedInMemory(coroutineContext)
+
+		var result: ProgressiveSlice<Int> = ProgressiveSlice.Empty()
+
+		log.info { "Subscribing…" }
+		launch {
+			cache[IntId(1)]
+				.collect { result = it }
+		}
+		// Wait for the first cache read to finish
+		delay(1000)
+		while (result is ProgressiveSlice.Empty) {
+			yield()
+		}
+		assertEquals(ProgressiveSlice.Success(1), result)
+
+		log.info { "Forcing an update with an incorrect value" }
+		cache.update(IntId(1), 5)
+		// Wait for the cache to update
+		while (result == ProgressiveSlice.Success(1) || result.progress !is Progression.Done) {
+			yield()
+		}
+		assertEquals(ProgressiveSlice.Success(5), result)
+
+		log.info { "Expiring the value to see the cache fix itself" }
+		cache.expire(IntId(1))
+		// Wait for the cache to update
+		while (result == ProgressiveSlice.Success(5) || result.progress !is Progression.Done) {
+			yield()
+		}
+		assertEquals(ProgressiveSlice.Success(1), result)
+
+		currentCoroutineContext().cancelChildren()
+	}
+
 }
