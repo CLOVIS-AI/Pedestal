@@ -14,6 +14,39 @@ This project contains the following modules:
 Pedestal focuses heavily on Kotlin and depends on some KotlinX libraries (e.g. Coroutines).
 Apart from that, Pedestal tries to be as agnostic of the technology as possible: for example, Spine APIs can be implemented with any web client or server framework (the Ktor implementation is available out of the box).
 
+## In the wild
+
+OpenSavvy Pedestal is used by these projects:
+
+- [Formulaide](https://gitlab.com/opensavvy/formulaide) is a web form editor with integrated workflow management,
+- [Decouple](https://gitlab.com/opensavvy/decouple) is a Kotlin Multiplatform UI framework aiming to decouple design systems from UI logic.
+
+## Using in your own projects
+
+You can easily add any module using Gradle:
+
+```kotlin
+// First, add the OpenSavvy repository
+repositories {
+	maven {
+		name = "OpenSavvy Pedestal"
+		url = uri("https://gitlab.com/api/v4/projects/37325377/packages/maven")
+	}
+}
+
+// You can now add a dependency on the various modules:
+dependencies {
+	implementation("opensavvy:backbone:<the version you want>")
+}
+```
+
+Currently, we only publish builds for Kotlin/JVM and Kotlin/JS (IR only).
+This project has very little platform-specific code, and would be easy to port to any other platform—we just don't have the need for it.
+If you are interested in another platform, we encourage contributions that add the relevant CI configuration to test and deploy for that platform.
+
+- [Release list](https://gitlab.com/opensavvy/pedestal/-/releases)
+- [Artifact list](https://gitlab.com/opensavvy/pedestal/-/packages)
+
 ## Development
 
 Pedestal is managed by Gradle, which requires a valid Java installation.
