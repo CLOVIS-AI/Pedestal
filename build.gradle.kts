@@ -1,3 +1,5 @@
+import java.net.URL
+
 plugins {
 	kotlin("multiplatform") apply false
 	id("com.palantir.git-version")
@@ -44,6 +46,23 @@ allprojects {
 				}
 			else
 				logger.debug("The GitLab registry is disabled because credentials are missing.")
+		}
+	}
+
+	tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
+		dokkaSourceSets.configureEach {
+			externalDocumentationLink {
+				url.set(URL("https://kotlinlang.org/api/kotlinx.coroutines/"))
+			}
+			externalDocumentationLink {
+				url.set(URL("https://kotlinlang.org/api/kotlinx.serialization/"))
+			}
+			externalDocumentationLink {
+				url.set(URL("https://www.slf4j.org/apidocs/index.html"))
+			}
+			externalDocumentationLink {
+				url.set(URL("https://api.ktor.io/"))
+			}
 		}
 	}
 }
