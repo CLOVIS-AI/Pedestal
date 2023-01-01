@@ -2,7 +2,7 @@ package opensavvy.logger
 
 import org.slf4j.LoggerFactory
 
-private class SlfLogger(self: Any): Logger {
+private class SlfLogger(self: Any) : Logger {
 	override var level = LogLevel.default
 	private val logger = LoggerFactory.getLogger(self::class.java)
 		?: error("Could not find a logger for ${self::class.java}")

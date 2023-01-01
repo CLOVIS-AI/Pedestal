@@ -89,7 +89,6 @@ data class Route(val segments: List<Segment>) {
 		 */
 		operator fun Route.div(id: String) = Route(segments + Segment(id))
 
-
 		/**
 		 * Shorthand to create a sub-route named [id] from the current route.
 		 */
