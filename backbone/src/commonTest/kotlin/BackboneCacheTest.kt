@@ -7,10 +7,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runTest
 import opensavvy.backbone.Ref.Companion.expire
 import opensavvy.backbone.Ref.Companion.request
+import opensavvy.state.outcome.ensureValid
+import opensavvy.state.outcome.orThrow
+import opensavvy.state.outcome.out
 import opensavvy.state.progressive.firstValue
-import opensavvy.state.slice.ensureValid
-import opensavvy.state.slice.orThrow
-import opensavvy.state.slice.slice
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -18,7 +18,7 @@ class BackboneCacheTest {
 
 	// Id("12") -> 12
 	private class Bone(override val cache: RefCache<Int>) : Backbone<Int> {
-		override suspend fun directRequest(ref: Ref<Int>) = slice {
+		override suspend fun directRequest(ref: Ref<Int>) = out {
 			ensureValid(ref is Ref.Basic) { "Only basic references are accepted by ${this@Bone}" }
 			val int = ref.id.toIntOrNull()
 			ensureValid(int != null) { "The reference $ref does not refer to a valid integer" }

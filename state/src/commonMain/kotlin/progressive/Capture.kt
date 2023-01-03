@@ -5,12 +5,12 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import opensavvy.state.Progression
 import opensavvy.state.ProgressionReporter
-import opensavvy.state.slice.Slice
+import opensavvy.state.outcome.Outcome
 
-private val ProducerScope<ProgressiveSlice<Nothing>>.progressExtractor: ProgressionReporter
+private val ProducerScope<ProgressiveOutcome<Nothing>>.progressExtractor: ProgressionReporter
 	get() = ProgressionReporter.callbackReporter {
 		if (it is Progression.Loading)
-			send(ProgressiveSlice.Empty(it))
+			send(ProgressiveOutcome.Empty(it))
 		// else: the action has reported that it's over, but the results haven't reached us yet, they'll probably
 		//       arrive just afterwards
 	}
@@ -20,9 +20,9 @@ private val ProducerScope<ProgressiveSlice<Nothing>>.progressExtractor: Progress
  *
  * Because flows cannot emit from multiple coroutines, the implementation of this function requires the usage
  * of channels, which are more expensive.
- * If possible, prefer using the [progressiveSlice] builder.
+ * If possible, prefer using the [progressive] builder.
  */
-fun <T> Flow<Slice<T>>.captureProgress() = channelFlow {
+fun <T> Flow<Outcome<T>>.captureProgress() = channelFlow {
 	this@captureProgress
 		.flowOn(progressExtractor)
 		.map { it.withProgress() }
@@ -35,9 +35,9 @@ fun <T> Flow<Slice<T>>.captureProgress() = channelFlow {
  *
  * Because flows cannot emit from multiple coroutines, the implementation of this function requires the usage
  * of channels, which are more expensive.
- * If possible, prefer using the [progressiveSlice] builder.
+ * If possible, prefer using the [progressive] builder.
  */
-fun <T> captureProgress(block: suspend () -> Slice<T>) = channelFlow {
+fun <T> captureProgress(block: suspend () -> Outcome<T>) = channelFlow {
 	withContext(progressExtractor) {
 		send(block().withProgress())
 	}

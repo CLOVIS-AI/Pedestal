@@ -11,7 +11,7 @@ import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
-import opensavvy.state.progressive.ProgressiveSlice
+import opensavvy.state.progressive.ProgressiveOutcome
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
@@ -83,7 +83,7 @@ class ExpirationCache<I, T>(
 		}
 	}
 
-	override fun get(id: I): Flow<ProgressiveSlice<T>> = upstream[id]
+	override fun get(id: I): Flow<ProgressiveOutcome<T>> = upstream[id]
 		.onEach { markAsUpdatedNow(id) }
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {

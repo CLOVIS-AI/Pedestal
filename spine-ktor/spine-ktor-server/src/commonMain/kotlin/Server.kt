@@ -9,7 +9,7 @@ import opensavvy.logger.loggerFor
 import opensavvy.spine.Operation
 import opensavvy.spine.Parameters
 import opensavvy.spine.ktor.toHttp
-import opensavvy.state.slice.slice
+import opensavvy.state.outcome.out
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -92,7 +92,7 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 
 			call.advertiseEndpointsFor(operation, id)
 
-			slice {
+			out {
 				operation.validate(id, body, params, context).bind()
 
 				val responseBuilder = ResponseStateBuilder(this, id, body, params, call, context)

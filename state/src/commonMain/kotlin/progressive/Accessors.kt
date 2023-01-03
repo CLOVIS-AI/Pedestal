@@ -5,35 +5,35 @@ import arrow.core.right
 import kotlinx.coroutines.flow.*
 import opensavvy.state.Progression
 import opensavvy.state.ProgressionReporter.Companion.report
-import opensavvy.state.progressive.ProgressiveSlice.*
-import opensavvy.state.progressive.ProgressiveSlice.Companion.component1
-import opensavvy.state.progressive.ProgressiveSlice.Companion.component2
-import opensavvy.state.slice.Slice
+import opensavvy.state.outcome.Outcome
+import opensavvy.state.progressive.ProgressiveOutcome.*
+import opensavvy.state.progressive.ProgressiveOutcome.Companion.component1
+import opensavvy.state.progressive.ProgressiveOutcome.Companion.component2
 
 //region Regular
 
 /**
- * Returns [Success.value], or `null` if this slice is not successful.
+ * Returns [Success.value], or `null` if this outcome is not successful.
  */
-val <T : Any> ProgressiveSlice<T>.valueOrNull: T?
+val <T : Any> ProgressiveOutcome<T>.valueOrNull: T?
 	get() = (this as? Success<T>)?.value
 
 /**
- * Returns [Failure.failure], or `null` if this slice is not a failure.
+ * Returns [Failure.failure], or `null` if this outcome is not a failure.
  */
-val ProgressiveSlice<*>.failureOrNull: opensavvy.state.Failure?
+val ProgressiveOutcome<*>.failureOrNull: opensavvy.state.Failure?
 	get() = (this as? Failure)?.failure
 
 /**
- * Converts this progressive slice into a [regular slice][Slice].
+ * Converts this progressive outcome into a [regular outcome][Outcome].
  *
- * Because regular slices do not have a concept of progression, the progress information is lost.
- * To access both the slice and the progression information, consider using destructuration instead:
+ * Because regular outcomes do not have a concept of progression, the progress information is lost.
+ * To access both the outcome and the progression information, consider using destructuration instead:
  * ```kotlin
- * val (slice, progression) = /* ProgressiveSlice */
+ * val (outcome, progression) = /* ProgressiveOutcome */
  * ```
  */
-fun <T> ProgressiveSlice<T>.asSlice(): Slice<T>? = when (this) {
+fun <T> ProgressiveOutcome<T>.asOutcome(): Outcome<T>? = when (this) {
 	is Empty -> null
 	is Success -> value.right()
 	is Failure -> failure.left()
@@ -47,9 +47,9 @@ fun <T> ProgressiveSlice<T>.asSlice(): Slice<T>? = when (this) {
  *
  * All progress information is re-emitted in the calling flow.
  */
-fun <T> Flow<ProgressiveSlice<T>>.filterDone() = onEach { report(it.progress) }
+fun <T> Flow<ProgressiveOutcome<T>>.filterDone() = onEach { report(it.progress) }
 	.filter { it.progress == Progression.done() }
-	.mapNotNull { it.asSlice() }
+	.mapNotNull { it.asOutcome() }
 
 /**
  * Suspends until the first finished value is available (success or failure).
@@ -58,13 +58,13 @@ fun <T> Flow<ProgressiveSlice<T>>.filterDone() = onEach { report(it.progress) }
  *
  * @throws NoSuchElementException if the flow has no finished elements.
  */
-suspend fun <T> Flow<ProgressiveSlice<T>>.firstValue() = filterDone()
+suspend fun <T> Flow<ProgressiveOutcome<T>>.firstValue() = filterDone()
 	.first()
 
 /**
- * Splits this progressive slice into its slice and progress information.
+ * Splits this progressive outcome into its outcome and progress information.
  */
-fun <T> Flow<ProgressiveSlice<T>>.asSlices(): Flow<Pair<Slice<T>?, Progression>> =
-	map { (slice, progress) -> slice to progress }
+fun <T> Flow<ProgressiveOutcome<T>>.asOutcomeAndProgress(): Flow<Pair<Outcome<T>?, Progression>> =
+	map { (out, progress) -> out to progress }
 
 //endregion

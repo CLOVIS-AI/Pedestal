@@ -1,6 +1,6 @@
 package opensavvy.backbone
 
-import opensavvy.state.slice.Slice
+import opensavvy.state.outcome.Outcome
 
 /**
  * A common interface for API endpoints.
@@ -24,7 +24,7 @@ interface Backbone<O> {
 	 * This function completely bypasses the [cache]: a request will be sent everytime it is called.
 	 * To avoid sending unnecessary requests, use [request] instead.
 	 */
-	suspend fun directRequest(ref: Ref<O>): Slice<O>
+	suspend fun directRequest(ref: Ref<O>): Outcome<O>
 
 	/**
 	 * Fetches the value associated with all [refs] in an external media (e.g. a remote server, a database).
@@ -39,7 +39,7 @@ interface Backbone<O> {
 	 *
 	 * The default implementation simply calls [directRequest] sequentially.
 	 */
-	fun batchRequests(refs: Set<Ref<O>>): Map<Ref<O>, suspend () -> Slice<O>> = refs
+	fun batchRequests(refs: Set<Ref<O>>): Map<Ref<O>, suspend () -> Outcome<O>> = refs
 		.map { it to suspend { directRequest(it) } }
 		.associate { it }
 

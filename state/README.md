@@ -15,8 +15,8 @@ suspend fun setPassword(
 	oldPassword: String,
 	repeatOldPassword: String,
 	newPassword: String,
-) = slice {
-	// The 'slice' builder is essentially the same as the 'either {}' block, 
+) = out {
+	// The 'out' builder is essentially the same as the 'either {}' block, 
 	// except it intercepts some exceptions used in idiomatic Kotlin 
 	// (IllegalArgumentException…)
 
@@ -57,10 +57,10 @@ You can also create your own progress type to store any kind of additional infor
 
 Centralized [Failure][opensavvy.state.Failure] management as well as [Progression][opensavvy.state.Progression] APIs to represent ongoing operations and their current state.
 
-# Package opensavvy.state.slice
+# Package opensavvy.state.outcome
 
-Utilities for the [Slice][opensavvy.state.slice.Slice] type, allowing to embed typed error management directly into the API without using exceptions.
+Utilities for the [Outcome][opensavvy.state.outcome.Outcome] type, allowing to embed typed error management directly into the API without using exceptions.
 
 # Package opensavvy.state.progressive
 
-The [ProgressiveSlice][opensavvy.state.progressive.ProgressiveSlice], which combines [Slice][opensavvy.state.slice.Slice] with [Progression][opensavvy.state.Progression].
+The [ProgressiveOutcome][opensavvy.state.progressive.ProgressiveOutcome], which combines [Outcome][opensavvy.state.outcome.Outcome] with [Progression][opensavvy.state.Progression].

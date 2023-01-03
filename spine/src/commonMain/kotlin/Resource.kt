@@ -4,7 +4,7 @@ import arrow.core.continuations.EffectScope
 import opensavvy.spine.ResourceGroup.AbstractResource
 import opensavvy.spine.Route.Companion.div
 import opensavvy.state.Failure
-import opensavvy.state.slice.ensureValid
+import opensavvy.state.outcome.ensureValid
 
 /**
  * Common ancestor of [Service] and [AbstractResource].

@@ -12,8 +12,8 @@ import opensavvy.backbone.Ref.Companion.request
 import opensavvy.backbone.defaultRefCache
 import opensavvy.spine.Route.Companion.div
 import opensavvy.state.*
+import opensavvy.state.outcome.*
 import opensavvy.state.progressive.firstValue
-import opensavvy.state.slice.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -114,7 +114,7 @@ class ServiceTest {
 			users["1"] = User("Admin", admin = true)
 		}
 
-		override suspend fun directRequest(ref: Ref<User>) = slice {
+		override suspend fun directRequest(ref: Ref<User>) = out {
 			ensureValid(ref is Ref.Basic) { "The reference type ${ref::class} is not supported by UserBone" }
 
 			val result = users[ref.id]
@@ -137,7 +137,7 @@ class ServiceTest {
 		val id1 = endpoint.idOf("0")
 		assertEquals(
 			successful(User("Employee", false)),
-			slice {
+			out {
 				endpoint.validate(id1, Unit, Parameters.Empty, employee).bind()
 				employee.user.request().firstValue().bind()
 			}

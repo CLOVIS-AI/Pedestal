@@ -1,4 +1,4 @@
-package opensavvy.state.slice
+package opensavvy.state.outcome
 
 import arrow.core.continuations.EffectScope
 import arrow.core.continuations.either
@@ -8,7 +8,7 @@ import opensavvy.state.Failure
 /**
  * Performs some calculation which may fail.
  */
-suspend fun <T> slice(block: suspend EffectScope<Failure>.() -> T): Slice<T> =
+suspend fun <T> out(block: suspend EffectScope<Failure>.() -> T): Outcome<T> =
 	try {
 		either(block)
 	} catch (e: Failure.FailureException) {

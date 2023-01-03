@@ -52,13 +52,13 @@ data class Score(
 		//   (this is necessary to ensure the cache catches all requests,
 		//   the 'directRequest' method should be the only one which returns
 		//   a real object).
-		// - return a Slice or ProgressiveSlice instance for error management
+		// - return an Outcome or ProgressiveOutcome instance for error management
 		//   (see the documentation of Pedestal State).
-		suspend fun increment(score: Ref, amount: Int = 1): Slice<Unit>
+		suspend fun increment(score: Ref, amount: Int = 1): Outcome<Unit>
 
 		// Using the same rules, we see that search operations
 		// return references instead of returning the value directly.
-		suspend fun listMine(): Slice<List<Ref>>
+		suspend fun listMine(): Outcome<List<Ref>>
 	}
 
 	// We can now declare references to a specific score.
@@ -115,7 +115,7 @@ class ClientScores(
 		.cachedInMemory(coroutineContext)
 		.expireAfter(15.minutes, coroutineContext)
 
-	override suspend fun increment(score: Score.Ref, amount: Int) = slice {
+	override suspend fun increment(score: Score.Ref, amount: Int) = out {
 		// This is an imaginary HTTP client
 		// Of course, Pedestal does not care what you use to make your request.
 		// This could be anything you like.
@@ -137,7 +137,7 @@ class ClientScores(
 		// operation would have been necessary to call this function.
 	}
 
-	override suspend fun listMine() = slice {
+	override suspend fun listMine() = out {
 		client.get<List<Int>>("http://localhost:8080/myScores")
 			// convert the IDs to references linked to this 
 			// backbone implementation
@@ -153,7 +153,7 @@ class ClientScores(
 
 	// As mentioned previously, we must implement a way to access the value
 	// in case of cache miss:
-	override suspend fun directRequest(ref: Ref<Score>): slice {
+	override suspend fun directRequest(ref: Ref<Score>): out {
 		// Due to a limitation of our API, we must cast the reference
 		ensureValid(ref is Score.Ref) { "Found an unexpected reference type: $ref" }
 
@@ -211,7 +211,7 @@ fun ListScores(scores: Score.Service) {
 
 @Composable
 fun Score(score: Score.Ref) {
-	val value by remember { score.request().collectAsState(ProgressiveSlice.Empty()) }
+	val value by remember { score.request().collectAsState(ProgressiveOutcome.Empty()) }
 
 	value.onSuccess {
 		Text("Current score: ${it.value}")

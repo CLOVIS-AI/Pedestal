@@ -16,9 +16,9 @@ import opensavvy.logger.loggerFor
 import opensavvy.state.*
 import opensavvy.state.Progression.Companion.loading
 import opensavvy.state.ProgressionReporter.Companion.report
-import opensavvy.state.progressive.ProgressiveSlice
+import opensavvy.state.outcome.*
+import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.firstValue
-import opensavvy.state.slice.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
@@ -184,9 +184,9 @@ class CacheTest {
 	fun batching() = runTest {
 		val cache = batchingCache<IntId, Int>(coroutineContext) { ids ->
 			for (ref in ids) {
-				emit(ref to ProgressiveSlice.Empty(loading()))
+				emit(ref to ProgressiveOutcome.Empty(loading()))
 				delay(10)
-				emit(ref to ProgressiveSlice.Success(ref.id))
+				emit(ref to ProgressiveOutcome.Success(ref.id))
 			}
 		}
 			.cachedInMemory(coroutineContext)
@@ -219,7 +219,7 @@ class CacheTest {
 		val cache = adapter()
 			.cachedInMemory(coroutineContext)
 
-		var result: ProgressiveSlice<Int> = ProgressiveSlice.Empty()
+		var result: ProgressiveOutcome<Int> = ProgressiveOutcome.Empty()
 
 		log.info { "Subscribing…" }
 		launch {
@@ -228,26 +228,26 @@ class CacheTest {
 		}
 		// Wait for the first cache read to finish
 		delay(1000)
-		while (result is ProgressiveSlice.Empty) {
+		while (result is ProgressiveOutcome.Empty) {
 			yield()
 		}
-		assertEquals(ProgressiveSlice.Success(1), result)
+		assertEquals(ProgressiveOutcome.Success(1), result)
 
 		log.info { "Forcing an update with an incorrect value" }
 		cache.update(IntId(1), 5)
 		// Wait for the cache to update
-		while (result == ProgressiveSlice.Success(1) || result.progress !is Progression.Done) {
+		while (result == ProgressiveOutcome.Success(1) || result.progress !is Progression.Done) {
 			yield()
 		}
-		assertEquals(ProgressiveSlice.Success(5), result)
+		assertEquals(ProgressiveOutcome.Success(5), result)
 
 		log.info { "Expiring the value to see the cache fix itself" }
 		cache.expire(IntId(1))
 		// Wait for the cache to update
-		while (result == ProgressiveSlice.Success(5) || result.progress !is Progression.Done) {
+		while (result == ProgressiveOutcome.Success(5) || result.progress !is Progression.Done) {
 			yield()
 		}
-		assertEquals(ProgressiveSlice.Success(1), result)
+		assertEquals(ProgressiveOutcome.Success(1), result)
 
 		currentCoroutineContext().cancelChildren()
 	}

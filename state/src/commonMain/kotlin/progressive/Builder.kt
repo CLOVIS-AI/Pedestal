@@ -7,50 +7,50 @@ import kotlinx.coroutines.flow.flow
 import opensavvy.state.Failure
 import opensavvy.state.Progression
 import opensavvy.state.ProgressionReporter
-import opensavvy.state.slice.Slice
-import opensavvy.state.slice.slice
+import opensavvy.state.outcome.Outcome
+import opensavvy.state.outcome.out
 
 /**
- * Adds [progress] information to this slice to make it a [ProgressiveSlice].
+ * Adds [progress] information to this outcome to make it a [ProgressiveOutcome].
  *
- * Because regular slices cannot be unfinished, this function never returns [ProgressiveSlice.Empty].
+ * Because regular outcomes cannot be unfinished, this function never returns [ProgressiveOutcome.Empty].
  */
-fun <T> Slice<T>.withProgress(progress: Progression = Progression.done()) = fold(
-	ifLeft = { ProgressiveSlice.Failure(it, progress) },
-	ifRight = { ProgressiveSlice.Success(it, progress) },
+fun <T> Outcome<T>.withProgress(progress: Progression = Progression.done()) = fold(
+	ifLeft = { ProgressiveOutcome.Failure(it, progress) },
+	ifRight = { ProgressiveOutcome.Success(it, progress) },
 )
 
 /**
- * Replaces the [progress] information from this progressive slice.
+ * Replaces the [progress] information from this progressive outcome.
  */
-fun <T> ProgressiveSlice<T>.copy(progress: Progression.Loading) = when (this) {
-	is ProgressiveSlice.Empty -> ProgressiveSlice.Empty(progress)
-	is ProgressiveSlice.Failure -> ProgressiveSlice.Failure(failure, progress)
-	is ProgressiveSlice.Success -> ProgressiveSlice.Success(value, progress)
+fun <T> ProgressiveOutcome<T>.copy(progress: Progression.Loading) = when (this) {
+	is ProgressiveOutcome.Empty -> ProgressiveOutcome.Empty(progress)
+	is ProgressiveOutcome.Failure -> ProgressiveOutcome.Failure(failure, progress)
+	is ProgressiveOutcome.Success -> ProgressiveOutcome.Success(value, progress)
 }
 
 /**
  * Performs some calculation which may fail, capturing all progression events in the process.
  *
- * For performance reasons, the [ProgressionReporter.report] function is shadowed by [ProgressiveSliceCollector.report], which
+ * For performance reasons, the [ProgressionReporter.report] function is shadowed by [ProgressiveOutcomeCollector.report], which
  * bypasses [ProgressionReporter] and directly pushes the event into the resulting flow.
  * Calls to [ProgressionReporter.report] are not affected by this function (they pass through to the closest
  * parent [ProgressionReporter]). If you wish to capture them, use [captureProgress].
  */
-fun <T> progressiveSlice(block: suspend ProgressiveSliceCollector<T>.() -> T): Flow<ProgressiveSlice<T>> = flow {
+fun <T> progressive(block: suspend ProgressiveOutcomeCollector<T>.() -> T): Flow<ProgressiveOutcome<T>> = flow {
 	emit(
-		slice {
-			block(ProgressiveSliceCollector(this@flow, this@slice))
+		out {
+			block(ProgressiveOutcomeCollector(this@flow, this@out))
 		}.withProgress()
 	)
 }
 
-class ProgressiveSliceCollector<T>(
-	private val flowCollector: FlowCollector<ProgressiveSlice<T>>,
+class ProgressiveOutcomeCollector<T>(
+	private val flowCollector: FlowCollector<ProgressiveOutcome<T>>,
 	private val effectScope: EffectScope<Failure>,
 ) : EffectScope<Failure> by effectScope {
 
 	suspend fun report(progress: Progression.Loading) {
-		flowCollector.emit(ProgressiveSlice.Empty(progress))
+		flowCollector.emit(ProgressiveOutcome.Empty(progress))
 	}
 }
