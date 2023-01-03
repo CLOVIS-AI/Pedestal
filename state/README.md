@@ -23,6 +23,8 @@ suspend fun setPassword(
 	// We can easily report the progress of our function
 	// The progress is sent directly to the caller using CoroutineContext
 	// (does nothing if the caller has not registered a listener)
+	// Progress can thus be reported in any suspending function, even
+	// without the 'out' builder
 	report(loading(0.1)) // 10%
 
 	// Use APIs inspired by the standard library's 'require'
