@@ -8,7 +8,6 @@ import kotlinx.coroutines.sync.withPermit
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import opensavvy.cache.ExpirationCache.Companion.expireAfter
-import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.state.progressive.ProgressiveOutcome
@@ -57,7 +56,6 @@ class ExpirationCache<I, T>(
 		scope.launch {
 			while (isActive) {
 				delay(expireAfter)
-				log.debug { "Starting a cleanup job for expired cache values" }
 
 				lock.withPermit {
 					val now = Clock.System.now()
@@ -66,7 +64,7 @@ class ExpirationCache<I, T>(
 						val (id, instant) = iterator.next()
 
 						if (instant < now - expireAfter) {
-							log.trace(id) { "Removing" }
+							log.trace(id) { "Expired value:" }
 							iterator.remove()
 							upstream.expire(id)
 						}
