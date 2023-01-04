@@ -99,7 +99,16 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 				responseBuilder.block()
 			}.fold(
 				ifLeft = {
-					Server.log.warn(it.kind, it.message, it.cause?.stackTraceToString()) { "Failed request" }
+					Server.log.warn(it.kind, it.message) {
+						buildString {
+							append("${it.kind}: ${it.message}")
+
+							if (it.cause != null) {
+								appendLine()
+								append("Caused by: ${it.cause?.stackTraceToString()}")
+							}
+						}
+					}
 					call.respond(it.kind.toHttp(), it.message)
 				},
 				ifRight = {
