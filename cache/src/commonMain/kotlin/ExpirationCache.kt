@@ -10,6 +10,7 @@ import kotlinx.datetime.Instant
 import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
+import opensavvy.state.Progression
 import opensavvy.state.progressive.ProgressiveOutcome
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -82,7 +83,11 @@ class ExpirationCache<I, T>(
 	}
 
 	override fun get(id: I): Flow<ProgressiveOutcome<T>> = upstream[id]
-		.onEach { markAsUpdatedNow(id) }
+		.onEach {
+			if (it.progress == Progression.Done)
+				markAsUpdatedNow(id)
+			// else: it's still loading, no need to count it as done
+		}
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
 		// When the upstream is updated, it will signal the modification through the 'get' function,
