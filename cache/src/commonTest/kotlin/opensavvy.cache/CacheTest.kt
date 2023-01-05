@@ -16,6 +16,8 @@ import opensavvy.logger.loggerFor
 import opensavvy.state.*
 import opensavvy.state.Progression.Companion.loading
 import opensavvy.state.ProgressionReporter.Companion.report
+import opensavvy.state.progressive.ProgressiveSlice
+import opensavvy.state.progressive.firstValue
 import opensavvy.state.slice.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -182,9 +184,9 @@ class CacheTest {
 	fun batching() = runTest {
 		val cache = batchingCache<IntId, Int>(coroutineContext) { ids ->
 			for (ref in ids) {
-				report(loading())
+				emit(ref to ProgressiveSlice.Empty(loading()))
 				delay(10)
-				emit(ref to successful(ref.id))
+				emit(ref to ProgressiveSlice.Success(ref.id))
 			}
 		}
 			.cachedInMemory(coroutineContext)
@@ -208,6 +210,44 @@ class CacheTest {
 		cache.expireAll()
 		assertEquals(0, cache[id0].firstValue().orThrow())
 		assertEquals(1, cache[id1].firstValue().orThrow())
+
+		currentCoroutineContext().cancelChildren()
+	}
+
+	@Test
+	fun concurrent() = runTest {
+		val cache = adapter()
+			.cachedInMemory(coroutineContext)
+
+		var result: ProgressiveSlice<Int> = ProgressiveSlice.Empty()
+
+		log.info { "Subscribing…" }
+		launch {
+			cache[IntId(1)]
+				.collect { result = it }
+		}
+		// Wait for the first cache read to finish
+		delay(1000)
+		while (result is ProgressiveSlice.Empty) {
+			yield()
+		}
+		assertEquals(ProgressiveSlice.Success(1), result)
+
+		log.info { "Forcing an update with an incorrect value" }
+		cache.update(IntId(1), 5)
+		// Wait for the cache to update
+		while (result == ProgressiveSlice.Success(1) || result.progress !is Progression.Done) {
+			yield()
+		}
+		assertEquals(ProgressiveSlice.Success(5), result)
+
+		log.info { "Expiring the value to see the cache fix itself" }
+		cache.expire(IntId(1))
+		// Wait for the cache to update
+		while (result == ProgressiveSlice.Success(5) || result.progress !is Progression.Done) {
+			yield()
+		}
+		assertEquals(ProgressiveSlice.Success(1), result)
 
 		currentCoroutineContext().cancelChildren()
 	}

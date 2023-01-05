@@ -7,7 +7,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runTest
 import opensavvy.backbone.Ref.Companion.expire
 import opensavvy.backbone.Ref.Companion.request
-import opensavvy.state.firstValue
+import opensavvy.state.progressive.firstValue
 import opensavvy.state.slice.ensureValid
 import opensavvy.state.slice.orThrow
 import opensavvy.state.slice.slice

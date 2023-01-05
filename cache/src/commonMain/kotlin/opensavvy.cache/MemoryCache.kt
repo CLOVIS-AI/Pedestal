@@ -7,11 +7,8 @@ import kotlinx.coroutines.sync.withPermit
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
-import opensavvy.state.Progression
-import opensavvy.state.ProgressionReporter.Companion.progressionReporter
-import opensavvy.state.ProgressionReporter.Companion.report
-import opensavvy.state.slice.Slice
-import opensavvy.state.slice.successful
+import opensavvy.state.progressive.ProgressiveSlice
+import opensavvy.state.progressive.copy
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -50,7 +47,7 @@ class MemoryCache<I, T>(
 	 * - 'expire' removed the cached value
 	 */
 
-	private val cache = HashMap<I, MutableStateFlow<Pair<Slice<T>, Progression>?>>()
+	private val cache = HashMap<I, MutableStateFlow<ProgressiveSlice<T>?>>()
 	private val cacheLock = Semaphore(1)
 
 	private val jobs = HashMap<I, Job>()
@@ -62,7 +59,7 @@ class MemoryCache<I, T>(
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
 
-	override fun get(id: I): Flow<Slice<T>> = flow {
+	override fun get(id: I): Flow<ProgressiveSlice<T>> = flow {
 		val cached = cacheLock.withPermit { getUnsafe(id) }
 			.onEach { slice ->
 				if (slice == null) {
@@ -70,38 +67,46 @@ class MemoryCache<I, T>(
 					// However, multiple subscribers may see this event at the same time.
 					// One of the subscribers becomes responsible for making the request
 
-					jobsLock.withPermit {
-						val job = jobs[id]
-						if (job == null || !job.isActive) {
-							// No one is currently making the request, I'm taking the responsibility to do it
-
-							val reporter = progressionReporter()
-
-							jobs[id] = scope.launch(CoroutineName("${this@MemoryCache} for $id") + reporter) {
-								log.trace(id) { "Subscribing to the previous layer for" }
-
-								val state = cacheLock.withPermit { getUnsafe(id) }
-
-								upstream[id]
-									.zip(reporter.progress) { value, progress -> value to progress }
-									.onEach { log.trace(it) { "Event" } }
-									.onEach { state.value = it }
-									.collect()
-							}
-						}
-					}
+					attemptTakeResponsibilityPingUpstream(id)
 				}
 			}
 			.filterNotNull() // 'null' is an internal value, it shouldn't be returned to downstream users
 
-		cached.collect { (slice, progression) ->
-			report(progression)
-			emit(slice)
+		emitAll(cached)
+	}.onEach { log.trace(it) { "Emit value for $id ->" } }
+
+	private suspend fun attemptTakeResponsibilityPingUpstream(id: I) {
+		jobsLock.withPermit {
+			val job = jobs[id]
+			if (job == null || !job.isActive) {
+				// No one is currently making the request, I'm taking the responsibility to do it
+
+				jobs[id] = scope.launch(CoroutineName("${this@MemoryCache} for $id")) {
+					log.trace(id) { "Subscribing to the previous layer for" }
+
+					val state = cacheLock.withPermit { getUnsafe(id) }
+
+					upstream[id]
+						.onEach { log.trace(it) { "Prev value for $id ->" } }
+						.map {
+							val previousValue = state.value
+
+							// If the previous cache layer says it's a new value, but we remember what the previous
+							// result was, we return the previous value with the new progress information
+							if (it is ProgressiveSlice.Empty && previousValue != null)
+								previousValue.copy(progress = it.progress)
+							else
+								it
+						}
+						.onEach { state.value = it }
+						.collect()
+				}
+			} // else: someone else has taken the responsibility to start the request, I don't need to do anything
 		}
 	}
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
-		log.trace(values) { "updateAll" }
+		log.trace(values) { "update" }
 
 		jobsLock.withPermit {
 			for ((id, _) in values) {
@@ -111,7 +116,7 @@ class MemoryCache<I, T>(
 
 		cacheLock.withPermit {
 			for ((id, value) in values) {
-				getUnsafe(id).value = successful(value) to Progression.done()
+				getUnsafe(id).value = ProgressiveSlice.Success(value)
 			}
 		}
 
@@ -119,7 +124,7 @@ class MemoryCache<I, T>(
 	}
 
 	override suspend fun expire(ids: Collection<I>) {
-		log.trace(ids) { "expireAll" }
+		log.trace(ids) { "expire" }
 
 		jobsLock.withPermit {
 			for (id in ids) {
@@ -137,8 +142,9 @@ class MemoryCache<I, T>(
 					// No one cares about the value, we can free it
 					cache.remove(id)
 				} else {
-					// At least one person is subscribed to the value, let's notify them that it's out-of-date
-					cached.value = null
+					// At least one person is subscribed to the value, but we just cancelled ongoing requests,
+					// let's start a new one
+					attemptTakeResponsibilityPingUpstream(id)
 				}
 			}
 		}
@@ -162,8 +168,9 @@ class MemoryCache<I, T>(
 					// No one cares about the value, we can free it
 					toRemove += id
 				} else {
-					// At least one person is subscribed to the value, let's notify them that it's out-of-date
-					cached.value = null
+					// At least one person is subscribed to the value, but we just cancelled ongoing requests,
+					// let's start a new one
+					attemptTakeResponsibilityPingUpstream(id)
 				}
 			}
 

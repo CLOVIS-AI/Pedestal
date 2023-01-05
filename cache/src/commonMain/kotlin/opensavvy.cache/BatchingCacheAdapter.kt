@@ -10,11 +10,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import opensavvy.logger.Logger.Companion.error
 import opensavvy.logger.loggerFor
-import opensavvy.state.slice.Slice
+import opensavvy.state.progressive.ProgressiveSlice
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
-private typealias CacheStorage<T> = CompletableDeferred<StateFlow<Slice<T>?>>
+private typealias CacheStorage<T> = CompletableDeferred<StateFlow<ProgressiveSlice<T>>>
 
 /**
  * Cache implementation aimed to be the first link in a cache chain.
@@ -35,7 +35,7 @@ class BatchingCacheAdapter<I, T>(
 	 * Increasing the number of workers may increase latency.
 	 */
 	workers: Int = 1,
-	val queryBatch: (Set<I>) -> Flow<Pair<I, Slice<T>>>,
+	val queryBatch: (Set<I>) -> Flow<Pair<I, ProgressiveSlice<T>>>,
 ) : Cache<I, T> {
 
 	private val log = loggerFor(this)
@@ -84,11 +84,11 @@ class BatchingCacheAdapter<I, T>(
 					.add(promise)
 			}
 
-			val states = HashMap<I, MutableStateFlow<Slice<T>?>>()
+			val states = HashMap<I, MutableStateFlow<ProgressiveSlice<T>>>()
 
 			// Tell all clients that their request is starting
 			for ((id, promises) in results) {
-				val state: MutableStateFlow<Slice<T>?> = MutableStateFlow(null)
+				val state: MutableStateFlow<ProgressiveSlice<T>> = MutableStateFlow(ProgressiveSlice.Empty())
 
 				for (promise in promises) {
 					promise.complete(state)
@@ -113,8 +113,8 @@ class BatchingCacheAdapter<I, T>(
 		}
 	}
 
-	override fun get(id: I): Flow<Slice<T>> = flow {
-		val promise = CompletableDeferred<StateFlow<Slice<T>?>>()
+	override fun get(id: I): Flow<ProgressiveSlice<T>> = flow {
+		val promise = CompletableDeferred<StateFlow<ProgressiveSlice<T>>>()
 
 		requests.send(id to promise)
 
@@ -137,10 +137,10 @@ class BatchingCacheAdapter<I, T>(
 		fun <I, T> batchingCache(
 			context: CoroutineContext,
 			workers: Int = 1,
-			transform: suspend FlowCollector<Pair<I, Slice<T>>>.(Set<I>) -> Unit,
-		) = BatchingCacheAdapter<I, T>(context, workers) {
+			transform: suspend FlowCollector<Pair<I, ProgressiveSlice<T>>>.(Set<I>) -> Unit,
+		) = BatchingCacheAdapter<I, T>(context, workers) { ids ->
 			flow {
-				transform(it)
+				transform(ids)
 			}
 		}
 	}

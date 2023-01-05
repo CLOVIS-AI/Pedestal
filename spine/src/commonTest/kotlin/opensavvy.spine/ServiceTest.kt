@@ -12,6 +12,7 @@ import opensavvy.backbone.Ref.Companion.request
 import opensavvy.backbone.defaultRefCache
 import opensavvy.spine.Route.Companion.div
 import opensavvy.state.*
+import opensavvy.state.progressive.firstValue
 import opensavvy.state.slice.*
 import kotlin.test.Test
 import kotlin.test.assertEquals

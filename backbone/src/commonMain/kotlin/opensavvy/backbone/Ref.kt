@@ -3,6 +3,7 @@ package opensavvy.backbone
 import opensavvy.backbone.Backbone.Companion.request
 import opensavvy.backbone.Ref.Companion.directRequest
 import opensavvy.backbone.Ref.Companion.request
+import opensavvy.state.progressive.firstValue
 
 /**
  * A reference to a specific [object][O].
@@ -44,6 +45,17 @@ interface Ref<O> {
 		 * This is a convenience method around [Backbone.request].
 		 */
 		fun <O> Ref<O>.request() = backbone.request(this)
+
+		/**
+		 * Requests the referenced data, returning the first value returned by the cache.
+		 *
+		 * This is a shorthand to `ref.request().firstValue()`.
+		 *
+		 * This function returns a single value and not a subscription, it is not recommended to use it when being
+		 * notified of new values is important (e.g. in a UI).
+		 * This function is intended for non-reactive environments (e.g. server requests, tests…).
+		 */
+		suspend fun <O> Ref<O>.now() = request().firstValue()
 
 		/**
 		 * Forces the cache to forget anything it might remember about this reference.
