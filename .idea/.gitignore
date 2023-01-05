@@ -16,6 +16,8 @@
 /jarRepositories.xml
 /modules
 /vcs.xml
+/modules.xml
+/kotlinc.xml
 
 # Different for everyone
 /misc.xml

@@ -1,5 +1,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
+import java.net.URL
+
 plugins {
 	kotlin("multiplatform")
 }
@@ -33,6 +35,18 @@ kover {
 			bound {
 				minValue = 90
 			}
+		}
+	}
+}
+
+tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
+	dokkaSourceSets.configureEach {
+		includes.from("${project.projectDir}/README.md")
+
+		sourceLink {
+			localDirectory.set(file("src"))
+			remoteUrl.set(URL("https://gitlab.com/opensavvy/pedestal/-/blob/main/logger/src"))
+			remoteLineSuffix.set("#L")
 		}
 	}
 }

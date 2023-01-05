@@ -14,18 +14,22 @@ enum class LogLevel {
 	 * `true` if [TRACE] messages should be printed.
 	 */
 	val trace = ordinal <= 0
+
 	/**
 	 * `true` if [DEBUG] messages should be printed.
 	 */
 	val debug = ordinal <= 1
+
 	/**
 	 * `true` if [INFO] messages should be printed.
 	 */
 	val info = ordinal <= 2
+
 	/**
 	 * `true` if [WARN] messages should be printed.
 	 */
 	val warn = ordinal <= 3
+
 	/**
 	 * `true` if [ERROR] messages should be printed.
 	 */
