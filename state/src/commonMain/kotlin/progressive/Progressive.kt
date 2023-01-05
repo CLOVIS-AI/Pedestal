@@ -1,37 +1,37 @@
 package opensavvy.state.progressive
 
 import opensavvy.state.Progression
-import opensavvy.state.progressive.ProgressiveSlice.*
-import opensavvy.state.slice.Slice
+import opensavvy.state.outcome.Outcome
+import opensavvy.state.progressive.ProgressiveOutcome.*
 
 /**
- * A [Slice] with integrated [Progression] management.
+ * A [Outcome] with integrated [Progression] management.
  *
  * There are three possible cases:
  * - [Empty] if the task has started but no value is currently available,
  * - [Success] if a successful result is available (see [Success.value]),
  * - [Failure] if a failed result is available (see [Failure.failure]).
  *
- * Note that in cases, a progressive slice may be currently loading.
+ * Note that in cases, a progressive outcome may be currently loading.
  * - [Empty] must be loading,
  * - [Success] may be loading if the task is currently querying a newer value than the one it stores,
  * - [Failure] may be loading if the task is currently retrying the operation.
  *
- * To create a progressive slice from a function returning a regular slice, use [captureProgress].
+ * To create a progressive outcome from a function returning a regular outcome, use [captureProgress].
  *
- * To access the inner slice and progression, you can use [asSlices] or the destructuring operator:
+ * To access the inner outcome and progression, you can use [asOutcomeAndProgress] or the destructuring operator:
  * ```kotlin
- * val (slice, progression) = /* ProgressiveSlice */
+ * val (out, progression) = /* ProgressiveOutcome */
  * ```
  *
- * To create progressive slices from computations, use the [progressiveSlice] or [captureProgress].
+ * To create progressive outcomes from computations, use the [progressive] or [captureProgress] builders.
  */
-sealed class ProgressiveSlice<out T> {
+sealed class ProgressiveOutcome<out T> {
 
 	/**
-	 * The current progression of this slice.
+	 * The current progression of this outcome.
 	 *
-	 * For more information, see [ProgressiveSlice].
+	 * For more information, see [ProgressiveOutcome].
 	 */
 	abstract val progress: Progression
 
@@ -40,7 +40,7 @@ sealed class ProgressiveSlice<out T> {
 	 */
 	data class Empty(
 		override val progress: Progression.Loading = Progression.loading(),
-	) : ProgressiveSlice<Nothing>()
+	) : ProgressiveOutcome<Nothing>()
 
 	/**
 	 * The latest known result of the operation was a success, available as [value].
@@ -51,7 +51,7 @@ sealed class ProgressiveSlice<out T> {
 	data class Success<T>(
 		val value: T,
 		override val progress: Progression = Progression.done(),
-	) : ProgressiveSlice<T>()
+	) : ProgressiveOutcome<T>()
 
 	/**
 	 * The latest known result of the operation was a failure, available as [failure].
@@ -62,12 +62,12 @@ sealed class ProgressiveSlice<out T> {
 	data class Failure(
 		val failure: opensavvy.state.Failure,
 		override val progress: Progression = Progression.done(),
-	) : ProgressiveSlice<Nothing>()
+	) : ProgressiveOutcome<Nothing>()
 
 	companion object {
 
-		operator fun <T> ProgressiveSlice<T>.component1() = asSlice()
-		operator fun <T> ProgressiveSlice<T>.component2() = progress
+		operator fun <T> ProgressiveOutcome<T>.component1() = asOutcome()
+		operator fun <T> ProgressiveOutcome<T>.component2() = progress
 
 	}
 

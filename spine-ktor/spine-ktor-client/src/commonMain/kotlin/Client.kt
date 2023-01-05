@@ -15,7 +15,7 @@ import opensavvy.state.Failure
 import opensavvy.state.Progression.Companion.loading
 import opensavvy.state.ProgressionReporter.Companion.report
 import opensavvy.state.ProgressionReporter.Companion.transformQuantifiedProgress
-import opensavvy.state.slice.slice
+import opensavvy.state.outcome.out
 
 /**
  * Executes a [HttpClient] request, with the information declared in an [Operation].
@@ -51,7 +51,7 @@ suspend inline fun <Resource : Any, reified In : Any, reified Out : Any, reified
 	contentType: ContentType = ContentType.Application.Json,
 	crossinline onResponse: (HttpResponse) -> Unit = {},
 	crossinline configuration: HttpRequestBuilder.() -> Unit = {},
-) = slice {
+) = out {
 	report(loading(0.0))
 
 	transformQuantifiedProgress({ loading(it.normalized / 10) }) {

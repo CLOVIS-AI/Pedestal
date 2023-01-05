@@ -12,9 +12,9 @@ import opensavvy.spine.Parameters
 import opensavvy.spine.Route
 import opensavvy.spine.Route.Companion.div
 import opensavvy.spine.ktor.client.request
-import opensavvy.state.slice.ensureFound
-import opensavvy.state.slice.orThrow
-import opensavvy.state.slice.successful
+import opensavvy.state.outcome.ensureFound
+import opensavvy.state.outcome.orThrow
+import opensavvy.state.outcome.successful
 import org.junit.Test
 import org.slf4j.event.Level
 import kotlin.test.assertEquals

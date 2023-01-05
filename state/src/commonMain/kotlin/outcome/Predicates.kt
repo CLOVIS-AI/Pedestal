@@ -1,4 +1,4 @@
-package opensavvy.state.slice
+package opensavvy.state.outcome
 
 import arrow.core.continuations.EffectScope
 import opensavvy.state.Failure

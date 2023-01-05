@@ -13,16 +13,16 @@ import opensavvy.state.Progression.Companion.done
 import opensavvy.state.Progression.Companion.loading
 import opensavvy.state.ProgressionReporter.Companion.progressionReporter
 import opensavvy.state.ProgressionReporter.Companion.report
-import opensavvy.state.slice.*
+import opensavvy.state.outcome.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
-class SliceTest {
+class OutcomeTest {
 
 	private data class IntId(val id: Int) {
 
-		suspend fun request() = slice {
+		suspend fun request() = out {
 			val id = this@IntId
 
 			report(loading(0.0))

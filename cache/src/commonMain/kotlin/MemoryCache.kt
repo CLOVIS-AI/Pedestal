@@ -7,7 +7,7 @@ import kotlinx.coroutines.sync.withPermit
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
-import opensavvy.state.progressive.ProgressiveSlice
+import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.copy
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -47,7 +47,7 @@ class MemoryCache<I, T>(
 	 * - 'expire' removed the cached value
 	 */
 
-	private val cache = HashMap<I, MutableStateFlow<ProgressiveSlice<T>?>>()
+	private val cache = HashMap<I, MutableStateFlow<ProgressiveOutcome<T>?>>()
 	private val cacheLock = Semaphore(1)
 
 	private val jobs = HashMap<I, Job>()
@@ -59,10 +59,10 @@ class MemoryCache<I, T>(
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
 
-	override fun get(id: I): Flow<ProgressiveSlice<T>> = flow {
+	override fun get(id: I): Flow<ProgressiveOutcome<T>> = flow {
 		val cached = cacheLock.withPermit { getUnsafe(id) }
-			.onEach { slice ->
-				if (slice == null) {
+			.onEach { out ->
+				if (out == null) {
 					// Now, someone should make a request to the previous layer.
 					// However, multiple subscribers may see this event at the same time.
 					// One of the subscribers becomes responsible for making the request
@@ -93,7 +93,7 @@ class MemoryCache<I, T>(
 
 							// If the previous cache layer says it's a new value, but we remember what the previous
 							// result was, we return the previous value with the new progress information
-							if (it is ProgressiveSlice.Empty && previousValue != null)
+							if (it is ProgressiveOutcome.Empty && previousValue != null)
 								previousValue.copy(progress = it.progress)
 							else
 								it
@@ -116,7 +116,7 @@ class MemoryCache<I, T>(
 
 		cacheLock.withPermit {
 			for ((id, value) in values) {
-				getUnsafe(id).value = ProgressiveSlice.Success(value)
+				getUnsafe(id).value = ProgressiveOutcome.Success(value)
 			}
 		}
 

@@ -2,7 +2,7 @@ package opensavvy.spine
 
 import arrow.core.continuations.EffectScope
 import opensavvy.state.Failure
-import opensavvy.state.slice.slice
+import opensavvy.state.outcome.out
 import kotlin.js.JsName
 
 typealias OperationValidator<In, Params, Context> = suspend Operation.ValidatorScope<In, Params, Context>.() -> Unit
@@ -21,7 +21,7 @@ class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Contex
 	 */
 	fun idOf(vararg dynamic: String) = resource.idOf(*dynamic)
 
-	suspend fun validate(id: Id, body: In, parameters: Params, context: Context) = slice {
+	suspend fun validate(id: Id, body: In, parameters: Params, context: Context) = out {
 		val scope = ValidatorScope(this, id, body, parameters, context)
 		scope.validate()
 	}
