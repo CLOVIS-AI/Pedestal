@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
+import opensavvy.cache.PassThroughContext.Companion.onlyPassThrough
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.state.progressive.ProgressiveOutcome
@@ -81,7 +82,10 @@ class MemoryCache<I, T>(
 			if (job == null || !job.isActive) {
 				// No one is currently making the request, I'm taking the responsibility to do it
 
-				jobs[id] = scope.launch(CoroutineName("${this@MemoryCache} for $id")) {
+				val childContext = currentCoroutineContext().onlyPassThrough() +
+						CoroutineName("$this for $id")
+
+				jobs[id] = scope.launch(childContext) {
 					log.trace(id) { "Subscribing to the previous layer for" }
 
 					val state = cacheLock.withPermit { getUnsafe(id) }
