@@ -1,5 +1,8 @@
 package opensavvy.state
 
+import kotlinx.coroutines.CopyableThrowable
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
 /**
  * Common failure reasons.
  *
@@ -16,8 +19,18 @@ data class Failure(
 
 	fun toException() = FailureException(this, kind, message, cause)
 
+	@OptIn(ExperimentalCoroutinesApi::class)
 	class FailureException(val failure: Failure, val kind: Kind, message: String, cause: Throwable? = null) :
-		RuntimeException(message, cause)
+		RuntimeException(message, cause), CopyableThrowable<FailureException> {
+
+		@ExperimentalCoroutinesApi
+		override fun createCopy(): FailureException = FailureException(
+			failure = failure,
+			kind = kind,
+			message = message ?: "Copy of a FailureException without message, which should not be possible",
+			cause = this,
+		)
+	}
 
 	enum class Kind {
 		/**
