@@ -18,7 +18,7 @@ kotlin {
 				api(projects.spine)
 
 				api(KotlinX.serialization.core)
-				api(Ktor.http)
+				api(Ktor.plugins.http)
 
 				implementation(projects.logger)
 			}
