@@ -3,9 +3,7 @@
 import java.net.URL
 
 plugins {
-	id("opensavvy.gradle.versioning")
-
-	kotlin("multiplatform")
+	id("opensavvy.gradle.library")
 }
 
 kotlin {

@@ -1,9 +1,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-	id("opensavvy.gradle.versioning")
-
-	kotlin("multiplatform")
+	id("opensavvy.gradle.library")
 	kotlin("plugin.serialization")
 }
 
