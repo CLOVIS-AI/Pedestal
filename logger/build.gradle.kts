@@ -12,6 +12,9 @@ kotlin {
 		browser()
 		nodejs()
 	}
+	iosSimulatorArm64()
+	iosArm64()
+	iosX64()
 
 	sourceSets {
 		val commonTest by getting {
@@ -25,6 +28,11 @@ kotlin {
 				implementation("org.slf4j:slf4j-api:_")
 			}
 		}
+
+		val iosMain by creating
+		val iosArm64Main by getting { dependsOn(iosMain) }
+		val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
+		val iosX64Main by getting { dependsOn(iosMain) }
 	}
 }
 
