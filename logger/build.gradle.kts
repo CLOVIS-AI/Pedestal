@@ -17,6 +17,7 @@ kotlin {
 	iosX64()
 
 	sourceSets {
+		val commonMain by getting
 		val commonTest by getting {
 			dependencies {
 				implementation(projects.tester)
@@ -29,7 +30,7 @@ kotlin {
 			}
 		}
 
-		val iosMain by creating
+		val iosMain by creating { dependsOn(commonMain) }
 		val iosArm64Main by getting { dependsOn(iosMain) }
 		val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
 		val iosX64Main by getting { dependsOn(iosMain) }

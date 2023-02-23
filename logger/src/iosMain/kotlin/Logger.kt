@@ -1,30 +1,37 @@
 package opensavvy.logger
 
-class IosLogger(private val self: Any): Logger {
+import kotlinx.cinterop.ptr
+import platform.darwin.*
+
+class IosLogger(self: Any): Logger {
     override var level = LogLevel.default
 
     private val tag = self::class.simpleName
 
     override fun forceTrace(message: String, vararg objects: Any?) {
-        println("T: $tag: $message ${objects.joinToString(" ")}")
+        val string = "$tag: $message ${objects.joinToString(" ")}"
+        _os_log_internal(__dso_handle.ptr, OS_LOG_DEFAULT, OS_LOG_TYPE_DEFAULT, "%s", string)
     }
 
     override fun forceDebug(message: String, vararg objects: Any?) {
-        println("D: $tag: $message ${objects.joinToString(" ")}")
+        val string = "$tag: $message ${objects.joinToString(" ")}"
+        _os_log_internal(__dso_handle.ptr, OS_LOG_DEFAULT, OS_LOG_TYPE_DEBUG, "%s", string)
     }
 
     override fun forceInfo(message: String, vararg objects: Any?) {
-        println("I: $tag: $message ${objects.joinToString(" ")}")
+        val string = "$tag: $message ${objects.joinToString(" ")}"
+        _os_log_internal(__dso_handle.ptr, OS_LOG_DEFAULT, OS_LOG_TYPE_INFO, "%s", string)
     }
 
     override fun forceWarn(message: String, vararg objects: Any?) {
-        println("W: $tag: $message ${objects.joinToString(" ")}")
+        val string = "$tag: $message ${objects.joinToString(" ")}"
+        _os_log_internal(__dso_handle.ptr, OS_LOG_DEFAULT, OS_LOG_TYPE_DEFAULT, "%s", string)
     }
 
     override fun forceError(message: String, vararg objects: Any?) {
-        println("E: $tag: $message ${objects.joinToString(" ")}")
+        val string = "$tag: $message ${objects.joinToString(" ")}"
+        _os_log_internal(__dso_handle.ptr, OS_LOG_DEFAULT, OS_LOG_TYPE_ERROR, "%s", string)
     }
-
 }
 
 actual fun loggerFor(obj: Any): Logger = IosLogger(obj)
