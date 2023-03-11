@@ -1,8 +1,12 @@
-
 rootProject.name = "Pedestal"
 
+pluginManagement {
+	includeBuild("gradle/plugins")
+	repositories.gradlePluginPortal()
+}
+
 plugins {
-	id("de.fayard.refreshVersions") version "0.40.1"
+	id("de.fayard.refreshVersions") version "0.51.0"
 }
 
 include(

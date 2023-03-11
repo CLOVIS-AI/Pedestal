@@ -1,7 +1,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-	kotlin("multiplatform")
+	id("opensavvy.gradle.library")
 	kotlin("plugin.serialization")
 }
 
@@ -18,7 +18,7 @@ kotlin {
 				api(projects.spine)
 
 				api(KotlinX.serialization.core)
-				api(Ktor.http)
+				api(Ktor.plugins.http)
 
 				implementation(projects.logger)
 			}

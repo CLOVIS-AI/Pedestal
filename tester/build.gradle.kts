@@ -1,7 +1,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-	kotlin("multiplatform")
+	id("opensavvy.gradle.library")
 }
 
 kotlin {
