@@ -1,7 +1,7 @@
 rootProject.name = "Pedestal"
 
 pluginManagement {
-	includeBuild("gradle/plugins")
+	includeBuild("gradle/conventions")
 	repositories.gradlePluginPortal()
 }
 
