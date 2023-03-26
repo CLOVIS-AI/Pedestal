@@ -49,6 +49,7 @@ If you are interested in another platform, we encourage contributions that add t
 
 - [Release list](https://gitlab.com/opensavvy/pedestal/-/releases)
 - [Artifact list](https://gitlab.com/opensavvy/pedestal/-/packages)
+- [Breaking changes migration guide](docs/MIGRATION_GUIDE.md)
 
 ## Development
 
