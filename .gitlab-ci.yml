@@ -53,6 +53,35 @@ publish:
     - if: $CI_COMMIT_TAG
   interruptible: false
 
+publish:ios:
+  extends: [ .ios ]
+  stage: publish
+  script:
+    - >
+      ./gradlew
+      logger:publishIosArm64PublicationToGitLabRepository
+      state:publishIosArm64PublicationToGitLabRepository
+      cache:publishIosArm64PublicationToGitLabRepository
+      backbone:publishIosArm64PublicationToGitLabRepository
+      logger:publishIosArm64PublicationToGitLabRepository
+    - >
+      ./gradlew
+      logger:publishIosSimulatorArm64PublicationToGitLabRepository
+      state:publishIosSimulatorArm64PublicationToGitLabRepository
+      cache:publishIosSimulatorArm64PublicationToGitLabRepository
+      backbone:publishIosSimulatorArm64PublicationToGitLabRepository
+      logger:publishIosSimulatorArm64PublicationToGitLabRepository
+    - >
+      ./gradlew
+      logger:publishIosX64PublicationToGitLabRepository
+      state:publishIosX64PublicationToGitLabRepository
+      cache:publishIosX64PublicationToGitLabRepository
+      backbone:publishIosX64PublicationToGitLabRepository
+      logger:publishIosX64PublicationToGitLabRepository
+  rules:
+    - if: $CI_COMMIT_TAG
+  interruptible: false
+
 .test-jvm:
   extends: [ .jvm ]
   variables:
