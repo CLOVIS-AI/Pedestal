@@ -28,6 +28,12 @@ workflow:
   variables:
     JAVA_HOME: /usr/lib/jvm/default
 
+.ios:
+  image: macos-12-xcode-13
+
+  tags:
+    - shared-macos-amd64
+
 publish:
   extends: [ .jvm ]
   stage: publish
@@ -164,6 +170,14 @@ spine-ktor:convert-coverage:
   variables:
     module: spine-ktor:spine-ktor-server
     module_path: spine-ktor/spine-ktor-server
+
+test:ios:
+  extends: [ .ios ]
+
+  script:
+    - >
+      ./gradlew
+      iosSimulatorArm64Test
 
 dokka:
   extends: [ .jvm ]
