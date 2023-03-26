@@ -1,5 +1,8 @@
 package opensavvy.gradle
 
+import org.gradle.kotlin.dsl.extra
+import org.gradle.kotlin.dsl.invoke
+
 plugins {
 	id("com.palantir.git-version")
 }
@@ -14,5 +17,5 @@ fun calculateVersion(): String {
 		"${details.lastTag}-post.${details.commitDistance}+${details.gitHash}"
 }
 
-group = "opensavvy"
+group = "opensavvy.pedestal"
 version = calculateVersion()
