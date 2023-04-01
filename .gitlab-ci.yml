@@ -133,6 +133,32 @@ logger:convert-coverage:
   variables:
     module: logger
 
+progress:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: progress
+
+progress:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: progress:test:jvm
+      artifacts: true
+  variables:
+    module: progress
+
+progress-coroutines:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: progress-coroutines
+
+progress-coroutines:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: progress-coroutines:test:jvm
+      artifacts: true
+  variables:
+    module: progress-coroutines
+
 state:test:jvm:
   extends: [ .test-jvm ]
   variables:
