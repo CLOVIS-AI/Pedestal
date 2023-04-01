@@ -41,6 +41,8 @@ publish:
     - >
       ./gradlew 
       logger:publishAllPublicationsToGitLabRepository
+      progress:publishAllPublicationsToGitLabRepository
+      progress-coroutines:publishAllPublicationsToGitLabRepository
       state:publishAllPublicationsToGitLabRepository
       cache:publishAllPublicationsToGitLabRepository
       backbone:publishAllPublicationsToGitLabRepository
@@ -60,6 +62,8 @@ publish:ios:
     - >
       ./gradlew
       logger:publishIosArm64PublicationToGitLabRepository
+      progress:publishIosArm64PublicationToGitLabRepository
+      progress-coroutines:publishIosArm64PublicationToGitLabRepository
       state:publishIosArm64PublicationToGitLabRepository
       cache:publishIosArm64PublicationToGitLabRepository
       backbone:publishIosArm64PublicationToGitLabRepository
@@ -67,6 +71,8 @@ publish:ios:
     - >
       ./gradlew
       logger:publishIosSimulatorArm64PublicationToGitLabRepository
+      progress:publishIosSimulatorArm64PublicationToGitLabRepository
+      progress-coroutines:publishIosSimulatorArm64PublicationToGitLabRepository
       state:publishIosSimulatorArm64PublicationToGitLabRepository
       cache:publishIosSimulatorArm64PublicationToGitLabRepository
       backbone:publishIosSimulatorArm64PublicationToGitLabRepository
@@ -74,6 +80,8 @@ publish:ios:
     - >
       ./gradlew
       logger:publishIosX64PublicationToGitLabRepository
+      progress:publishIosX64PublicationToGitLabRepository
+      progress-coroutines:publishIosX64PublicationToGitLabRepository
       state:publishIosX64PublicationToGitLabRepository
       cache:publishIosX64PublicationToGitLabRepository
       backbone:publishIosX64PublicationToGitLabRepository
