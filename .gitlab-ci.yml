@@ -180,6 +180,32 @@ state:convert-coverage:
   variables:
     module: state
 
+state-arrow:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: state-arrow
+
+state-arrow:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: state-arrow:test:jvm
+      artifacts: true
+  variables:
+    module: state-arrow
+
+state-coroutines:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: state-coroutines
+
+state-coroutines:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: state-coroutines:test:jvm
+      artifacts: true
+  variables:
+    module: state-coroutines
+
 cache:test:jvm:
   extends: [ .test-jvm ]
   variables:
