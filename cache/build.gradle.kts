@@ -11,6 +11,9 @@ kotlin {
 	js(IR) {
 		browser()
 	}
+	iosSimulatorArm64()
+	iosArm64()
+	iosX64()
 
 	sourceSets {
 		val commonMain by getting {
