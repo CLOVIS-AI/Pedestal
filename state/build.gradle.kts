@@ -22,6 +22,9 @@ kotlin {
 				api(KotlinX.coroutines.core)
 				api("io.arrow-kt:arrow-core:_")
 
+				api(projects.progress)
+				api(projects.progressCoroutines)
+
 				implementation(projects.logger)
 			}
 		}

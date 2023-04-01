@@ -1,26 +1,25 @@
 package opensavvy.state
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
-import opensavvy.state.Progression.Companion.done
-import opensavvy.state.Progression.Companion.loading
-import opensavvy.state.ProgressionReporter.Companion.progressionReporter
-import opensavvy.state.ProgressionReporter.Companion.report
-import opensavvy.state.ProgressionReporter.Companion.transformQuantifiedProgress
+import opensavvy.progress.coroutines.StateFlowProgressReporter
+import opensavvy.progress.coroutines.asCoroutineContext
+import opensavvy.progress.coroutines.mapProgressTo
+import opensavvy.progress.coroutines.report
+import opensavvy.progress.done
+import opensavvy.progress.loading
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ProgressionReporterTest {
 
 	@Test
 	fun simple() = runTest {
-		val reporter = progressionReporter()
+		val reporter = StateFlowProgressReporter()
 
 		launch {
-			withContext(reporter) {
+			withContext(reporter.asCoroutineContext()) {
 				report(loading(0.0))
 				delay(100)
 				report(loading(0.5))
@@ -40,18 +39,18 @@ class ProgressionReporterTest {
 
 	@Test
 	fun nested() = runTest {
-		val reporter = progressionReporter()
+		val reporter = StateFlowProgressReporter()
 
 		launch {
-			withContext(reporter) {
-				transformQuantifiedProgress({ loading(it.normalized / 2) }) {
+			withContext(reporter.asCoroutineContext()) {
+				mapProgressTo(0.0..0.5) {
 					report(loading())
 					delay(10)
 					report(done())
 					delay(10)
 					report(loading(0.5))
+					delay(100)
 				}
-				delay(100)
 				report(loading(0.5))
 			}
 		}

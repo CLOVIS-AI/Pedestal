@@ -10,7 +10,7 @@ import kotlinx.datetime.Instant
 import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
-import opensavvy.state.Progression
+import opensavvy.progress.done
 import opensavvy.state.progressive.ProgressiveOutcome
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -84,7 +84,7 @@ class ExpirationCache<I, T>(
 
 	override fun get(id: I): Flow<ProgressiveOutcome<T>> = upstream[id]
 		.onEach {
-			if (it.progress == Progression.Done)
+			if (it.progress == done())
 				markAsUpdatedNow(id)
 			// else: it's still loading, no need to count it as done
 		}

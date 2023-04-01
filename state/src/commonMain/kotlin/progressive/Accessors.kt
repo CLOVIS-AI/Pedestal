@@ -3,8 +3,9 @@ package opensavvy.state.progressive
 import arrow.core.left
 import arrow.core.right
 import kotlinx.coroutines.flow.*
-import opensavvy.state.Progression
-import opensavvy.state.ProgressionReporter.Companion.report
+import opensavvy.progress.Progress
+import opensavvy.progress.coroutines.report
+import opensavvy.progress.done
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome.*
 import opensavvy.state.progressive.ProgressiveOutcome.Companion.component1
@@ -48,7 +49,7 @@ fun <T> ProgressiveOutcome<T>.asOutcome(): Outcome<T>? = when (this) {
  * All progress information is re-emitted in the calling flow.
  */
 fun <T> Flow<ProgressiveOutcome<T>>.filterDone() = onEach { report(it.progress) }
-	.filter { it.progress == Progression.done() }
+	.filter { it.progress == done() }
 	.mapNotNull { it.asOutcome() }
 
 /**
@@ -64,7 +65,7 @@ suspend fun <T> Flow<ProgressiveOutcome<T>>.firstValue() = filterDone()
 /**
  * Splits this progressive outcome into its outcome and progress information.
  */
-fun <T> Flow<ProgressiveOutcome<T>>.asOutcomeAndProgress(): Flow<Pair<Outcome<T>?, Progression>> =
+fun <T> Flow<ProgressiveOutcome<T>>.asOutcomeAndProgress(): Flow<Pair<Outcome<T>?, Progress>> =
 	map { (out, progress) -> out to progress }
 
 //endregion
