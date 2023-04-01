@@ -19,11 +19,7 @@ kotlin {
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
-				api(KotlinX.coroutines.core)
-				api("io.arrow-kt:arrow-core:_")
-
 				api(projects.progress)
-				api(projects.progressCoroutines)
 
 				implementation(projects.logger)
 			}
@@ -32,6 +28,8 @@ kotlin {
 		val commonTest by getting {
 			dependencies {
 				implementation(projects.tester)
+
+				implementation(projects.stateArrow)
 
 				api(KotlinX.coroutines.test)
 			}
