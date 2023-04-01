@@ -1,4 +1,4 @@
-package opensavvy.pedestal.progress
+package opensavvy.progress
 
 private class SimpleLoadingImplementation(
     override val normalized: Double,

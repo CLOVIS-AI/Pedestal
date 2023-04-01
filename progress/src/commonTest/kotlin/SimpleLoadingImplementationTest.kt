@@ -1,4 +1,4 @@
-package opensavvy.pedestal.progress
+package opensavvy.progress
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
