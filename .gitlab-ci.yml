@@ -252,6 +252,11 @@ dokka:
     paths:
       - documentation
     expose_as: "Documentation"
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG/documentation
+    url: https://$CI_PROJECT_NAMESPACE.$CI_PAGES_DOMAIN/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/documentation/index.html
+    deployment_tier: development
+    auto_stop_in: 1 week
   interruptible: true
 
 pages:
