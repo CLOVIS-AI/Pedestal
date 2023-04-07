@@ -1,15 +1,15 @@
 package opensavvy.state.outcome
 
-import arrow.core.Either
-import opensavvy.state.Failure
+import opensavvy.state.failure.Failure
 
 /**
- * Returns the value of this outcome, or throws the [Failure] if it isn't successful.
- *
- * This function breaks the functional error handling paradigm, it shouldn't be used in regular code.
- * It is useful in tests.
+ * Returns [Success.value][Outcome.Success.value], or `null` if this outcome is not successful.
  */
-fun <T> Outcome<T>.orThrow(): T = when (this) {
-	is Either.Left -> throw value.toException()
-	is Either.Right -> value
-}
+val <T : Any> Outcome<*, T>.valueOrNull: T?
+    get() = (this as? Outcome.Success<T>)?.value
+
+/**
+ * Returns [Failure.failure][Outcome.Failure.failure], or `null` if this outcome is not a failure.
+ */
+val <F : Failure> Outcome<F, *>.failureOrNull: F?
+    get() = (this as? Outcome.Failure)?.failure
