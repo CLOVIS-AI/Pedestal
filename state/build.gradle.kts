@@ -42,7 +42,7 @@ kover {
 		rule {
 			name = "Minimal code coverage"
 			bound {
-				minValue = 70 // until it is rewritten
+				minValue = 90
 			}
 		}
 	}
