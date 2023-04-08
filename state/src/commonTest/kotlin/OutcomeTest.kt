@@ -9,10 +9,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import opensavvy.state.Progression.Companion.done
-import opensavvy.state.Progression.Companion.loading
-import opensavvy.state.ProgressionReporter.Companion.progressionReporter
-import opensavvy.state.ProgressionReporter.Companion.report
+import opensavvy.progress.Progress
+import opensavvy.progress.coroutines.StateFlowProgressReporter
+import opensavvy.progress.coroutines.asCoroutineContext
+import opensavvy.progress.coroutines.report
+import opensavvy.progress.done
+import opensavvy.progress.loading
 import opensavvy.state.outcome.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -55,14 +57,13 @@ class OutcomeTest {
 	@Test
 	fun successful() = runTest {
 		val id = IntId(18)
-		val reporter = progressionReporter()
+		val reporter = StateFlowProgressReporter()
 
-		val actualAsync = async(reporter) {
+		val actualAsync = async(reporter.asCoroutineContext()) {
 			id.request().also { report(done()) }
 		}
 
 		val expectedLoading = listOf(
-			loading(),
 			loading(0.0),
 			loading(0.2),
 			loading(0.4),
@@ -70,11 +71,11 @@ class OutcomeTest {
 			loading(0.8),
 		)
 
-		val actualLoading = reporter.progress.takeWhile { it !is Progression.Done }.toList()
+		val actualLoading = reporter.progress.takeWhile { it !is Progress.Done }.toList()
 
 		val actual = actualAsync.await()
 		assertEquals(18.right(), actual)
-		assertEquals(18, actual.orNull())
+		assertEquals(18, actual.getOrNull())
 		assertEquals(18, actual.orThrow())
 
 		assertEquals(expectedLoading, actualLoading)

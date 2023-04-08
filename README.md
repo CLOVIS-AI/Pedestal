@@ -9,7 +9,10 @@ The release notes and changelogs are [available here](https://gitlab.com/opensav
 This project contains the following modules:
 
 - [Pedestal Logger](logger/README.md) is a simple logger implementation for multiplatform projects.
-- [Pedestal State](state/README.md) is a state management library based on KotlinX.Coroutines and Arrow to represent values that change over time, domain failures, and progression of long-running tasks.
+- [Pedestal Progress](progress/README.md) models asynchronous task progression (
+  compatibility: [KotlinX.Coroutines](progress-coroutines/README.md)).
+- [Pedestal State](state/README.md) is a state management library based on KotlinX.Coroutines and Arrow to represent
+  values that change over time, domain failures, and progression of long-running tasks.
 - [Pedestal Cache](cache/README.md) is a collection of cache implementations for Pedestal State which helps with reducing network traffic on the entire stack.
 - [Pedestal Backbone](backbone/README.md) helps with exposing multiple implementations of the same API transparently, facilitating architectural modifications with automatic caching and state management for performant reactive applications.
 - [Pedestal Spine](spine/README.md) (experimental) declares typesafe Kotlin API endpoints that can be easily used from any web server or client.

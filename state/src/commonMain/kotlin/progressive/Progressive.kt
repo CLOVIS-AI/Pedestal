@@ -1,11 +1,13 @@
 package opensavvy.state.progressive
 
-import opensavvy.state.Progression
+import opensavvy.progress.Progress
+import opensavvy.progress.done
+import opensavvy.progress.loading
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome.*
 
 /**
- * A [Outcome] with integrated [Progression] management.
+ * A [Outcome] with integrated [Progress] management.
  *
  * There are three possible cases:
  * - [Empty] if the task has started but no value is currently available,
@@ -33,13 +35,13 @@ sealed class ProgressiveOutcome<out T> {
 	 *
 	 * For more information, see [ProgressiveOutcome].
 	 */
-	abstract val progress: Progression
+	abstract val progress: Progress
 
 	/**
 	 * The operation is ongoing, but we do not know if it will be successful or a failure.
 	 */
 	data class Empty(
-		override val progress: Progression.Loading = Progression.loading(),
+		override val progress: Progress.Loading = loading(),
 	) : ProgressiveOutcome<Nothing>()
 
 	/**
@@ -50,7 +52,7 @@ sealed class ProgressiveOutcome<out T> {
 	 */
 	data class Success<T>(
 		val value: T,
-		override val progress: Progression = Progression.done(),
+		override val progress: Progress = done(),
 	) : ProgressiveOutcome<T>()
 
 	/**
@@ -61,7 +63,7 @@ sealed class ProgressiveOutcome<out T> {
 	 */
 	data class Failure(
 		val failure: opensavvy.state.Failure,
-		override val progress: Progression = Progression.done(),
+		override val progress: Progress = done(),
 	) : ProgressiveOutcome<Nothing>()
 
 	companion object {

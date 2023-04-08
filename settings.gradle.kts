@@ -11,6 +11,8 @@ plugins {
 
 include(
 	"state",
+	"progress",
+	"progress-coroutines",
 	"cache",
 	"backbone",
 	"spine",

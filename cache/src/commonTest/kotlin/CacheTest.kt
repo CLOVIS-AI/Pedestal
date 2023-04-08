@@ -3,7 +3,8 @@
 package opensavvy.cache
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runTest
 import opensavvy.cache.BatchingCacheAdapter.Companion.batchingCache
 import opensavvy.cache.CacheAdapter.Companion.cache
@@ -13,10 +14,11 @@ import opensavvy.logger.LogLevel
 import opensavvy.logger.Logger.Companion.debug
 import opensavvy.logger.Logger.Companion.info
 import opensavvy.logger.loggerFor
-import opensavvy.state.*
-import opensavvy.state.Progression.Companion.loading
-import opensavvy.state.ProgressionReporter.Companion.report
-import opensavvy.state.outcome.*
+import opensavvy.progress.Progress
+import opensavvy.progress.coroutines.report
+import opensavvy.progress.loading
+import opensavvy.state.outcome.ensureValid
+import opensavvy.state.outcome.orThrow
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.firstValue
 import kotlin.test.Test
@@ -48,22 +50,22 @@ class CacheTest {
 		val one = cache[IntId(1)]
 		val minus = cache[IntId(-1)]
 
-		assertEquals(0, zero.firstValue().orNull())
-		assertEquals(1, one.firstValue().orNull())
-		assertEquals(null, minus.firstValue().orNull())
+		assertEquals(0, zero.firstValue().getOrNull())
+		assertEquals(1, one.firstValue().getOrNull())
+		assertEquals(null, minus.firstValue().getOrNull())
 	}
 
 	private suspend fun testUpdateExpire(cache: Cache<IntId, Int>) {
 		log.info { "Checking normal behavior" }
-		assertEquals(0, cache[IntId(0)].firstValue().orNull())
+		assertEquals(0, cache[IntId(0)].firstValue().getOrNull())
 
 		log.info { "Overwriting with a different value" }
 		cache.update(IntId(0), 5)
-		assertEquals(5, cache[IntId(0)].firstValue().orNull())
+		assertEquals(5, cache[IntId(0)].firstValue().getOrNull())
 
 		log.info { "Expiring the value re-downloads and replaces our fake value" }
 		cache.expire(IntId(0))
-		assertEquals(0, cache[IntId(0)].firstValue().orNull())
+		assertEquals(0, cache[IntId(0)].firstValue().getOrNull())
 	}
 
 	private suspend fun testAutoExpiration(cache: Cache<IntId, Int>) {
@@ -236,7 +238,7 @@ class CacheTest {
 		log.info { "Forcing an update with an incorrect value" }
 		cache.update(IntId(1), 5)
 		// Wait for the cache to update
-		while (result == ProgressiveOutcome.Success(1) || result.progress !is Progression.Done) {
+		while (result == ProgressiveOutcome.Success(1) || result.progress !is Progress.Done) {
 			yield()
 		}
 		assertEquals(ProgressiveOutcome.Success(5), result)
@@ -244,7 +246,7 @@ class CacheTest {
 		log.info { "Expiring the value to see the cache fix itself" }
 		cache.expire(IntId(1))
 		// Wait for the cache to update
-		while (result == ProgressiveOutcome.Success(5) || result.progress !is Progression.Done) {
+		while (result == ProgressiveOutcome.Success(5) || result.progress !is Progress.Done) {
 			yield()
 		}
 		assertEquals(ProgressiveOutcome.Success(1), result)
