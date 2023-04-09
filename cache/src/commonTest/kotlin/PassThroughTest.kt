@@ -8,6 +8,8 @@ import kotlinx.coroutines.withContext
 import opensavvy.cache.CacheAdapter.Companion.cache
 import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
+import opensavvy.state.arrow.out
+import opensavvy.state.failure.Failure
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.Test
@@ -30,9 +32,11 @@ class PassThroughTest {
 		val shouldNot = ShouldNotPassThrough()
 		val should = ShouldPassThrough()
 
-		val cache = cache<Unit, Unit> {
-			assertEquals(null, currentCoroutineContext()[ShouldNotPassThrough])
-			assertEquals(should, currentCoroutineContext()[ShouldPassThrough])
+		val cache = cache<Unit, Failure, Unit> {
+			out {
+				assertEquals(null, currentCoroutineContext()[ShouldNotPassThrough])
+				assertEquals(should, currentCoroutineContext()[ShouldPassThrough])
+			}
 		}
 			.cachedInMemory(backgroundScope.coroutineContext)
 			.expireAfter(2.minutes, backgroundScope.coroutineContext)
