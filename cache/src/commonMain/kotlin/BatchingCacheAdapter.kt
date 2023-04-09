@@ -130,15 +130,20 @@ class BatchingCacheAdapter<I, F : Failure, T>(
 		// This cache layer has no state, nothing to do
 	}
 
-	companion object {
-		fun <I, F : Failure, T> batchingCache(
-			scope: CoroutineScope,
-			workers: Int = 1,
-			transform: suspend FlowCollector<Pair<I, ProgressiveOutcome<F, T>>>.(Set<I>) -> Unit,
-		) = BatchingCacheAdapter<I, F, T>(scope, workers) { ids ->
-			flow {
-				transform(ids)
-			}
-		}
+	companion object
+}
+
+/**
+ * Creates a cache layer that batches cache requests and executes them at once.
+ *
+ * See [BatchingCacheAdapter].
+ */
+fun <I, F : Failure, T> batchingCache(
+	scope: CoroutineScope,
+	workers: Int = 1,
+	transform: suspend FlowCollector<Pair<I, ProgressiveOutcome<F, T>>>.(Set<I>) -> Unit,
+) = BatchingCacheAdapter<I, F, T>(scope, workers) { ids ->
+	flow {
+		transform(ids)
 	}
 }

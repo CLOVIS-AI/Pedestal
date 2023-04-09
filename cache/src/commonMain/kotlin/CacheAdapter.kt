@@ -30,8 +30,13 @@ class CacheAdapter<I, F : Failure, T>(
 		// This cache layer has no state, nothing to do
 	}
 
-	companion object {
-		fun <I, F : Failure, T> cache(transform: suspend (I) -> Outcome<F, T>) =
-			CacheAdapter<I, F, T> { transform(it) }
-	}
+	companion object
 }
+
+/**
+ * Creates a cache layer that intercepts requests.
+ *
+ * See [CacheAdapter].
+ */
+fun <I, F : Failure, T> cache(transform: suspend (I) -> Outcome<F, T>) =
+	CacheAdapter<I, F, T> { transform(it) }

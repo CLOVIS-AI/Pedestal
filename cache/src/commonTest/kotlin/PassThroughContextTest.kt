@@ -20,7 +20,7 @@ class PassThroughContextTest {
 
     @Test
     fun memoryCache() = runTest {
-        val cache = CacheAdapter.cache<Boolean, Failure, Unit> {
+        val cache = cache<Boolean, Failure, Unit> {
             println(currentCoroutineContext())
             if (it) {
                 assertNotNull(currentCoroutineContext()[CustomContext])

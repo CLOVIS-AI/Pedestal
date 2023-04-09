@@ -5,8 +5,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runTest
-import opensavvy.cache.BatchingCacheAdapter.Companion.batchingCache
-import opensavvy.cache.CacheAdapter.Companion.cache
 import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.LogLevel
