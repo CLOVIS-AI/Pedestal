@@ -3,7 +3,8 @@ package opensavvy.backbone
 import opensavvy.backbone.Backbone.Companion.request
 import opensavvy.backbone.Ref.Companion.directRequest
 import opensavvy.backbone.Ref.Companion.request
-import opensavvy.state.progressive.firstValue
+import opensavvy.state.coroutines.firstValue
+import opensavvy.state.failure.Failure
 
 /**
  * A reference to a specific [object][O].
@@ -17,19 +18,19 @@ import opensavvy.state.progressive.firstValue
  *
  * @param O The object this reference refers to.
  */
-interface Ref<O> {
+interface Ref<F : Failure, O> {
 
 	/**
 	 * The [Backbone] responsible for this reference.
 	 *
 	 * This property should always return the same [Backbone] instance for a given [Ref].
 	 */
-	val backbone: Backbone<O>
+	val backbone: Backbone<F, O>
 
 	/**
 	 * Most simple implementation of [Ref], which identifies objects with an [id].
 	 */
-	data class Basic<O>(val id: String, override val backbone: Backbone<O>) : Ref<O>
+	data class Basic<F : Failure, O>(val id: String, override val backbone: Backbone<F, O>) : Ref<F, O>
 
 	companion object {
 		/**
@@ -37,14 +38,14 @@ interface Ref<O> {
 		 *
 		 * This is a convenience method around [Backbone.directRequest].
 		 */
-		suspend fun <O> Ref<O>.directRequest() = backbone.directRequest(this)
+		suspend fun <F : Failure, O> Ref<F, O>.directRequest() = backbone.directRequest(this)
 
 		/**
 		 * Requests the referenced data, returning a value from the cache if one is stored.
 		 *
 		 * This is a convenience method around [Backbone.request].
 		 */
-		fun <O> Ref<O>.request() = backbone.request(this)
+		fun <F : Failure, O> Ref<F, O>.request() = backbone.request(this)
 
 		/**
 		 * Requests the referenced data, returning the first value returned by the cache.
@@ -55,14 +56,14 @@ interface Ref<O> {
 		 * notified of new values is important (e.g. in a UI).
 		 * This function is intended for non-reactive environments (e.g. server requests, tests…).
 		 */
-		suspend fun <O> Ref<O>.now() = request().firstValue()
+		suspend fun <F : Failure, O> Ref<F, O>.now() = request().firstValue()
 
 		/**
 		 * Forces the cache to forget anything it might remember about this reference.
 		 *
 		 * The next time [request] is called, a new request will be started.
 		 */
-		suspend fun <O> Ref<O>.expire() {
+		suspend fun <F : Failure, O> Ref<F, O>.expire() {
 			backbone.cache.expire(this)
 		}
 	}
