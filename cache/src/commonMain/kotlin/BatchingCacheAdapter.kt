@@ -1,18 +1,14 @@
 package opensavvy.cache
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import opensavvy.logger.Logger.Companion.error
 import opensavvy.logger.loggerFor
 import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
 private typealias CacheStorage<F, T> = CompletableDeferred<StateFlow<ProgressiveOutcome<F, T>>>
@@ -26,7 +22,7 @@ private typealias CacheStorage<F, T> = CompletableDeferred<StateFlow<Progressive
  * Unlike [CacheAdapter], this class is able to group requests together.
  */
 class BatchingCacheAdapter<I, F : Failure, T>(
-	context: CoroutineContext,
+	scope: CoroutineScope,
 	/**
 	 * The number of workers batching the requests.
 	 *
@@ -49,9 +45,8 @@ class BatchingCacheAdapter<I, F : Failure, T>(
 		val requests = Channel<Pair<I, CacheStorage<F, T>>>()
 		this.requests = requests
 
-		val scope = CoroutineScope(context)
 		repeat(workers) {
-			scope.launch {
+			scope.launch(CoroutineName("$this($it/$workers)")) {
 				worker(requests)
 			}
 		}
@@ -137,10 +132,10 @@ class BatchingCacheAdapter<I, F : Failure, T>(
 
 	companion object {
 		fun <I, F : Failure, T> batchingCache(
-			context: CoroutineContext,
+			scope: CoroutineScope,
 			workers: Int = 1,
 			transform: suspend FlowCollector<Pair<I, ProgressiveOutcome<F, T>>>.(Set<I>) -> Unit,
-		) = BatchingCacheAdapter<I, F, T>(context, workers) { ids ->
+		) = BatchingCacheAdapter<I, F, T>(scope, workers) { ids ->
 			flow {
 				transform(ids)
 			}

@@ -109,17 +109,15 @@ class CacheTest {
 	@Test
 	fun infiniteMemoryCache() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
+			.cachedInMemory(coroutineContext.job)
 
 		testCache(cache)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun infiniteMemoryCacheUpdateExpire() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
+			.cachedInMemory(coroutineContext.job)
 
 		testUpdateExpire(cache)
 
@@ -129,51 +127,43 @@ class CacheTest {
 	@Test
 	fun expiringDefaultCache() = runTest {
 		val cache = adapter()
-			.expireAfter(1.seconds, coroutineContext)
+			.expireAfter(1.seconds, backgroundScope)
 
 		testCache(cache)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expiringMemoryCache() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
-			.expireAfter(1.seconds, coroutineContext)
+			.cachedInMemory(coroutineContext.job)
+			.expireAfter(1.seconds, backgroundScope)
 
 		testCache(cache)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expiringMemoryCacheUpdateExpire() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
-			.expireAfter(1.seconds, coroutineContext)
+			.cachedInMemory(coroutineContext.job)
+			.expireAfter(1.seconds, backgroundScope)
 
 		testUpdateExpire(cache)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expiringMemoryCacheExpirationLayer() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
-			.expireAfter(1.seconds, coroutineContext)
+			.cachedInMemory(coroutineContext.job)
+			.expireAfter(1.seconds, backgroundScope)
 
 		testAutoExpiration(cache)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expireAll() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
-			.expireAfter(1.seconds, coroutineContext)
+			.cachedInMemory(coroutineContext.job)
+			.expireAfter(1.seconds, backgroundScope)
 
 		log.info { "Initial values" }
 		val id0 = IntId(0)
@@ -193,21 +183,19 @@ class CacheTest {
 		cache.expireAll()
 		assertEquals(0, cache[id0].firstValue().valueOrNull)
 		assertEquals(1, cache[id1].firstValue().valueOrNull)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun batching() = runTest {
-		val cache = batchingCache<IntId, IntId.Failures, Int>(coroutineContext) { ids ->
+		val cache = batchingCache<IntId, IntId.Failures, Int>(backgroundScope) { ids ->
 			for (ref in ids) {
 				emit(ref to ProgressiveOutcome.Incomplete(loading()))
 				delay(10)
 				emit(ref to ProgressiveOutcome.Success(ref.id))
 			}
 		}
-			.cachedInMemory(coroutineContext)
-			.expireAfter(1.seconds, coroutineContext)
+			.cachedInMemory(coroutineContext.job)
+			.expireAfter(1.seconds, backgroundScope)
 
 		log.info { "Initial values" }
 		val id0 = IntId(0)
@@ -227,19 +215,17 @@ class CacheTest {
 		cache.expireAll()
 		assertEquals(0, cache[id0].firstValue().valueOrNull)
 		assertEquals(1, cache[id1].firstValue().valueOrNull)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun concurrent() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
+			.cachedInMemory(coroutineContext.job)
 
 		var result: ProgressiveOutcome<IntId.Failures, Int> = ProgressiveOutcome.Incomplete()
 
 		log.info { "Subscribing…" }
-		launch {
+		val subscriber = launch {
 			cache[IntId(1)]
 				.collect { result = it }
 		}
@@ -266,7 +252,7 @@ class CacheTest {
 		}
 		assertEquals(ProgressiveOutcome.Success(1), result)
 
-		currentCoroutineContext().cancelChildren()
+		subscriber.cancel()
 	}
 
 }

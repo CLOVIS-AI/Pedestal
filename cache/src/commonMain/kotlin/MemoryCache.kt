@@ -5,14 +5,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
-import opensavvy.cache.PassThroughContext.Companion.onlyPassThrough
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.copy
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * In-memory [Cache] implementation.
@@ -33,7 +30,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  */
 class MemoryCache<I, F : Failure, T>(
 	private val upstream: Cache<I, F, T>,
-	context: CoroutineContext = EmptyCoroutineContext,
+	private val job: Job = SupervisorJob(),
 ) : Cache<I, F, T> {
 
 	private val log = loggerFor(this)
@@ -54,9 +51,6 @@ class MemoryCache<I, F : Failure, T>(
 
 	private val jobs = HashMap<I, Job>()
 	private val jobsLock = Semaphore(1)
-
-	private val subscribeJob = SupervisorJob(context[Job])
-	private val scope = CoroutineScope(subscribeJob)
 
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
@@ -83,10 +77,11 @@ class MemoryCache<I, F : Failure, T>(
 			if (job == null || !job.isActive) {
 				// No one is currently making the request, I'm taking the responsibility to do it
 
-				val childContext = currentCoroutineContext().onlyPassThrough() +
-						CoroutineName("$this for $id")
+				val childContext = currentCoroutineContext() +
+						CoroutineName("$this(for = $id)") +
+						this.job
 
-				jobs[id] = scope.launch(childContext) {
+				jobs[id] = CoroutineScope(childContext).launch {
 					log.trace(id) { "Subscribing to the previous layer for" }
 
 					val state = cacheLock.withPermit { getUnsafe(id) }
@@ -187,6 +182,6 @@ class MemoryCache<I, F : Failure, T>(
 	}
 
 	companion object {
-		fun <I, F : Failure, T> Cache<I, F, T>.cachedInMemory(context: CoroutineContext) = MemoryCache(this, context)
+		fun <I, F : Failure, T> Cache<I, F, T>.cachedInMemory(job: Job) = MemoryCache(this, job)
 	}
 }

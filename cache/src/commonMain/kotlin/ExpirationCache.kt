@@ -13,8 +13,6 @@ import opensavvy.logger.loggerFor
 import opensavvy.progress.done
 import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -44,18 +42,15 @@ class ExpirationCache<I, F : Failure, T>(
 	 *
 	 * Cancelling this job will cancel the expiration job, after which this cache will stop expiring data.
 	 */
-	context: CoroutineContext = EmptyCoroutineContext,
+	expirationScope: CoroutineScope,
 ) : Cache<I, F, T> {
 	private val log = loggerFor(this)
 
 	private val lastUpdate = HashMap<I, Instant>()
 	private val lock = Semaphore(1)
 
-	private val job = Job(context[Job])
-	private val scope = CoroutineScope(job + CoroutineName("ExpirationCache task"))
-
 	init {
-		scope.launch {
+		expirationScope.launch(CoroutineName("$this")) {
 			while (isActive) {
 				delay(expireAfter)
 
@@ -117,7 +112,7 @@ class ExpirationCache<I, F : Failure, T>(
 		 *
 		 * @see ExpirationCache
 		 */
-		fun <I, F : Failure, T> Cache<I, F, T>.expireAfter(duration: Duration, context: CoroutineContext) =
-			ExpirationCache(this, duration, context)
+		fun <I, F : Failure, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
+			ExpirationCache(this, duration, scope)
 	}
 }
