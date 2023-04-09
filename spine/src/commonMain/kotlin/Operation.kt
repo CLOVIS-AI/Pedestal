@@ -1,8 +1,7 @@
 package opensavvy.spine
 
-import arrow.core.continuations.EffectScope
-import opensavvy.state.Failure
-import opensavvy.state.outcome.out
+import arrow.core.raise.Raise
+import opensavvy.state.arrow.out
 import kotlin.js.JsName
 
 typealias OperationValidator<In, Params, Context> = suspend Operation.ValidatorScope<In, Params, Context>.() -> Unit
@@ -69,7 +68,7 @@ class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Contex
 	}
 
 	class ValidatorScope<In : Any, Params : Parameters, Context> internal constructor(
-		private val scope: EffectScope<Failure>,
+		private val scope: Raise<SpineFailure>,
 
 		val id: Id,
 
@@ -78,5 +77,5 @@ class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Contex
 		val parameters: Params,
 
 		val context: Context,
-	) : EffectScope<Failure> by scope
+	) : Raise<SpineFailure> by scope
 }

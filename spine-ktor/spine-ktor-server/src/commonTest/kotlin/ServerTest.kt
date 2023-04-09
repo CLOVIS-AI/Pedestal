@@ -1,20 +1,17 @@
 package opensavvy.spine.ktor.server
 
+import arrow.core.raise.ensure
 import io.ktor.client.plugins.logging.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.testing.*
 import opensavvy.logger.Logger.Companion.info
 import opensavvy.logger.loggerFor
-import opensavvy.spine.Id
-import opensavvy.spine.Identified
-import opensavvy.spine.Parameters
-import opensavvy.spine.Route
+import opensavvy.spine.*
 import opensavvy.spine.Route.Companion.div
 import opensavvy.spine.ktor.client.request
-import opensavvy.state.outcome.ensureFound
-import opensavvy.state.outcome.orThrow
-import opensavvy.state.outcome.successful
+import opensavvy.state.outcome.success
+import opensavvy.state.outcome.valueOrNull
 import org.junit.Test
 import org.slf4j.event.Level
 import kotlin.test.assertEquals
@@ -68,27 +65,27 @@ class ServerTest {
 
 			route(api.users.id.get, context) {
 				val user = users.find { it.id == id }
-				ensureFound(user != null) { "Could not find the user $id" }
+				ensure(user != null) { SpineFailure(SpineFailure.Type.NotFound, "Could not find the user $id") }
 				user
 			}
 
 			route(api.users.id.archive, context) {
 				val userIndex = users.indexOfFirst { it.id == id }
-				ensureFound(userIndex >= 0) { "Could not find user $id" }
+				ensure(userIndex >= 0) { SpineFailure(SpineFailure.Type.NotFound, "Could not find user $id") }
 				val user = users.removeAt(userIndex)
 				users.add(user.copy(archived = true))
 			}
 
 			route(api.users.id.unarchive, context) {
 				val userIndex = users.indexOfFirst { it.id == id }
-				ensureFound(userIndex >= 0) { "Could not find user $id" }
+				ensure(userIndex >= 0) { SpineFailure(SpineFailure.Type.NotFound, "Could not find user $id") }
 				val user = users.removeAt(userIndex)
 				users.add(user.copy(archived = false))
 			}
 
 			route(api.users.id.delete, context) {
 				val userIndex = users.indexOfFirst { it.id == id }
-				ensureFound(userIndex >= 0) { "Could not find user $id" }
+				ensure(userIndex >= 0) { SpineFailure(SpineFailure.Type.NotFound, "Could not find user $id") }
 				users.removeAt(userIndex)
 			}
 		}
@@ -113,7 +110,7 @@ class ServerTest {
 			val params = User.SearchParams().apply { includeArchived = true }
 			val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
 
-			assertEquals(successful(emptyList()), results)
+			assertEquals(emptyList<Id>().success(), results)
 		}
 
 		log.info { "Step 2: creating two users" }
@@ -121,18 +118,18 @@ class ServerTest {
 		run {
 			val first =
 				client.request(api.users.create, api.users.create.idOf(), User.New("first"), Parameters.Empty, Unit)
-					.orThrow()
+					.valueOrNull!!
 
 			val second =
 				client.request(api.users.create, api.users.create.idOf(), User.New("second"), Parameters.Empty, Unit)
-					.orThrow()
+					.valueOrNull!!
 
 			assertEquals(User(Id("test", Route / "users" / "0"), "first", archived = false), first.value)
 			assertEquals(User(Id("test", Route / "users" / "1"), "second", archived = false), second.value)
 
 			val params = User.SearchParams().apply { includeArchived = true }
 			val results = client.request(api.users.get, api.users.get.idOf(), Unit, params, Unit)
-				.orThrow()
+				.valueOrNull
 
 			assertEquals(listOf(first.id, second.id), results)
 		}

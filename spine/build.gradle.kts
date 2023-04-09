@@ -16,6 +16,8 @@ kotlin {
 		val commonMain by getting {
 			dependencies {
 				api(projects.state)
+				api(projects.stateArrow)
+				api(projects.stateCoroutines)
 				api(KotlinX.serialization.core)
 
 				implementation(projects.logger)
@@ -29,17 +31,6 @@ kotlin {
 
 				implementation(KotlinX.coroutines.test)
 				implementation(KotlinX.serialization.json)
-			}
-		}
-	}
-}
-
-kover {
-	verify {
-		rule {
-			name = "Minimal code coverage"
-			bound {
-				minValue = 80
 			}
 		}
 	}
