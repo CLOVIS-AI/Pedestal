@@ -16,8 +16,8 @@ This project contains the following modules:
 - [Pedestal Cache](cache/README.md) is a collection of cache implementations for Pedestal State which helps with reducing network traffic on the entire stack.
 - [Pedestal Backbone](backbone/README.md) helps with exposing multiple implementations of the same API transparently, facilitating architectural modifications with automatic caching and state management for performant reactive applications.
 
-Pedestal focuses heavily on Kotlin and depends on some KotlinX libraries (e.g. Coroutines).
-Apart from that, Pedestal tries to be as agnostic of the technology as possible: for example, Spine APIs can be implemented with any web client or server framework (the Ktor implementation is available out of the box).
+Pedestal focuses heavily on Kotlin and attempts to depend on as few external dependencies as possible.
+Where possible, compatibility modules are provided to interoperate with other ecosystems.
 
 ## In the wild
 
