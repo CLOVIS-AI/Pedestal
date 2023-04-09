@@ -230,28 +230,29 @@ class CacheTest {
 		}
 		// Wait for the first cache read to finish
 		delay(1000)
-		while (result is ProgressiveOutcome.Incomplete) {
-			yield()
-		}
+		yieldUntil { result !is ProgressiveOutcome.Incomplete }
 		assertEquals(ProgressiveOutcome.Success(1), result)
 
 		log.info { "Forcing an update with an incorrect value" }
 		cache.update(IntId(1), 5)
 		// Wait for the cache to update
-		while (result == ProgressiveOutcome.Success(1) || result.progress !is Progress.Done) {
-			yield()
-		}
+		yieldUntil { result != ProgressiveOutcome.Success(1) && result.progress is Progress.Done }
 		assertEquals(ProgressiveOutcome.Success(5), result)
 
 		log.info { "Expiring the value to see the cache fix itself" }
 		cache.expire(IntId(1))
 		// Wait for the cache to update
-		while (result == ProgressiveOutcome.Success(5) || result.progress !is Progress.Done) {
-			yield()
-		}
+		yieldUntil { result != ProgressiveOutcome.Success(5) && result.progress is Progress.Done }
 		assertEquals(ProgressiveOutcome.Success(1), result)
 
 		subscriber.cancel()
 	}
 
+}
+
+private suspend fun yieldUntil(predicate: () -> Boolean) {
+	while (!predicate()) {
+		delay(100)
+		yield()
+	}
 }
