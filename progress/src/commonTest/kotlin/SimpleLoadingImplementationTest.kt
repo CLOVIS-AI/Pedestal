@@ -1,6 +1,7 @@
 package opensavvy.progress
 
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
@@ -45,5 +46,30 @@ class SimpleLoadingImplementationTest {
     @Test
     fun percent100() {
         assertEquals(100, loading(1.0).percent)
+    }
+
+    @Test
+    fun string() {
+        assertEquals("Loading(0%)", loading(0.0).toString())
+        assertEquals("Loading(20%)", loading(0.2).toString())
+        assertEquals("Loading(99%)", loading(0.99).toString())
+        assertEquals("Loading(100%)", loading(1.0).toString())
+    }
+
+    @Test
+    fun hash() {
+        val set = hashSetOf(
+            done(),
+            loading(0.0),
+            loading(0.7),
+            loading(0.9),
+            loading(1.0),
+        )
+
+        assertContains(set, done())
+        assertContains(set, loading(0.0))
+        assertContains(set, loading(0.7))
+        assertContains(set, loading(0.9))
+        assertContains(set, loading(1.0))
     }
 }
