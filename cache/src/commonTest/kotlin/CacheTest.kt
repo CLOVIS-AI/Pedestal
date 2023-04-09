@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package opensavvy.cache
 
 import arrow.core.raise.ensure
@@ -28,6 +26,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CacheTest {
 
 	private val log = loggerFor(this).apply {
@@ -56,7 +55,7 @@ class CacheTest {
 			delay(10)
 			ensure(it.id >= 0) { IntId.Failures.Negative(it.id) }
 			it.id
-		}
+		}.also { log.debug(it) { "Response:" } }
 	}
 
 	private suspend fun testCache(cache: Cache<IntId, IntId.Failures, Int>) {
