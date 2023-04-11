@@ -1,67 +1,46 @@
 # Module state
 
-Small library for state management based on KotlinX.Coroutines and Kotlin Arrow Core.
+Small library for value-based outcome representation.
 
-Pedestal State is a centralized way of handling:
+Using `state`, it is possible to model a successful operation, a failed operation, as well as the intermediate progress
+states of an ongoing operation (using `progress`).
 
-- error management using [Either][arrow.core.Either], with integrated API failure reasons,
-- reporting the progress of ongoing operations to their callers, entirely through coroutines.
+## Representing a computation's outcome
 
-Example usage:
+In
+Kotlin, [exceptions are not an idiomatic way to represent domain failures](https://elizarov.medium.com/kotlin-and-exceptions-8062f589d07).
+They should only be used for programming errors (for example, broken invariants, using `IllegalArgumentException`),
+issues that may arise anywhere in a program and thus shouldn't be handled everywhere they appear (for
+example, `OutOfMemoryError`) or to encapsulate errors outside our control (for example, `NetworkError`). Instead, we
+should represent the outcome of a domain operation using
+a [sealed class hierarchy](https://kotlinlang.org/docs/sealed-classes.html).
 
-```kotlin
-suspend fun setPassword(
-	userId: String,
-	oldPassword: String,
-	repeatOldPassword: String,
-	newPassword: String,
-) = out {
-	// The 'out' builder is essentially the same as the 'either {}' block, 
-	// except it intercepts some exceptions used in idiomatic Kotlin 
-	// (IllegalArgumentException…)
+Multiple libraries have been created to facilitate using these sealed class hierarchies, most
+notably [Arrow](https://arrow-kt.io/docs/patterns/error_handling/). These libraries provide enhanced semantics and
+syntax sugar for this style of error management, but they lack a representation for intermediate values (for example,
+the current progress of an information).
 
-	// We can easily report the progress of our function
-	// The progress is sent directly to the caller using CoroutineContext
-	// (does nothing if the caller has not registered a listener)
-	// Progress can thus be reported in any suspending function, even
-	// without the 'out' builder
-	report(loading(0.1)) // 10%
+Originally, `state` was built upon Arrow. Today, `state` is independent of Arrow, but it doesn't duplicate all the nice
+tooling provided by Arrow: we recommend using our provided `state-arrow` compatibility layer to use in your
+projects. `state` itself is kept as small as possible to help interoperability with projects that do not use Arrow.
 
-	// Use APIs inspired by the standard library's 'require'
-	// to check preconditions/invariants
-	// The added information can be used for example by the Pedestal Spine module
-	// to automatically generate the appropriate HTTP status codes
-	ensureAuthenticated(userService.currentUser() == userId) { "You cannot edit the password of another user" }
-	ensureValid(oldPassword == repeatOldPassword) { "The two provided passwords are different" }
-	ensureValid(oldPassword != newPassword) { "The new password cannot be the same password as the old one" }
+There are multiple recommended ways to represent outcomes:
 
-	// The goal of the progress reporting API is that you can add
-	// reporting points after your application is developed, as your usage
-	// dictates they become useful, without any impact to your APIs
-	report(loading(0.5)) // 50%
-
-	// Within the block, all progress events go through the provided computation
-	transformQuantifiedProgress({ loading(it.normalized / 2.0 + 0.5) }) {
-		report(loading(0.1)) // 10%, becomes 55% due to the transformation block
-
-		// We're still inside the Arrow 'either {}' block, so we can use 'bind'
-		// and all other utilities
-		userService.setPassword(userId, newPassword).bind()
-
-		report(loading(0.8)) // 80%, becomes 90% due to the transformation block
-	}
-}
-```
-
-You can also create your own progress type to store any kind of additional information (e.g. bandwidth speed, estimated time of end, amount of files impacted…) by implementing the [Progression.Quantified][opensavvy.state.Progression.Quantified] interface.
+- success, failures and progress in a wrapper object (
+  see [ProgressiveOutcome][opensavvy.state.progressive.ProgressiveOutcome]),
+- success and failures in a wrapper object (see `state-arrow`'s `Outcome`) and progress by asynchronous context calls (
+  see `progress-coroutines`'s `CoroutineProgressReporter`),
+- success as a regular return type, failures as a context receiver (see Arrow 2.0's `Raise` interface) and progress as a
+  context receiver (using `progress`' `ProgressReporter`).
 
 # Package opensavvy.state
 
-Centralized [Failure][opensavvy.state.Failure] management as well as [Progression][opensavvy.state.Progression] APIs to represent ongoing operations and their current state.
+Centralized [Failure][opensavvy.state.Failure] management.
 
 # Package opensavvy.state.outcome
 
-Utilities for the [Outcome][opensavvy.state.outcome.Outcome] type, allowing to embed typed error management directly into the API without using exceptions.
+Utilities for the [Outcome][opensavvy.state.outcome.Outcome] type, allowing to embed typed error management directly
+into the API without using exceptions.
 
 # Package opensavvy.state.progressive
 

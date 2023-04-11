@@ -30,6 +30,7 @@ kotlin {
 		val commonTest by getting {
 			dependencies {
 				implementation(projects.tester)
+				implementation(projects.stateArrow)
 
 				api(KotlinX.coroutines.test)
 			}

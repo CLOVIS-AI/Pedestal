@@ -1,20 +1,21 @@
 package opensavvy.spine.ktor
 
 import io.ktor.http.*
-import opensavvy.state.Failure
+import opensavvy.spine.SpineFailure
 
 fun HttpStatusCode.toSpine() = when (this) {
-	HttpStatusCode.NotFound -> Failure.Kind.NotFound
-	HttpStatusCode.Unauthorized -> Failure.Kind.Unauthenticated
-	HttpStatusCode.Forbidden -> Failure.Kind.Unauthorized
-	HttpStatusCode.UnprocessableEntity -> Failure.Kind.Invalid
-	else -> Failure.Kind.Unknown
+	HttpStatusCode.NotFound -> SpineFailure.Type.NotFound
+	HttpStatusCode.Unauthorized -> SpineFailure.Type.Unauthenticated
+	HttpStatusCode.Forbidden -> SpineFailure.Type.Unauthorized
+	HttpStatusCode.UnprocessableEntity -> SpineFailure.Type.InvalidRequest
+	HttpStatusCode.Conflict -> SpineFailure.Type.InvalidState
+	else -> error("Unexpected error code: $this")
 }
 
-fun Failure.Kind.toHttp() = when (this) {
-	Failure.Kind.Invalid -> HttpStatusCode.UnprocessableEntity
-	Failure.Kind.Unauthenticated -> HttpStatusCode.Unauthorized
-	Failure.Kind.Unauthorized -> HttpStatusCode.Forbidden
-	Failure.Kind.NotFound -> HttpStatusCode.NotFound
-	Failure.Kind.Unknown -> HttpStatusCode.InternalServerError
+fun SpineFailure.Type.toHttp() = when (this) {
+	SpineFailure.Type.InvalidRequest -> HttpStatusCode.UnprocessableEntity
+	SpineFailure.Type.Unauthenticated -> HttpStatusCode.Unauthorized
+	SpineFailure.Type.Unauthorized -> HttpStatusCode.Forbidden
+	SpineFailure.Type.NotFound -> HttpStatusCode.NotFound
+	SpineFailure.Type.InvalidState -> HttpStatusCode.InternalServerError
 }

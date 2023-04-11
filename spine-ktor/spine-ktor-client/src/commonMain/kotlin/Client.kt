@@ -10,10 +10,10 @@ import opensavvy.spine.Id
 import opensavvy.spine.Operation
 import opensavvy.spine.Parameters
 import opensavvy.spine.ResourceGroup.AbstractResource
+import opensavvy.spine.SpineFailure
 import opensavvy.spine.ktor.toHttp
 import opensavvy.spine.ktor.toSpine
-import opensavvy.state.Failure
-import opensavvy.state.outcome.out
+import opensavvy.state.arrow.out
 
 /**
  * Executes a [HttpClient] request, with the information declared in an [Operation].
@@ -93,7 +93,7 @@ suspend inline fun <Resource : Any, reified In : Any, reified Out : Any, reified
 		} else {
 			val body = result.body<String>().ifBlank { "${result.status} with no provided body" }
 			val kind = result.status.toSpine()
-			shift(Failure(kind, body))
+			raise(SpineFailure(kind, body))
 		}
 	}
 }

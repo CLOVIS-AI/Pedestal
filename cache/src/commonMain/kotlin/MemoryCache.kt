@@ -5,13 +5,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
-import opensavvy.cache.PassThroughContext.Companion.onlyPassThrough
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
+import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.copy
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * In-memory [Cache] implementation.
@@ -30,10 +28,10 @@ import kotlin.coroutines.EmptyCoroutineContext
  *     .expireAfter(2.minutes)
  * ```
  */
-class MemoryCache<I, T>(
-	private val upstream: Cache<I, T>,
-	context: CoroutineContext = EmptyCoroutineContext,
-) : Cache<I, T> {
+class MemoryCache<I, F : Failure, T>(
+	private val upstream: Cache<I, F, T>,
+	private val job: Job = SupervisorJob(),
+) : Cache<I, F, T> {
 
 	private val log = loggerFor(this)
 
@@ -48,19 +46,16 @@ class MemoryCache<I, T>(
 	 * - 'expire' removed the cached value
 	 */
 
-	private val cache = HashMap<I, MutableStateFlow<ProgressiveOutcome<T>?>>()
+	private val cache = HashMap<I, MutableStateFlow<ProgressiveOutcome<F, T>?>>()
 	private val cacheLock = Semaphore(1)
 
 	private val jobs = HashMap<I, Job>()
 	private val jobsLock = Semaphore(1)
 
-	private val subscribeJob = SupervisorJob(context[Job])
-	private val scope = CoroutineScope(subscribeJob)
-
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
 
-	override fun get(id: I): Flow<ProgressiveOutcome<T>> = flow {
+	override fun get(id: I): Flow<ProgressiveOutcome<F, T>> = flow {
 		val cached = cacheLock.withPermit { getUnsafe(id) }
 			.onEach { out ->
 				if (out == null) {
@@ -82,10 +77,11 @@ class MemoryCache<I, T>(
 			if (job == null || !job.isActive) {
 				// No one is currently making the request, I'm taking the responsibility to do it
 
-				val childContext = currentCoroutineContext().onlyPassThrough() +
-						CoroutineName("$this for $id")
+				val childContext = currentCoroutineContext() +
+						CoroutineName("$this(for = $id)") +
+						this.job
 
-				jobs[id] = scope.launch(childContext) {
+				jobs[id] = CoroutineScope(childContext).launch {
 					log.trace(id) { "Subscribing to the previous layer for" }
 
 					val state = cacheLock.withPermit { getUnsafe(id) }
@@ -97,7 +93,7 @@ class MemoryCache<I, T>(
 
 							// If the previous cache layer says it's a new value, but we remember what the previous
 							// result was, we return the previous value with the new progress information
-							if (it is ProgressiveOutcome.Empty && previousValue != null)
+							if (it is ProgressiveOutcome.Incomplete && previousValue != null)
 								previousValue.copy(progress = it.progress)
 							else
 								it
@@ -186,6 +182,6 @@ class MemoryCache<I, T>(
 	}
 
 	companion object {
-		fun <I, T> Cache<I, T>.cachedInMemory(context: CoroutineContext) = MemoryCache(this, context)
+		fun <I, F : Failure, T> Cache<I, F, T>.cachedInMemory(job: Job) = MemoryCache(this, job)
 	}
 }

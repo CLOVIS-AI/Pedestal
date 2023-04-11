@@ -44,6 +44,8 @@ publish:
       progress:publishAllPublicationsToGitLabRepository
       progress-coroutines:publishAllPublicationsToGitLabRepository
       state:publishAllPublicationsToGitLabRepository
+      state-arrow:publishAllPublicationsToGitLabRepository
+      state-coroutines:publishAllPublicationsToGitLabRepository
       cache:publishAllPublicationsToGitLabRepository
       backbone:publishAllPublicationsToGitLabRepository
       logger:publishAllPublicationsToGitLabRepository
@@ -65,6 +67,8 @@ publish:ios:
       progress:publishIosArm64PublicationToGitLabRepository
       progress-coroutines:publishIosArm64PublicationToGitLabRepository
       state:publishIosArm64PublicationToGitLabRepository
+      state-arrow:publishIosArm64PublicationToGitLabRepository
+      state-coroutines:publishIosArm64PublicationToGitLabRepository
       cache:publishIosArm64PublicationToGitLabRepository
       backbone:publishIosArm64PublicationToGitLabRepository
       logger:publishIosArm64PublicationToGitLabRepository
@@ -74,6 +78,8 @@ publish:ios:
       progress:publishIosSimulatorArm64PublicationToGitLabRepository
       progress-coroutines:publishIosSimulatorArm64PublicationToGitLabRepository
       state:publishIosSimulatorArm64PublicationToGitLabRepository
+      state-arrow:publishIosSimulatorArm64PublicationToGitLabRepository
+      state-coroutines:publishIosSimulatorArm64PublicationToGitLabRepository
       cache:publishIosSimulatorArm64PublicationToGitLabRepository
       backbone:publishIosSimulatorArm64PublicationToGitLabRepository
       logger:publishIosSimulatorArm64PublicationToGitLabRepository
@@ -83,6 +89,8 @@ publish:ios:
       progress:publishIosX64PublicationToGitLabRepository
       progress-coroutines:publishIosX64PublicationToGitLabRepository
       state:publishIosX64PublicationToGitLabRepository
+      state-arrow:publishIosX64PublicationToGitLabRepository
+      state-coroutines:publishIosX64PublicationToGitLabRepository
       cache:publishIosX64PublicationToGitLabRepository
       backbone:publishIosX64PublicationToGitLabRepository
       logger:publishIosX64PublicationToGitLabRepository
@@ -179,6 +187,32 @@ state:convert-coverage:
       artifacts: true
   variables:
     module: state
+
+state-arrow:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: state-arrow
+
+state-arrow:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: state-arrow:test:jvm
+      artifacts: true
+  variables:
+    module: state-arrow
+
+state-coroutines:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: state-coroutines
+
+state-coroutines:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: state-coroutines:test:jvm
+      artifacts: true
+  variables:
+    module: state-coroutines
 
 cache:test:jvm:
   extends: [ .test-jvm ]

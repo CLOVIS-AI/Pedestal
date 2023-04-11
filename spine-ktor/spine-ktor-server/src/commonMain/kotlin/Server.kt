@@ -1,5 +1,6 @@
 package opensavvy.spine.ktor.server
 
+import arrow.core.raise.either
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -9,7 +10,7 @@ import opensavvy.logger.loggerFor
 import opensavvy.spine.Operation
 import opensavvy.spine.Parameters
 import opensavvy.spine.ktor.toHttp
-import opensavvy.state.outcome.out
+import opensavvy.state.arrow.toEither
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -92,24 +93,15 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 
 			call.advertiseEndpointsFor(operation, id)
 
-			out {
-				operation.validate(id, body, params, context).bind()
+			either {
+				operation.validate(id, body, params, context).toEither().bind()
 
 				val responseBuilder = ResponseStateBuilder(this, id, body, params, call, context)
 				responseBuilder.block()
 			}.fold(
 				ifLeft = {
-					Server.log.warn(it.kind, it.message) {
-						buildString {
-							append("${it.kind}: ${it.message}")
-
-							if (it.cause != null) {
-								appendLine()
-								append("Caused by: ${it.cause?.stackTraceToString()}")
-							}
-						}
-					}
-					call.respond(it.kind.toHttp(), it.message)
+					Server.log.warn(it.type, it.message) { it.toString() }
+					call.respond(it.type.toHttp(), it.message)
 				},
 				ifRight = {
 					call.respond(it)

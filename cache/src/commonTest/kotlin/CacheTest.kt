@@ -1,13 +1,10 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package opensavvy.cache
 
+import arrow.core.raise.ensure
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runTest
-import opensavvy.cache.BatchingCacheAdapter.Companion.batchingCache
-import opensavvy.cache.CacheAdapter.Companion.cache
 import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.LogLevel
@@ -17,14 +14,17 @@ import opensavvy.logger.loggerFor
 import opensavvy.progress.Progress
 import opensavvy.progress.coroutines.report
 import opensavvy.progress.loading
-import opensavvy.state.outcome.ensureValid
-import opensavvy.state.outcome.orThrow
+import opensavvy.state.arrow.out
+import opensavvy.state.coroutines.firstValue
+import opensavvy.state.failure.CustomFailure
+import opensavvy.state.failure.Failure
+import opensavvy.state.outcome.valueOrNull
 import opensavvy.state.progressive.ProgressiveOutcome
-import opensavvy.state.progressive.firstValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class CacheTest {
 
 	private val log = loggerFor(this).apply {
@@ -33,54 +33,66 @@ class CacheTest {
 
 	private data class IntId(val id: Int) {
 		override fun toString() = "Id($id)"
+
+		sealed interface Failures : Failure {
+			data class Negative(val id: Int) :
+				CustomFailure(Companion, "Only positive integers are allowed, found $id"),
+				Failures {
+				companion object : Failure.Key {
+					override fun toString() = "Negative"
+				}
+			}
+		}
 	}
 
-	private fun adapter() = cache<IntId, Int> {
-		log.debug(it) { "Requesting" }
-		delay(100)
-		report(loading(0.2))
-		delay(10)
-		ensureValid(it.id >= 0) { "Only positive integers are allowed: found ${it.id}" }
-		it.id
+	private fun adapter() = cache<IntId, IntId.Failures, Int> {
+		out {
+			log.debug(it) { "Requesting" }
+			delay(100)
+			report(loading(0.2))
+			delay(10)
+			ensure(it.id >= 0) { IntId.Failures.Negative(it.id) }
+			it.id
+		}.also { log.debug(it) { "Response:" } }
 	}
 
-	private suspend fun testCache(cache: Cache<IntId, Int>) {
+	private suspend fun testCache(cache: Cache<IntId, IntId.Failures, Int>) {
 		log.info { "Regular access" }
 		val zero = cache[IntId(0)]
 		val one = cache[IntId(1)]
 		val minus = cache[IntId(-1)]
 
-		assertEquals(0, zero.firstValue().getOrNull())
-		assertEquals(1, one.firstValue().getOrNull())
-		assertEquals(null, minus.firstValue().getOrNull())
+		assertEquals(0, zero.firstValue().valueOrNull)
+		assertEquals(1, one.firstValue().valueOrNull)
+		assertEquals(null, minus.firstValue().valueOrNull)
 	}
 
-	private suspend fun testUpdateExpire(cache: Cache<IntId, Int>) {
+	private suspend fun testUpdateExpire(cache: Cache<IntId, IntId.Failures, Int>) {
 		log.info { "Checking normal behavior" }
-		assertEquals(0, cache[IntId(0)].firstValue().getOrNull())
+		assertEquals(0, cache[IntId(0)].firstValue().valueOrNull)
 
 		log.info { "Overwriting with a different value" }
 		cache.update(IntId(0), 5)
-		assertEquals(5, cache[IntId(0)].firstValue().getOrNull())
+		assertEquals(5, cache[IntId(0)].firstValue().valueOrNull)
 
 		log.info { "Expiring the value re-downloads and replaces our fake value" }
 		cache.expire(IntId(0))
-		assertEquals(0, cache[IntId(0)].firstValue().getOrNull())
+		assertEquals(0, cache[IntId(0)].firstValue().valueOrNull)
 	}
 
-	private suspend fun testAutoExpiration(cache: Cache<IntId, Int>) {
+	private suspend fun testAutoExpiration(cache: Cache<IntId, IntId.Failures, Int>) {
 		log.info { "Adding 5 to the cache to make updates visible" }
-		assertEquals(0, cache[IntId(0)].firstValue().orThrow())
+		assertEquals(0, cache[IntId(0)].firstValue().valueOrNull)
 		cache.update(IntId(0), 5)
-		assertEquals(5, cache[IntId(0)].firstValue().orThrow())
+		assertEquals(5, cache[IntId(0)].firstValue().valueOrNull)
 
 		log.info { "Waiting for the cache to correct itself" }
 		assertEquals(0,
-		             cache[IntId(0)]
-			             .onEach { log.debug(it) { "Found new value" } }
-			             .drop(1) // Skip the bad value we inserted
-			             .firstValue()
-			             .orThrow()
+			cache[IntId(0)]
+				.onEach { log.debug(it) { "Found new value" } }
+				.drop(1) // Skip the bad value we inserted
+				.firstValue()
+				.valueOrNull
 		)
 	}
 
@@ -94,17 +106,15 @@ class CacheTest {
 	@Test
 	fun infiniteMemoryCache() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
+			.cachedInMemory(coroutineContext.job)
 
 		testCache(cache)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun infiniteMemoryCacheUpdateExpire() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
+			.cachedInMemory(coroutineContext.job)
 
 		testUpdateExpire(cache)
 
@@ -114,144 +124,133 @@ class CacheTest {
 	@Test
 	fun expiringDefaultCache() = runTest {
 		val cache = adapter()
-			.expireAfter(1.seconds, coroutineContext)
+			.expireAfter(1.seconds, backgroundScope)
 
 		testCache(cache)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expiringMemoryCache() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
-			.expireAfter(1.seconds, coroutineContext)
+			.cachedInMemory(coroutineContext.job)
+			.expireAfter(1.seconds, backgroundScope)
 
 		testCache(cache)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expiringMemoryCacheUpdateExpire() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
-			.expireAfter(1.seconds, coroutineContext)
+			.cachedInMemory(coroutineContext.job)
+			.expireAfter(1.seconds, backgroundScope)
 
 		testUpdateExpire(cache)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expiringMemoryCacheExpirationLayer() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
-			.expireAfter(1.seconds, coroutineContext)
+			.cachedInMemory(coroutineContext.job)
+			.expireAfter(1.seconds, backgroundScope)
 
 		testAutoExpiration(cache)
-
-		currentCoroutineContext().cancelChildren()
 	}
 
 	@Test
 	fun expireAll() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
-			.expireAfter(1.seconds, coroutineContext)
+			.cachedInMemory(coroutineContext.job)
+			.expireAfter(1.seconds, backgroundScope)
 
 		log.info { "Initial values" }
 		val id0 = IntId(0)
 		val id1 = IntId(1)
-		assertEquals(0, cache[id0].firstValue().orThrow())
-		assertEquals(1, cache[id1].firstValue().orThrow())
+		assertEquals(0, cache[id0].firstValue().valueOrNull)
+		assertEquals(1, cache[id1].firstValue().valueOrNull)
 
 		log.info { "Adding 5" }
 		cache.update(
 			id0 to 5,
 			id1 to 6,
 		)
-		assertEquals(5, cache[id0].firstValue().orThrow())
-		assertEquals(6, cache[id1].firstValue().orThrow())
+		assertEquals(5, cache[id0].firstValue().valueOrNull)
+		assertEquals(6, cache[id1].firstValue().valueOrNull)
 
 		log.info { "Expiring all values" }
 		cache.expireAll()
-		assertEquals(0, cache[id0].firstValue().orThrow())
-		assertEquals(1, cache[id1].firstValue().orThrow())
-
-		currentCoroutineContext().cancelChildren()
+		assertEquals(0, cache[id0].firstValue().valueOrNull)
+		assertEquals(1, cache[id1].firstValue().valueOrNull)
 	}
 
 	@Test
 	fun batching() = runTest {
-		val cache = batchingCache<IntId, Int>(coroutineContext) { ids ->
+		val cache = batchingCache<IntId, IntId.Failures, Int>(backgroundScope) { ids ->
 			for (ref in ids) {
-				emit(ref to ProgressiveOutcome.Empty(loading()))
+				emit(ref to ProgressiveOutcome.Incomplete(loading()))
 				delay(10)
 				emit(ref to ProgressiveOutcome.Success(ref.id))
 			}
 		}
-			.cachedInMemory(coroutineContext)
-			.expireAfter(1.seconds, coroutineContext)
+			.cachedInMemory(coroutineContext.job)
+			.expireAfter(1.seconds, backgroundScope)
 
 		log.info { "Initial values" }
 		val id0 = IntId(0)
 		val id1 = IntId(1)
-		assertEquals(0, cache[id0].firstValue().orThrow())
-		assertEquals(1, cache[id1].firstValue().orThrow())
+		assertEquals(0, cache[id0].firstValue().valueOrNull)
+		assertEquals(1, cache[id1].firstValue().valueOrNull)
 
 		log.info { "Adding 5" }
 		cache.update(
 			id0 to 5,
 			id1 to 6,
 		)
-		assertEquals(5, cache[id0].firstValue().orThrow())
-		assertEquals(6, cache[id1].firstValue().orThrow())
+		assertEquals(5, cache[id0].firstValue().valueOrNull)
+		assertEquals(6, cache[id1].firstValue().valueOrNull)
 
 		log.info { "Expiring all values" }
 		cache.expireAll()
-		assertEquals(0, cache[id0].firstValue().orThrow())
-		assertEquals(1, cache[id1].firstValue().orThrow())
-
-		currentCoroutineContext().cancelChildren()
+		assertEquals(0, cache[id0].firstValue().valueOrNull)
+		assertEquals(1, cache[id1].firstValue().valueOrNull)
 	}
 
 	@Test
 	fun concurrent() = runTest {
 		val cache = adapter()
-			.cachedInMemory(coroutineContext)
+			.cachedInMemory(coroutineContext.job)
 
-		var result: ProgressiveOutcome<Int> = ProgressiveOutcome.Empty()
+		var result: ProgressiveOutcome<IntId.Failures, Int> = ProgressiveOutcome.Incomplete()
 
 		log.info { "Subscribing…" }
-		launch {
+		val subscriber = launch {
 			cache[IntId(1)]
 				.collect { result = it }
 		}
 		// Wait for the first cache read to finish
 		delay(1000)
-		while (result is ProgressiveOutcome.Empty) {
-			yield()
-		}
+		yieldUntil { result !is ProgressiveOutcome.Incomplete }
 		assertEquals(ProgressiveOutcome.Success(1), result)
 
 		log.info { "Forcing an update with an incorrect value" }
 		cache.update(IntId(1), 5)
 		// Wait for the cache to update
-		while (result == ProgressiveOutcome.Success(1) || result.progress !is Progress.Done) {
-			yield()
-		}
+		yieldUntil { result != ProgressiveOutcome.Success(1) && result.progress is Progress.Done }
 		assertEquals(ProgressiveOutcome.Success(5), result)
 
 		log.info { "Expiring the value to see the cache fix itself" }
 		cache.expire(IntId(1))
 		// Wait for the cache to update
-		while (result == ProgressiveOutcome.Success(5) || result.progress !is Progress.Done) {
-			yield()
-		}
+		yieldUntil { result != ProgressiveOutcome.Success(5) && result.progress is Progress.Done }
 		assertEquals(ProgressiveOutcome.Success(1), result)
 
-		currentCoroutineContext().cancelChildren()
+		subscriber.cancel()
 	}
 
+}
+
+private suspend fun yieldUntil(predicate: () -> Boolean) {
+	while (!predicate()) {
+		delay(100)
+		yield()
+	}
 }

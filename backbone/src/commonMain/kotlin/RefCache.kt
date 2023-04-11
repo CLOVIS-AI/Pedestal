@@ -1,5 +1,6 @@
 package opensavvy.backbone
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -7,15 +8,15 @@ import opensavvy.backbone.Ref.Companion.directRequest
 import opensavvy.cache.BatchingCacheAdapter
 import opensavvy.cache.Cache
 import opensavvy.cache.CacheAdapter
-import opensavvy.state.progressive.captureProgress
-import kotlin.coroutines.CoroutineContext
+import opensavvy.state.coroutines.captureProgress
+import opensavvy.state.failure.Failure
 
-typealias RefCache<O> = Cache<Ref<O>, O>
+typealias RefCache<F, O> = Cache<Ref<F, O>, F, O>
 
-fun <O> defaultRefCache() = CacheAdapter<Ref<O>, O> { it.directRequest() }
+fun <F : Failure, O> defaultRefCache() = CacheAdapter<Ref<F, O>, F, O> { it.directRequest() }
 
-fun <O> batchingRefCache(context: CoroutineContext, workers: Int = 1) =
-	BatchingCacheAdapter<Ref<O>, O>(context, workers) { requests ->
+fun <F : Failure, O> batchingRefCache(scope: CoroutineScope, workers: Int = 1) =
+	BatchingCacheAdapter<Ref<F, O>, F, O>(scope, workers) { requests ->
 		val backbones = requests
 			.groupBy { it.backbone }
 

@@ -11,9 +11,8 @@ import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.progress.done
+import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -26,11 +25,11 @@ import kotlin.time.Duration.Companion.minutes
  *      .expireAfter(5.minutes, Job())
  * ```
  */
-class ExpirationCache<I, T>(
+class ExpirationCache<I, F : Failure, T>(
 	/**
 	 * The previous cache layer, from which values will be expired.
 	 */
-	private val upstream: Cache<I, T>,
+	private val upstream: Cache<I, F, T>,
 	/**
 	 * After how much time should the values from the previous cache layer be expired.
 	 *
@@ -43,18 +42,15 @@ class ExpirationCache<I, T>(
 	 *
 	 * Cancelling this job will cancel the expiration job, after which this cache will stop expiring data.
 	 */
-	context: CoroutineContext = EmptyCoroutineContext,
-) : Cache<I, T> {
+	expirationScope: CoroutineScope,
+) : Cache<I, F, T> {
 	private val log = loggerFor(this)
 
 	private val lastUpdate = HashMap<I, Instant>()
 	private val lock = Semaphore(1)
 
-	private val job = Job(context[Job])
-	private val scope = CoroutineScope(job + CoroutineName("ExpirationCache task"))
-
 	init {
-		scope.launch {
+		expirationScope.launch(CoroutineName("$this")) {
 			while (isActive) {
 				delay(expireAfter)
 
@@ -82,7 +78,7 @@ class ExpirationCache<I, T>(
 		}
 	}
 
-	override fun get(id: I): Flow<ProgressiveOutcome<T>> = upstream[id]
+	override fun get(id: I): Flow<ProgressiveOutcome<F, T>> = upstream[id]
 		.onEach {
 			if (it.progress == done())
 				markAsUpdatedNow(id)
@@ -116,7 +112,7 @@ class ExpirationCache<I, T>(
 		 *
 		 * @see ExpirationCache
 		 */
-		fun <I, T> Cache<I, T>.expireAfter(duration: Duration, context: CoroutineContext) =
-			ExpirationCache(this, duration, context)
+		fun <I, F : Failure, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
+			ExpirationCache(this, duration, scope)
 	}
 }
