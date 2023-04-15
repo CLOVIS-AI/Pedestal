@@ -1,10 +1,9 @@
 package opensavvy.cache
 
-import kotlinx.coroutines.flow.Flow
+import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.coroutines.captureProgress
 import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.Outcome
-import opensavvy.state.progressive.ProgressiveOutcome
 
 /**
  * Cache implementation aimed to be the first link in a cache chain.
@@ -16,7 +15,7 @@ class CacheAdapter<I, F : Failure, T>(
 	val query: suspend (I) -> Outcome<F, T>,
 ) : Cache<I, F, T> {
 
-	override fun get(id: I): Flow<ProgressiveOutcome<F, T>> = captureProgress { query(id) }
+	override fun get(id: I): ProgressiveFlow<F, T> = captureProgress { query(id) }
 
 	override suspend fun update(values: Collection<Pair<I, T>>) {
 		// This cache layer has no state, nothing to do
