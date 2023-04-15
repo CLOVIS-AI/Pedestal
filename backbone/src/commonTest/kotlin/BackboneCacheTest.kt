@@ -4,10 +4,8 @@ import arrow.core.raise.ensure
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runTest
-import opensavvy.backbone.Ref.Companion.expire
-import opensavvy.backbone.Ref.Companion.request
+import opensavvy.cache.cache
 import opensavvy.state.arrow.out
-import opensavvy.state.coroutines.firstValue
 import opensavvy.state.failure.CustomFailure
 import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.valueOrNull
@@ -17,47 +15,62 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalCoroutinesApi::class)
 class BackboneCacheTest {
 
+	data class BasicRef(val id: String, val backbone: Bone) : Ref<Bone.Invalid, Int> {
+
+		override fun request() = backbone.request(this)
+	}
+
 	// Id("12") -> 12
-	private class Bone(override val cache: RefCache<Invalid, Int>) : Backbone<Bone.Invalid, Int> {
-		override suspend fun directRequest(ref: Ref<Invalid, Int>) = out {
-			ensure(ref is Ref.Basic) { Invalid }
-			val int = ref.id.toIntOrNull()
-			ensure(int != null) { Invalid }
-			int
+	class Bone : Backbone<BasicRef, Bone.Invalid, Int> {
+		val cache = cache<BasicRef, Invalid, Int> {
+			out {
+				val int = it.id.toIntOrNull()
+				ensure(int != null) { Invalid }
+				int
+			}
 		}
 
-		fun of(int: Int) = Ref.Basic(int.toString(), this)
+		override fun request(ref: BasicRef) = cache[ref]
+
+		fun of(int: Int) = BasicRef(int.toString(), this)
 
 		object Invalid : CustomFailure(Invalid, "Invalid"), Failure.Key
 	}
 
 	@Test
 	fun default() = runTest {
-		val bone = Bone(defaultRefCache())
+		val bone = Bone()
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 
-		assertEquals(5, id5.request().firstValue().valueOrNull)
-		assertEquals(2, id2.request().firstValue().valueOrNull)
+		assertEquals(5, id5.now().valueOrNull)
+		assertEquals(2, id2.now().valueOrNull)
 
-		id2.expire()
-		assertEquals(2, id2.request().firstValue().valueOrNull)
+		bone.cache.expire(id2)
+		assertEquals(2, id2.now().valueOrNull)
 	}
 
 	@Test
 	fun batching() = runTest {
 		val job = Job()
 
-		val bone = Bone(batchingRefCache(backgroundScope))
+		val bone = Bone()
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 
-		assertEquals(5, id5.request().firstValue().valueOrNull)
-		assertEquals(2, id2.request().firstValue().valueOrNull)
+		assertEquals(5, id5.now().valueOrNull)
+		assertEquals(2, id2.now().valueOrNull)
 
-		id2.expire()
-		assertEquals(2, id2.request().firstValue().valueOrNull)
+		bone.cache.expire(id2)
+		assertEquals(2, id2.now().valueOrNull)
 
 		job.cancel()
+	}
+
+	@Test
+	fun companions() {
+		println(Ref)
+		println(Backbone)
+		println()
 	}
 }

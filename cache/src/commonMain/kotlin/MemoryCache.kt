@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.withPermit
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
+import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.copy
@@ -55,7 +56,7 @@ class MemoryCache<I, F : Failure, T>(
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
 
-	override fun get(id: I): Flow<ProgressiveOutcome<F, T>> = flow {
+	override fun get(id: I): ProgressiveFlow<F, T> = flow {
 		val cached = cacheLock.withPermit { getUnsafe(id) }
 			.onEach { out ->
 				if (out == null) {

@@ -7,6 +7,7 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
 import opensavvy.logger.Logger.Companion.error
 import opensavvy.logger.loggerFor
+import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
 import kotlin.coroutines.coroutineContext
@@ -110,7 +111,7 @@ class BatchingCacheAdapter<I, F : Failure, T>(
 		}
 	}
 
-	override fun get(id: I): Flow<ProgressiveOutcome<F, T>> = flow {
+	override fun get(id: I): ProgressiveFlow<F, T> = flow {
 		val promise = CompletableDeferred<StateFlow<ProgressiveOutcome<F, T>>>()
 
 		requests.send(id to promise)

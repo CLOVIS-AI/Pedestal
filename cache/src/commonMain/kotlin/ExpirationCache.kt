@@ -1,7 +1,6 @@
 package opensavvy.cache
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -11,8 +10,8 @@ import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.progress.done
+import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.failure.Failure
-import opensavvy.state.progressive.ProgressiveOutcome
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -78,7 +77,7 @@ class ExpirationCache<I, F : Failure, T>(
 		}
 	}
 
-	override fun get(id: I): Flow<ProgressiveOutcome<F, T>> = upstream[id]
+	override fun get(id: I): ProgressiveFlow<F, T> = upstream[id]
 		.onEach {
 			if (it.progress == done())
 				markAsUpdatedNow(id)
