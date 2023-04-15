@@ -17,16 +17,18 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalCoroutinesApi::class)
 class BackboneCacheTest {
 
+	data class BasicRef<F : Failure, O>(val id: String, override val backbone: Backbone<F, O>) : Ref<F, O>
+
 	// Id("12") -> 12
 	private class Bone(override val cache: RefCache<Invalid, Int>) : Backbone<Bone.Invalid, Int> {
 		override suspend fun directRequest(ref: Ref<Invalid, Int>) = out {
-			ensure(ref is Ref.Basic) { Invalid }
+			ensure(ref is BasicRef) { Invalid }
 			val int = ref.id.toIntOrNull()
 			ensure(int != null) { Invalid }
 			int
 		}
 
-		fun of(int: Int) = Ref.Basic(int.toString(), this)
+		fun of(int: Int) = BasicRef(int.toString(), this)
 
 		object Invalid : CustomFailure(Invalid, "Invalid"), Failure.Key
 	}

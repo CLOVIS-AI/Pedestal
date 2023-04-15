@@ -27,11 +27,6 @@ interface Ref<F : Failure, O> {
 	 */
 	val backbone: Backbone<F, O>
 
-	/**
-	 * Most simple implementation of [Ref], which identifies objects with an [id].
-	 */
-	data class Basic<F : Failure, O>(val id: String, override val backbone: Backbone<F, O>) : Ref<F, O>
-
 	companion object {
 		/**
 		 * Requests the referenced data (without taking into account the cache).
