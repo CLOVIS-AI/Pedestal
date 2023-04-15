@@ -3,7 +3,7 @@ package opensavvy.backbone
 import opensavvy.backbone.Backbone.Companion.request
 import opensavvy.backbone.Ref.Companion.directRequest
 import opensavvy.backbone.Ref.Companion.request
-import opensavvy.state.coroutines.firstValue
+import opensavvy.state.coroutines.now
 import opensavvy.state.failure.Failure
 
 /**
@@ -51,7 +51,7 @@ interface Ref<F : Failure, O> {
 		 * notified of new values is important (e.g. in a UI).
 		 * This function is intended for non-reactive environments (e.g. server requests, tests…).
 		 */
-		suspend fun <F : Failure, O> Ref<F, O>.now() = request().firstValue()
+		suspend fun <F : Failure, O> Ref<F, O>.now() = request().now()
 
 		/**
 		 * Forces the cache to forget anything it might remember about this reference.

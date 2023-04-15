@@ -15,7 +15,7 @@ import opensavvy.progress.Progress
 import opensavvy.progress.coroutines.report
 import opensavvy.progress.loading
 import opensavvy.state.arrow.out
-import opensavvy.state.coroutines.firstValue
+import opensavvy.state.coroutines.now
 import opensavvy.state.failure.CustomFailure
 import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.valueOrNull
@@ -62,36 +62,36 @@ class CacheTest {
 		val one = cache[IntId(1)]
 		val minus = cache[IntId(-1)]
 
-		assertEquals(0, zero.firstValue().valueOrNull)
-		assertEquals(1, one.firstValue().valueOrNull)
-		assertEquals(null, minus.firstValue().valueOrNull)
+		assertEquals(0, zero.now().valueOrNull)
+		assertEquals(1, one.now().valueOrNull)
+		assertEquals(null, minus.now().valueOrNull)
 	}
 
 	private suspend fun testUpdateExpire(cache: Cache<IntId, IntId.Failures, Int>) {
 		log.info { "Checking normal behavior" }
-		assertEquals(0, cache[IntId(0)].firstValue().valueOrNull)
+		assertEquals(0, cache[IntId(0)].now().valueOrNull)
 
 		log.info { "Overwriting with a different value" }
 		cache.update(IntId(0), 5)
-		assertEquals(5, cache[IntId(0)].firstValue().valueOrNull)
+		assertEquals(5, cache[IntId(0)].now().valueOrNull)
 
 		log.info { "Expiring the value re-downloads and replaces our fake value" }
 		cache.expire(IntId(0))
-		assertEquals(0, cache[IntId(0)].firstValue().valueOrNull)
+		assertEquals(0, cache[IntId(0)].now().valueOrNull)
 	}
 
 	private suspend fun testAutoExpiration(cache: Cache<IntId, IntId.Failures, Int>) {
 		log.info { "Adding 5 to the cache to make updates visible" }
-		assertEquals(0, cache[IntId(0)].firstValue().valueOrNull)
+		assertEquals(0, cache[IntId(0)].now().valueOrNull)
 		cache.update(IntId(0), 5)
-		assertEquals(5, cache[IntId(0)].firstValue().valueOrNull)
+		assertEquals(5, cache[IntId(0)].now().valueOrNull)
 
 		log.info { "Waiting for the cache to correct itself" }
 		assertEquals(0,
 			cache[IntId(0)]
 				.onEach { log.debug(it) { "Found new value" } }
 				.drop(1) // Skip the bad value we inserted
-				.firstValue()
+				.now()
 				.valueOrNull
 		)
 	}
@@ -165,21 +165,21 @@ class CacheTest {
 		log.info { "Initial values" }
 		val id0 = IntId(0)
 		val id1 = IntId(1)
-		assertEquals(0, cache[id0].firstValue().valueOrNull)
-		assertEquals(1, cache[id1].firstValue().valueOrNull)
+		assertEquals(0, cache[id0].now().valueOrNull)
+		assertEquals(1, cache[id1].now().valueOrNull)
 
 		log.info { "Adding 5" }
 		cache.update(
 			id0 to 5,
 			id1 to 6,
 		)
-		assertEquals(5, cache[id0].firstValue().valueOrNull)
-		assertEquals(6, cache[id1].firstValue().valueOrNull)
+		assertEquals(5, cache[id0].now().valueOrNull)
+		assertEquals(6, cache[id1].now().valueOrNull)
 
 		log.info { "Expiring all values" }
 		cache.expireAll()
-		assertEquals(0, cache[id0].firstValue().valueOrNull)
-		assertEquals(1, cache[id1].firstValue().valueOrNull)
+		assertEquals(0, cache[id0].now().valueOrNull)
+		assertEquals(1, cache[id1].now().valueOrNull)
 	}
 
 	@Test
@@ -197,21 +197,21 @@ class CacheTest {
 		log.info { "Initial values" }
 		val id0 = IntId(0)
 		val id1 = IntId(1)
-		assertEquals(0, cache[id0].firstValue().valueOrNull)
-		assertEquals(1, cache[id1].firstValue().valueOrNull)
+		assertEquals(0, cache[id0].now().valueOrNull)
+		assertEquals(1, cache[id1].now().valueOrNull)
 
 		log.info { "Adding 5" }
 		cache.update(
 			id0 to 5,
 			id1 to 6,
 		)
-		assertEquals(5, cache[id0].firstValue().valueOrNull)
-		assertEquals(6, cache[id1].firstValue().valueOrNull)
+		assertEquals(5, cache[id0].now().valueOrNull)
+		assertEquals(6, cache[id1].now().valueOrNull)
 
 		log.info { "Expiring all values" }
 		cache.expireAll()
-		assertEquals(0, cache[id0].firstValue().valueOrNull)
-		assertEquals(1, cache[id1].firstValue().valueOrNull)
+		assertEquals(0, cache[id0].now().valueOrNull)
+		assertEquals(1, cache[id1].now().valueOrNull)
 	}
 
 	@Test

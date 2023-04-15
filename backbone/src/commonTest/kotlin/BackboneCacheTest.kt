@@ -7,7 +7,7 @@ import kotlinx.coroutines.test.runTest
 import opensavvy.backbone.Ref.Companion.expire
 import opensavvy.backbone.Ref.Companion.request
 import opensavvy.state.arrow.out
-import opensavvy.state.coroutines.firstValue
+import opensavvy.state.coroutines.now
 import opensavvy.state.failure.CustomFailure
 import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.valueOrNull
@@ -39,11 +39,11 @@ class BackboneCacheTest {
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 
-		assertEquals(5, id5.request().firstValue().valueOrNull)
-		assertEquals(2, id2.request().firstValue().valueOrNull)
+		assertEquals(5, id5.request().now().valueOrNull)
+		assertEquals(2, id2.request().now().valueOrNull)
 
 		id2.expire()
-		assertEquals(2, id2.request().firstValue().valueOrNull)
+		assertEquals(2, id2.request().now().valueOrNull)
 	}
 
 	@Test
@@ -54,11 +54,11 @@ class BackboneCacheTest {
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 
-		assertEquals(5, id5.request().firstValue().valueOrNull)
-		assertEquals(2, id2.request().firstValue().valueOrNull)
+		assertEquals(5, id5.request().now().valueOrNull)
+		assertEquals(2, id2.request().now().valueOrNull)
 
 		id2.expire()
-		assertEquals(2, id2.request().firstValue().valueOrNull)
+		assertEquals(2, id2.request().now().valueOrNull)
 
 		job.cancel()
 	}

@@ -23,7 +23,7 @@ class ProgressiveFlowAccessorsTest {
 
         assertEquals(
             Outcome.Failure(NotFound(2)),
-            input.firstValue(),
+            input.now(),
         )
     }
 
@@ -37,7 +37,7 @@ class ProgressiveFlowAccessorsTest {
 
         assertEquals(
             Outcome.Success(2),
-            input.firstValue(),
+            input.now(),
         )
     }
 }
