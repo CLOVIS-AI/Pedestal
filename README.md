@@ -41,7 +41,7 @@ repositories {
 
 // You can now add a dependency on the various modules:
 dependencies {
-	implementation("opensavvy:backbone:<the version you want>")
+    implementation("opensavvy.pedestal:backbone:<the version you want>")
 }
 ```
 
