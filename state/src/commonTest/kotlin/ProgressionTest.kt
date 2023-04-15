@@ -1,6 +1,6 @@
 package opensavvy.state
 
-import opensavvy.state.Progression.Companion.loading
+import opensavvy.progress.loading
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails

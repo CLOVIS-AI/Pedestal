@@ -1,7 +1,8 @@
 package opensavvy.cache
 
 import kotlinx.coroutines.flow.Flow
-import opensavvy.state.progressive.ProgressiveOutcome
+import opensavvy.state.coroutines.ProgressiveFlow
+import opensavvy.state.failure.Failure
 
 /**
  * Stores information temporarily to avoid unneeded network requests.
@@ -34,7 +35,7 @@ import opensavvy.state.progressive.ProgressiveOutcome
  * The first element of the chain, and therefore the one responsible for actually starting the request, is [CacheAdapter] or [BatchingCacheAdapter].
  * Note that both have a few implementation differences, it is not recommended to use them directly without chaining under another implementation.
  */
-interface Cache<I, T> {
+interface Cache<I, F : Failure, T> {
 
 	/**
 	 * Gets the value associated with an [id] in this cache.
@@ -43,7 +44,7 @@ interface Cache<I, T> {
 	 * such as inside the body of a UI component.
 	 * You can then subscribe to the [Flow] to access the actual values.
 	 */
-	operator fun get(id: I): Flow<ProgressiveOutcome<T>>
+	operator fun get(id: I): ProgressiveFlow<F, T>
 
 	/**
 	 * Forces the cache to accept [value] as a more recent value for the given [id] than whatever it was previously storing.

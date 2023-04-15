@@ -1,10 +1,9 @@
 package opensavvy.spine
 
-import arrow.core.continuations.EffectScope
+import arrow.core.raise.Raise
+import arrow.core.raise.ensure
 import opensavvy.spine.ResourceGroup.AbstractResource
 import opensavvy.spine.Route.Companion.div
-import opensavvy.state.Failure
-import opensavvy.state.outcome.ensureValid
 
 /**
  * Common ancestor of [Service] and [AbstractResource].
@@ -81,26 +80,41 @@ sealed class ResourceGroup {
 		/**
 		 * Validates that [id] identifies this resource.
 		 */
-		suspend fun EffectScope<Failure>.validateCorrectId(id: Id) {
-			ensureValid(
+		fun Raise<SpineFailure>.validateCorrectId(id: Id) {
+			ensure(
 				id.service == service.name
-			) { "The passed identifier refers to the service '${id.service}', but this resource belongs to the service '${service.name}'" }
+			) {
+				SpineFailure(
+					SpineFailure.Type.InvalidState,
+					"The passed identifier refers to the service '${id.service}', but this resource belongs to the service '${service.name}'"
+				)
+			}
 
 			// Let's check that the resource designated by the ID matches with this resource
 			var resource: ResourceGroup = this@AbstractResource
 			var index = id.resource.segments.lastIndex
 			while (resource is AbstractResource<*, *>) {
 				val segment = id.resource.segments.getOrNull(index)
-				ensureValid(
+				ensure(
 					segment != null
-				) { "The passed identifier's URI length is too short for this resource: '$id' for resource '${this@AbstractResource}'" }
+				) {
+					SpineFailure(
+						SpineFailure.Type.InvalidState,
+						"The passed identifier's URI length is too short for this resource: '$id' for resource '${this@AbstractResource}'"
+					)
+				}
 
 				@Suppress("NAME_SHADOWING") // necessary for smart cast because 'resource' is mutable
 				when (val resource: AbstractResource<*, *> = resource) {
 					is StaticResource<*, *, *> -> {
-						ensureValid(
+						ensure(
 							segment == resource.route
-						) { "The passed identifier's segment #$index doesn't match the resource; expected '${resource.route}' but found '$segment'" }
+						) {
+							SpineFailure(
+								SpineFailure.Type.InvalidState,
+								"The passed identifier's segment #$index doesn't match the resource; expected '${resource.route}' but found '$segment'"
+							)
+						}
 					}
 
 					is DynamicResource<*, *> -> {
@@ -115,9 +129,14 @@ sealed class ResourceGroup {
 				index--
 			}
 
-			ensureValid(
+			ensure(
 				index == -1
-			) { "The passed identifier's URI length is too long for this resource: '$id' for resource '${this@AbstractResource}'" }
+			) {
+				SpineFailure(
+					SpineFailure.Type.InvalidState,
+					"The passed identifier's URI length is too long for this resource: '$id' for resource '${this@AbstractResource}'"
+				)
+			}
 		}
 
 		/**
@@ -126,7 +145,7 @@ sealed class ResourceGroup {
 		 * For example, you can override this function to check access rights for read operations.
 		 * By default, this function does nothing.
 		 */
-		open suspend fun EffectScope<Failure>.validateId(id: Id, context: Context) {}
+		open suspend fun Raise<SpineFailure>.validateId(id: Id, context: Context) {}
 
 		protected fun <In : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
@@ -210,7 +229,7 @@ sealed class ResourceGroup {
 		 *
 		 * You should override this function if the parameters impact the access rights.
 		 */
-		open suspend fun EffectScope<Failure>.validateGetParams(id: Id, params: GetParams, context: Context) {}
+		open suspend fun Raise<SpineFailure>.validateGetParams(id: Id, params: GetParams, context: Context) {}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
 		val get =

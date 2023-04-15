@@ -19,6 +19,7 @@ kotlin {
 		val commonMain by getting {
 			dependencies {
 				api(projects.state)
+				api(projects.stateCoroutines)
 				api(KotlinX.datetime)
 
 				implementation(projects.logger)
@@ -29,6 +30,7 @@ kotlin {
 			dependencies {
 				implementation(projects.tester)
 				implementation(KotlinX.coroutines.test)
+				implementation(projects.stateArrow)
 			}
 		}
 	}

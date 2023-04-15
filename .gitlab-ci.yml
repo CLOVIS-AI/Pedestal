@@ -41,7 +41,11 @@ publish:
     - >
       ./gradlew 
       logger:publishAllPublicationsToGitLabRepository
+      progress:publishAllPublicationsToGitLabRepository
+      progress-coroutines:publishAllPublicationsToGitLabRepository
       state:publishAllPublicationsToGitLabRepository
+      state-arrow:publishAllPublicationsToGitLabRepository
+      state-coroutines:publishAllPublicationsToGitLabRepository
       cache:publishAllPublicationsToGitLabRepository
       backbone:publishAllPublicationsToGitLabRepository
       logger:publishAllPublicationsToGitLabRepository
@@ -60,21 +64,33 @@ publish:ios:
     - >
       ./gradlew
       logger:publishIosArm64PublicationToGitLabRepository
+      progress:publishIosArm64PublicationToGitLabRepository
+      progress-coroutines:publishIosArm64PublicationToGitLabRepository
       state:publishIosArm64PublicationToGitLabRepository
+      state-arrow:publishIosArm64PublicationToGitLabRepository
+      state-coroutines:publishIosArm64PublicationToGitLabRepository
       cache:publishIosArm64PublicationToGitLabRepository
       backbone:publishIosArm64PublicationToGitLabRepository
       logger:publishIosArm64PublicationToGitLabRepository
     - >
       ./gradlew
       logger:publishIosSimulatorArm64PublicationToGitLabRepository
+      progress:publishIosSimulatorArm64PublicationToGitLabRepository
+      progress-coroutines:publishIosSimulatorArm64PublicationToGitLabRepository
       state:publishIosSimulatorArm64PublicationToGitLabRepository
+      state-arrow:publishIosSimulatorArm64PublicationToGitLabRepository
+      state-coroutines:publishIosSimulatorArm64PublicationToGitLabRepository
       cache:publishIosSimulatorArm64PublicationToGitLabRepository
       backbone:publishIosSimulatorArm64PublicationToGitLabRepository
       logger:publishIosSimulatorArm64PublicationToGitLabRepository
     - >
       ./gradlew
       logger:publishIosX64PublicationToGitLabRepository
+      progress:publishIosX64PublicationToGitLabRepository
+      progress-coroutines:publishIosX64PublicationToGitLabRepository
       state:publishIosX64PublicationToGitLabRepository
+      state-arrow:publishIosX64PublicationToGitLabRepository
+      state-coroutines:publishIosX64PublicationToGitLabRepository
       cache:publishIosX64PublicationToGitLabRepository
       backbone:publishIosX64PublicationToGitLabRepository
       logger:publishIosX64PublicationToGitLabRepository
@@ -133,6 +149,32 @@ logger:convert-coverage:
   variables:
     module: logger
 
+progress:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: progress
+
+progress:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: progress:test:jvm
+      artifacts: true
+  variables:
+    module: progress
+
+progress-coroutines:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: progress-coroutines
+
+progress-coroutines:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: progress-coroutines:test:jvm
+      artifacts: true
+  variables:
+    module: progress-coroutines
+
 state:test:jvm:
   extends: [ .test-jvm ]
   variables:
@@ -145,6 +187,32 @@ state:convert-coverage:
       artifacts: true
   variables:
     module: state
+
+state-arrow:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: state-arrow
+
+state-arrow:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: state-arrow:test:jvm
+      artifacts: true
+  variables:
+    module: state-arrow
+
+state-coroutines:test:jvm:
+  extends: [ .test-jvm ]
+  variables:
+    module: state-coroutines
+
+state-coroutines:convert-coverage:
+  extends: [ .test-jvm-convert-coverage ]
+  needs:
+    - job: state-coroutines:test:jvm
+      artifacts: true
+  variables:
+    module: state-coroutines
 
 cache:test:jvm:
   extends: [ .test-jvm ]
@@ -218,6 +286,11 @@ dokka:
     paths:
       - documentation
     expose_as: "Documentation"
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG/documentation
+    url: https://$CI_PROJECT_NAMESPACE.$CI_PAGES_DOMAIN/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/documentation/index.html
+    deployment_tier: development
+    auto_stop_in: 1 week
   interruptible: true
 
 pages:

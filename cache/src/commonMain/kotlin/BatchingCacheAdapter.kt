@@ -1,20 +1,18 @@
 package opensavvy.cache
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import opensavvy.logger.Logger.Companion.error
 import opensavvy.logger.loggerFor
+import opensavvy.state.coroutines.ProgressiveFlow
+import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
-import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 
-private typealias CacheStorage<T> = CompletableDeferred<StateFlow<ProgressiveOutcome<T>>>
+private typealias CacheStorage<F, T> = CompletableDeferred<StateFlow<ProgressiveOutcome<F, T>>>
 
 /**
  * Cache implementation aimed to be the first link in a cache chain.
@@ -24,8 +22,8 @@ private typealias CacheStorage<T> = CompletableDeferred<StateFlow<ProgressiveOut
  *
  * Unlike [CacheAdapter], this class is able to group requests together.
  */
-class BatchingCacheAdapter<I, T>(
-	context: CoroutineContext,
+class BatchingCacheAdapter<I, F : Failure, T>(
+	scope: CoroutineScope,
 	/**
 	 * The number of workers batching the requests.
 	 *
@@ -35,35 +33,34 @@ class BatchingCacheAdapter<I, T>(
 	 * Increasing the number of workers may increase latency.
 	 */
 	workers: Int = 1,
-	val queryBatch: (Set<I>) -> Flow<Pair<I, ProgressiveOutcome<T>>>,
-) : Cache<I, T> {
+	val queryBatch: (Set<I>) -> Flow<Pair<I, ProgressiveOutcome<F, T>>>,
+) : Cache<I, F, T> {
 
 	private val log = loggerFor(this)
 
-	private val requests: SendChannel<Pair<I, CacheStorage<T>>>
+	private val requests: SendChannel<Pair<I, CacheStorage<F, T>>>
 
 	init {
 		require(workers > 0) { "There must be at least 1 worker: found $workers" }
 
-		val requests = Channel<Pair<I, CacheStorage<T>>>()
+		val requests = Channel<Pair<I, CacheStorage<F, T>>>()
 		this.requests = requests
 
-		val scope = CoroutineScope(context)
 		repeat(workers) {
-			scope.launch {
+			scope.launch(CoroutineName("$this($it/$workers)")) {
 				worker(requests)
 			}
 		}
 	}
 
-	private suspend fun worker(requests: ReceiveChannel<Pair<I, CacheStorage<T>>>) {
+	private suspend fun worker(requests: ReceiveChannel<Pair<I, CacheStorage<F, T>>>) {
 		while (coroutineContext.isActive) {
 			val batch = HashSet<I>()
 
 			// Store the results
 			// We have to store lists of Deferred in case multiple requests to the same Ref happen to be in the same
 			// batch.
-			val results = HashMap<I, MutableList<CacheStorage<T>>>()
+			val results = HashMap<I, MutableList<CacheStorage<F, T>>>()
 
 			run {
 				// Suspend until a first request arrives
@@ -84,11 +81,12 @@ class BatchingCacheAdapter<I, T>(
 					.add(promise)
 			}
 
-			val states = HashMap<I, MutableStateFlow<ProgressiveOutcome<T>>>()
+			val states = HashMap<I, MutableStateFlow<ProgressiveOutcome<F, T>>>()
 
 			// Tell all clients that their request is starting
 			for ((id, promises) in results) {
-				val state: MutableStateFlow<ProgressiveOutcome<T>> = MutableStateFlow(ProgressiveOutcome.Empty())
+				val state: MutableStateFlow<ProgressiveOutcome<F, T>> =
+					MutableStateFlow(ProgressiveOutcome.Incomplete())
 
 				for (promise in promises) {
 					promise.complete(state)
@@ -113,8 +111,8 @@ class BatchingCacheAdapter<I, T>(
 		}
 	}
 
-	override fun get(id: I): Flow<ProgressiveOutcome<T>> = flow {
-		val promise = CompletableDeferred<StateFlow<ProgressiveOutcome<T>>>()
+	override fun get(id: I): ProgressiveFlow<F, T> = flow {
+		val promise = CompletableDeferred<StateFlow<ProgressiveOutcome<F, T>>>()
 
 		requests.send(id to promise)
 
@@ -133,15 +131,20 @@ class BatchingCacheAdapter<I, T>(
 		// This cache layer has no state, nothing to do
 	}
 
-	companion object {
-		fun <I, T> batchingCache(
-			context: CoroutineContext,
-			workers: Int = 1,
-			transform: suspend FlowCollector<Pair<I, ProgressiveOutcome<T>>>.(Set<I>) -> Unit,
-		) = BatchingCacheAdapter<I, T>(context, workers) { ids ->
-			flow {
-				transform(ids)
-			}
-		}
+	companion object
+}
+
+/**
+ * Creates a cache layer that batches cache requests and executes them at once.
+ *
+ * See [BatchingCacheAdapter].
+ */
+fun <I, F : Failure, T> batchingCache(
+	scope: CoroutineScope,
+	workers: Int = 1,
+	transform: suspend FlowCollector<Pair<I, ProgressiveOutcome<F, T>>>.(Set<I>) -> Unit,
+) = BatchingCacheAdapter<I, F, T>(scope, workers) { ids ->
+	flow {
+		transform(ids)
 	}
 }

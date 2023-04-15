@@ -11,6 +11,10 @@ plugins {
 
 include(
 	"state",
+	"state-arrow",
+	"state-coroutines",
+	"progress",
+	"progress-coroutines",
 	"cache",
 	"backbone",
 	"spine",

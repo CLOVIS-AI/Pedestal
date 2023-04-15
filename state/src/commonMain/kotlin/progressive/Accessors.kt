@@ -1,27 +1,20 @@
 package opensavvy.state.progressive
 
-import arrow.core.left
-import arrow.core.right
-import kotlinx.coroutines.flow.*
-import opensavvy.state.Progression
-import opensavvy.state.ProgressionReporter.Companion.report
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome.*
-import opensavvy.state.progressive.ProgressiveOutcome.Companion.component1
-import opensavvy.state.progressive.ProgressiveOutcome.Companion.component2
 
 //region Regular
 
 /**
  * Returns [Success.value], or `null` if this outcome is not successful.
  */
-val <T : Any> ProgressiveOutcome<T>.valueOrNull: T?
+val <T : Any> ProgressiveOutcome<*, T>.valueOrNull: T?
 	get() = (this as? Success<T>)?.value
 
 /**
  * Returns [Failure.failure], or `null` if this outcome is not a failure.
  */
-val ProgressiveOutcome<*>.failureOrNull: opensavvy.state.Failure?
+val <F : opensavvy.state.failure.Failure> ProgressiveOutcome<F, *>.failureOrNull: F?
 	get() = (this as? Failure)?.failure
 
 /**
@@ -33,38 +26,23 @@ val ProgressiveOutcome<*>.failureOrNull: opensavvy.state.Failure?
  * val (outcome, progression) = /* ProgressiveOutcome */
  * ```
  */
-fun <T> ProgressiveOutcome<T>.asOutcome(): Outcome<T>? = when (this) {
-	is Empty -> null
-	is Success -> value.right()
-	is Failure -> failure.left()
+fun <F : opensavvy.state.failure.Failure, T> ProgressiveOutcome<F, T>.asOutcome() = when (this) {
+	is Success -> Outcome.Success(value)
+	is Failure -> Outcome.Failure(failure)
+	is Incomplete -> null
 }
 
 //endregion
-//region Flow
+//region Destructuration
 
 /**
- * Filters out all the [Empty] and loading values from this flow.
- *
- * All progress information is re-emitted in the calling flow.
+ * Syntax sugar for [asOutcome].
  */
-fun <T> Flow<ProgressiveOutcome<T>>.filterDone() = onEach { report(it.progress) }
-	.filter { it.progress == Progression.done() }
-	.mapNotNull { it.asOutcome() }
+operator fun <F : opensavvy.state.failure.Failure, T> ProgressiveOutcome<F, T>.component1() = asOutcome()
 
 /**
- * Suspends until the first finished value is available (success or failure).
- *
- * All progress information is re-emitted in the calling coroutine.
- *
- * @throws NoSuchElementException if the flow has no finished elements.
+ * Syntax sugar for [ProgressiveOutcome.progress].
  */
-suspend fun <T> Flow<ProgressiveOutcome<T>>.firstValue() = filterDone()
-	.first()
-
-/**
- * Splits this progressive outcome into its outcome and progress information.
- */
-fun <T> Flow<ProgressiveOutcome<T>>.asOutcomeAndProgress(): Flow<Pair<Outcome<T>?, Progression>> =
-	map { (out, progress) -> out to progress }
+operator fun ProgressiveOutcome<*, *>.component2() = progress
 
 //endregion

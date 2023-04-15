@@ -1,18 +1,15 @@
 package opensavvy.state.progressive
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import opensavvy.state.Progression
+import opensavvy.progress.Progress
 import opensavvy.state.progressive.ProgressiveOutcome.*
-
-//region Actions
+import opensavvy.state.failure.Failure as FailureSupertype
 
 /**
  * Executes [block] if this outcome is [successful][Success].
  *
  * Otherwise, does nothing.
  */
-inline fun <T> ProgressiveOutcome<T>.onSuccess(block: (T) -> Unit) {
+inline fun <T> ProgressiveOutcome<*, T>.onSuccess(block: (T) -> Unit) {
 	if (this is Success<T>)
 		block(this.value)
 }
@@ -22,46 +19,32 @@ inline fun <T> ProgressiveOutcome<T>.onSuccess(block: (T) -> Unit) {
  *
  * Otherwise, does nothing.
  */
-inline fun <T> ProgressiveOutcome<T>.onFailure(block: (opensavvy.state.Failure) -> Unit) {
+inline fun <F : FailureSupertype> ProgressiveOutcome<F, *>.onFailure(block: (F) -> Unit) {
 	if (this is Failure)
 		block(this.failure)
 }
 
 /**
- * Executes [block] if this outcome is loading (its [ProgressiveOutcome.progress] is [Progression.Loading]).
+ * Executes [block] if this outcome is [incomplete][Incomplete].
  *
- * Note that this isn't synonymous with this outcome being in the [Empty] state: successful or failed outcomes may
+ * Otherwise, does nothing.
+ */
+inline fun ProgressiveOutcome<*, *>.onIncomplete(block: () -> Unit) {
+	if (this is Incomplete)
+		block()
+}
+
+/**
+ * Executes [block] if this outcome is loading (its [ProgressiveOutcome.progress] is [Progress.Loading]).
+ *
+ * Note that this isn't synonymous with this outcome being in the [Incomplete] state: successful or failed outcomes may
  * still be loading. For more information, see [ProgressiveOutcome].
  *
  * Otherwise, does nothing.
  */
-inline fun <T> ProgressiveOutcome<T>.onLoading(block: (Progression.Loading) -> Unit) {
+inline fun ProgressiveOutcome<*, *>.onLoading(block: (Progress.Loading) -> Unit) {
 	val progression = progress
 
-	if (progression is Progression.Loading)
+	if (progression is Progress.Loading)
 		block(progression)
 }
-
-//endregion
-//region Combinations
-
-/**
- * Replaces the value of this outcome if it is successful using [transform].
- *
- * If this outcome isn't successful, does nothing.
- */
-inline fun <T, U> ProgressiveOutcome<T>.map(transform: (T) -> U) = when (this) {
-	is Empty -> this
-	is Failure -> this
-	is Success -> Success(transform(this.value), this.progress)
-}
-
-/**
- * Replaces the successful values using [transform].
- *
- * Values that are not successful are unchanged.
- */
-inline fun <T, U> Flow<ProgressiveOutcome<T>>.mapSuccess(crossinline transform: (T) -> U) = this
-	.map { it.map(transform) }
-
-//endregion

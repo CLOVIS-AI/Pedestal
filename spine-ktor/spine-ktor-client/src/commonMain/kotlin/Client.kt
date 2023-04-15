@@ -5,17 +5,15 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import opensavvy.progress.coroutines.mapProgressTo
 import opensavvy.spine.Id
 import opensavvy.spine.Operation
 import opensavvy.spine.Parameters
 import opensavvy.spine.ResourceGroup.AbstractResource
+import opensavvy.spine.SpineFailure
 import opensavvy.spine.ktor.toHttp
 import opensavvy.spine.ktor.toSpine
-import opensavvy.state.Failure
-import opensavvy.state.Progression.Companion.loading
-import opensavvy.state.ProgressionReporter.Companion.report
-import opensavvy.state.ProgressionReporter.Companion.transformQuantifiedProgress
-import opensavvy.state.outcome.out
+import opensavvy.state.arrow.out
 
 /**
  * Executes a [HttpClient] request, with the information declared in an [Operation].
@@ -52,52 +50,50 @@ suspend inline fun <Resource : Any, reified In : Any, reified Out : Any, reified
 	crossinline onResponse: (HttpResponse) -> Unit = {},
 	crossinline configuration: HttpRequestBuilder.() -> Unit = {},
 ) = out {
-	report(loading(0.0))
-
-	transformQuantifiedProgress({ loading(it.normalized / 10) }) {
+	mapProgressTo(0.0..0.1) {
 		operation.validate(id, input, parameters, context).bind()
 	}
 
-	report(loading(0.1))
+	val result = mapProgressTo(0.1..0.9) {
+		request {
+			method = operation.kind.toHttp()
 
-	val result = request {
-		method = operation.kind.toHttp()
+			url {
+				// {baseUrl}/{service}/{path-to-resource}/{path-to-method}
 
-		url {
-			// {baseUrl}/{service}/{path-to-resource}/{path-to-method}
+				// /{service}
+				appendPathSegments(id.service.segment)
 
-			// /{service}
-			appendPathSegments(id.service.segment)
+				// /{path-to-resource}
+				appendPathSegments(id.resource.segments.map { it.segment })
 
-			// /{path-to-resource}
-			appendPathSegments(id.resource.segments.map { it.segment })
-
-			// /{path-to-method}  (if present)
-			operation.route?.let { route ->
-				appendPathSegments(route.segments.map { it.segment })
+				// /{path-to-method}  (if present)
+				operation.route?.let { route ->
+					appendPathSegments(route.segments.map { it.segment })
+				}
 			}
+
+			for ((name, value) in parameters.data)
+				parameter(name, value)
+
+			contentType(contentType)
+			setBody(input)
+
+			configuration()
 		}
-
-		for ((name, value) in parameters.data)
-			parameter(name, value)
-
-		contentType(contentType)
-		setBody(input)
-
-		configuration()
 	}
 
-	report(loading(0.90))
+	mapProgressTo(0.9..0.95) {
+		onResponse(result)
+	}
 
-	onResponse(result)
-
-	report(loading(0.95))
-
-	if (result.status.isSuccess()) {
-		result.body<Out>()
-	} else {
-		val body = result.body<String>().ifBlank { "${result.status} with no provided body" }
-		val kind = result.status.toSpine()
-		shift(Failure(kind, body))
+	mapProgressTo(0.95..1.0) {
+		if (result.status.isSuccess()) {
+			result.body<Out>()
+		} else {
+			val body = result.body<String>().ifBlank { "${result.status} with no provided body" }
+			val kind = result.status.toSpine()
+			raise(SpineFailure(kind, body))
+		}
 	}
 }
