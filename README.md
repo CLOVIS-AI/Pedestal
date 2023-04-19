@@ -61,4 +61,10 @@ Gradle is invoked by running `./gradlew <tasks here>` in the project root.
 
 - `./gradlew projects` to list the available projects,
 - `./gradlew tasks` to list the available tasks in the root project,
-- `./gradlew <project>:<task>` to execute a task from another project (for example, `./gradlew backbone:tasks` to get the list of tasks in the Backbone project).
+- `./gradlew <project>:<task>` to execute a task from another project (for example, `./gradlew backbone:tasks` to get
+  the list of tasks in the Backbone project).
+
+## Contribution
+
+To learn how to contribute to the
+project, [please read our wiki](https://gitlab.com/opensavvy/wiki/-/blob/main/README.md).
