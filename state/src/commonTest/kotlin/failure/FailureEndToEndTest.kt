@@ -56,7 +56,7 @@ class FailureEndToEndTest {
 
                 val newId = Id(Random.nextInt())
 
-                lock.withLock {
+                lock.withLock("create() by ${context.user}") {
                     data[newId] = Counter(context.user, 0, emptySet())
                 }
 
@@ -66,7 +66,7 @@ class FailureEndToEndTest {
             suspend fun list(context: Context) = out<Failures.List, List<Id>> {
                 ensureNotNull(context.user) { Failures.Unauthenticated }
 
-                lock.withLock {
+                lock.withLock("list() by ${context.user}") {
                     val user: User = context.user
 
                     data
@@ -80,7 +80,7 @@ class FailureEndToEndTest {
             suspend fun get(context: Context, id: Id) = out<Failures.Get, Counter> {
                 ensureNotNull(context.user) { Failures.Unauthenticated }
 
-                val counter = lock.withLock { data[id] }
+                val counter = lock.withLock("get($id) by ${context.user}") { data[id] }
                 ensureNotNull(counter) { Failures.NotFound(id) }
                 ensure(counter.readableBy(context.user)) { Failures.NotFound(id) } // Do not tell the user why they cannot see it
 
@@ -93,7 +93,9 @@ class FailureEndToEndTest {
                 ensure(context.user == counter.owner) { Failures.NotTheOwner(id) }
 
                 // Possible data race here, but it's an imaginary example, so it's not a big deal
-                lock.withLock { data[id] = counter.copy(value = counter.value + 1) }
+                lock.withLock("increment($id) by ${context.user}") {
+                    data[id] = counter.copy(value = counter.value + 1)
+                }
             }
 
             // Imagine there is also a 'decrement' method
@@ -104,7 +106,9 @@ class FailureEndToEndTest {
                 ensure(context.user == counter.owner) { Failures.NotTheOwner(id) }
 
                 // Possible data race here, but it's an imaginary example, so it's not a big deal
-                lock.withLock { data[id] = counter.copy(canRead = counter.canRead + user) }
+                lock.withLock("share($id, $user) by ${context.user}") {
+                    data[id] = counter.copy(canRead = counter.canRead + user)
+                }
             }
 
             // Imagine there is also a 'unshare' method
