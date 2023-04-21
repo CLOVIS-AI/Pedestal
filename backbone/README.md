@@ -121,15 +121,12 @@ data class Score(
 
 	// The service implements the Backbone interface.
 	interface Service : Backbone<Ref, Failures, Score> {
-        
-		// The Backbone interface adds a 'request' method 
-		// to access the value behind a reference. 
 
 		// Methods should:
 		// - only accept/return references, and not actual values
-		//   (this is necessary to ensure the cache catches all requests,
-		//   the 'request' method should be the only one which returns
-		//   a real object).
+        //   (this is necessary to ensure the cache catches all requests,
+        //   the 'Ref.request' method should be the only one which returns
+        //   a real object).
 		// - return an Outcome or ProgressiveOutcome instance for error management
 		//   (see the documentation of Pedestal State).
 		//   ProgressiveFlow is used for cacheable read operations.
@@ -180,8 +177,8 @@ optional `arrow-state` dependency to profit from Arrow's typed error DSL.
 import sun.jvm.hotspot.oops.CellTypeState.refimport java.sql.Refimport kotlin.coroutines.CoroutineScope
 
 class ClientScoreRef(
-	internal val id: String,
-	override val backbone: ClientScores,
+        internal val id: String,
+        private val backbone: ClientScores,
 ) : Score.Ref {
 
 	// Provide convenience functions to act on this reference.
@@ -207,11 +204,11 @@ class ClientScores(
 		}        
 	}
 		.cachedInMemory(cacheScope.job)
-		.expireAfter(15.minutes, cacheScope)
+            .expireAfter(15.minutes, cacheScope)
 
-	override fun request(ref: ClientScoreRef) = cache[ref]
-    
-	override suspend fun increment(score: ClientScoreRef, amount: Int) = out {         
+  fun request(ref: ClientScoreRef) = cache[ref]
+
+  override suspend fun increment(score: ClientScoreRef, amount: Int) = out {         
 		client.post("http://localhost:8080/${score.id}?amount=$amount")
 
 		// We know the score was just modified, we thus clean the cache.

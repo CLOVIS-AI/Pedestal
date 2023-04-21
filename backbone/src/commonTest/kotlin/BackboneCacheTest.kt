@@ -17,7 +17,7 @@ class BackboneCacheTest {
 
 	data class BasicRef(val id: String, val backbone: Bone) : Ref<Bone.Invalid, Int> {
 
-		override fun request() = backbone.request(this)
+		override fun request() = backbone.cache[this]
 	}
 
 	// Id("12") -> 12
@@ -29,8 +29,6 @@ class BackboneCacheTest {
 				int
 			}
 		}
-
-		override fun request(ref: BasicRef) = cache[ref]
 
 		fun of(int: Int) = BasicRef(int.toString(), this)
 

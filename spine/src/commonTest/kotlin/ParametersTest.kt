@@ -139,8 +139,8 @@ class ParametersTest {
 				"uint" to "7",
 				"ulong" to "8",
 
-				"float" to "9.0",
-				"double" to "10.0",
+				"float" to "${9.0}", // JVM: "9.0" — JS: "9"
+				"double" to "${10.0}",
 			), params.data
 		)
 	}

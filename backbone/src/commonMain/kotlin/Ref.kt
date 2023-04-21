@@ -1,5 +1,6 @@
 package opensavvy.backbone
 
+import opensavvy.cache.Cache
 import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.coroutines.now
 import opensavvy.state.failure.Failure
@@ -26,9 +27,9 @@ import opensavvy.state.failure.Failure
 interface Ref<F : Failure, O> {
 
 	/**
-	 * Requests the referenced data, returning a value from the cache if one is stored.
+	 * Requests the referenced data.
 	 *
-	 * It is common to implement this method by calling [Backbone.request].
+	 * It is encouraged, but not mandatory, to implement this method using [Cache].
 	 */
 	fun request(): ProgressiveFlow<F, O>
 
