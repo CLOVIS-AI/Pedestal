@@ -176,6 +176,19 @@ class MemoryCache<I, F : Failure, T>(
 		upstream.expireAll()
 	}
 
+	/**
+	 * Goes through the entire cache and expires all values for which [predicate] returns `true`.
+	 */
+	internal suspend fun expireIf(predicate: (I) -> Boolean) {
+		log.trace { "expireIf" }
+
+		val targets = cacheLock.withLock("expireIf($predicate)") {
+			cache.keys.filter(predicate)
+		}
+
+		expire(targets)
+	}
+
 	companion object
 }
 
