@@ -2,8 +2,8 @@ package opensavvy.cache
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
@@ -48,16 +48,16 @@ class MemoryCache<I, F : Failure, T>(
 	 */
 
 	private val cache = HashMap<I, MutableStateFlow<ProgressiveOutcome<F, T>?>>()
-	private val cacheLock = Semaphore(1)
+	private val cacheLock = Mutex()
 
 	private val jobs = HashMap<I, Job>()
-	private val jobsLock = Semaphore(1)
+	private val jobsLock = Mutex()
 
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
 
 	override fun get(id: I): ProgressiveFlow<F, T> = flow {
-		val cached = cacheLock.withPermit { getUnsafe(id) }
+		val cached = cacheLock.withLock("get($id)") { getUnsafe(id) }
 			.onEach { out ->
 				if (out == null) {
 					// Now, someone should make a request to the previous layer.
@@ -73,19 +73,19 @@ class MemoryCache<I, F : Failure, T>(
 	}.onEach { log.trace(it) { "Emit value for $id ->" } }
 
 	private suspend fun attemptTakeResponsibilityPingUpstream(id: I) {
-		jobsLock.withPermit {
+		jobsLock.withLock("takeResponsibility($id)") {
 			val job = jobs[id]
 			if (job == null || !job.isActive) {
 				// No one is currently making the request, I'm taking the responsibility to do it
 
 				val childContext = currentCoroutineContext() +
-						CoroutineName("$this(for = $id)") +
-						this.job
+					CoroutineName("$this(for = $id)") +
+					this.job
 
 				jobs[id] = CoroutineScope(childContext).launch {
 					log.trace(id) { "Subscribing to the previous layer for" }
 
-					val state = cacheLock.withPermit { getUnsafe(id) }
+					val state = cacheLock.withLock("upstreamSubscription($id)") { getUnsafe(id) }
 
 					upstream[id]
 						.onEach { log.trace(it) { "Prev value for $id ->" } }
@@ -109,13 +109,13 @@ class MemoryCache<I, F : Failure, T>(
 	override suspend fun update(values: Collection<Pair<I, T>>) {
 		log.trace(values) { "update" }
 
-		jobsLock.withPermit {
+		jobsLock.withLock("updateJobs($values)") {
 			for ((id, _) in values) {
 				jobs.remove(id)?.cancel("MemoryCache.expire(refs) was called")
 			}
 		}
 
-		cacheLock.withPermit {
+		cacheLock.withLock("updateCache($values)") {
 			for ((id, value) in values) {
 				getUnsafe(id).value = ProgressiveOutcome.Success(value)
 			}
@@ -127,13 +127,13 @@ class MemoryCache<I, F : Failure, T>(
 	override suspend fun expire(ids: Collection<I>) {
 		log.trace(ids) { "expire" }
 
-		jobsLock.withPermit {
+		jobsLock.withLock("expireJobs($ids)") {
 			for (id in ids) {
 				jobs.remove(id)?.cancel("MemoryCache.expire(refs) was called")
 			}
 		}
 
-		cacheLock.withPermit {
+		cacheLock.withLock("expireCache($ids)") {
 			for (id in ids) {
 				val cached = cache[id]
 
@@ -156,12 +156,12 @@ class MemoryCache<I, F : Failure, T>(
 	override suspend fun expireAll() {
 		log.trace { "expireAll" }
 
-		jobsLock.withPermit {
+		jobsLock.withLock("expireAllJobs()") {
 			jobs.values.forEach { it.cancel("MemoryCache.expireAll() was called") }
 			jobs.clear()
 		}
 
-		cacheLock.withPermit {
+		cacheLock.withLock("expireAllCaches()") {
 			val toRemove = ArrayList<I>()
 
 			for ((id, cached) in cache) {
