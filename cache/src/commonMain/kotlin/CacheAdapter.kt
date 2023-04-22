@@ -12,7 +12,7 @@ import opensavvy.state.outcome.Outcome
  * and the underlying network APIs.
  */
 class CacheAdapter<I, F : Failure, T>(
-	val query: suspend (I) -> Outcome<F, T>,
+	private val query: suspend (I) -> Outcome<F, T>,
 ) : Cache<I, F, T> {
 
 	override fun get(id: I): ProgressiveFlow<F, T> = captureProgress { query(id) }
