@@ -21,12 +21,7 @@ import opensavvy.state.progressive.copy
  * This implementation never frees the cache or invalidates elements inside it.
  * To free memory, add a subsequent layer responsible for it (e.g. [ExpirationCache]).
  *
- * Use the [cachedInMemory] factory for easy cache chaining:
- * ```kotlin
- * val cache = Cache.Default()
- *     .cachedInMemory()
- *     .expireAfter(2.minutes)
- * ```
+ * Use the [cachedInMemory] factory for easy cache chaining.
  */
 class MemoryCache<I, F : Failure, T>(
 	private val upstream: Cache<I, F, T>,
