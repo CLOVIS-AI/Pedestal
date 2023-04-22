@@ -38,4 +38,4 @@ class CacheAdapter<I, F : Failure, T>(
  * See [CacheAdapter].
  */
 fun <I, F : Failure, T> cache(transform: suspend (I) -> Outcome<F, T>) =
-	CacheAdapter<I, F, T> { transform(it) }
+	CacheAdapter(transform)
