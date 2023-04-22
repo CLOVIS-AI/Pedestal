@@ -6,7 +6,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.progress.done
@@ -18,7 +17,7 @@ import kotlin.time.Duration.Companion.minutes
 /**
  * Cache layer that expires values from the previous layer after a specified [duration][expireAfter].
  *
- * To add an [ExpirationCache] to a previous layer, use [Cache.expireAfter][ExpirationCache.Companion.expireAfter]:
+ * To add an [ExpirationCache] to a previous layer, use [Cache.expireAfter][Cache.expireAfter]:
  * ```kotlin
  * val cache = Cache.Default
  *      .expireAfter(5.minutes, Job())
@@ -105,13 +104,13 @@ class ExpirationCache<I, F : Failure, T>(
 		upstream.expireAll()
 	}
 
-	companion object {
-		/**
-		 * Factory function to easily add a [ExpirationCache] layer to an existing cache chain.
-		 *
-		 * @see ExpirationCache
-		 */
-		fun <I, F : Failure, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
-			ExpirationCache(this, duration, scope)
-	}
+	companion object
 }
+
+/**
+ * Factory function to easily add a [ExpirationCache] layer to an existing cache chain.
+ *
+ * @see ExpirationCache
+ */
+fun <I, F : Failure, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
+	ExpirationCache(this, duration, scope)

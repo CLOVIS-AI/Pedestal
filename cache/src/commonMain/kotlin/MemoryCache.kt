@@ -4,7 +4,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.state.coroutines.ProgressiveFlow
@@ -182,7 +181,13 @@ class MemoryCache<I, F : Failure, T>(
 		upstream.expireAll()
 	}
 
-	companion object {
-		fun <I, F : Failure, T> Cache<I, F, T>.cachedInMemory(job: Job) = MemoryCache(this, job)
-	}
+	companion object
 }
+
+/**
+ * Creates a new cache layer which stores the last queried value for each identifier, and joins requests such that
+ * multiple subscribers to the same value only start a single request.
+ *
+ * For more information, see [MemoryCache].
+ */
+fun <I, F : Failure, T> Cache<I, F, T>.cachedInMemory(job: Job) = MemoryCache(this, job)
