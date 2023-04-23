@@ -2,11 +2,10 @@ package opensavvy.cache
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import opensavvy.cache.ExpirationCache.Companion.expireAfter
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.progress.done
@@ -18,7 +17,7 @@ import kotlin.time.Duration.Companion.minutes
 /**
  * Cache layer that expires values from the previous layer after a specified [duration][expireAfter].
  *
- * To add an [ExpirationCache] to a previous layer, use [Cache.expireAfter][ExpirationCache.Companion.expireAfter]:
+ * To add an [ExpirationCache] to a previous layer, use [Cache.expireAfter][Cache.expireAfter]:
  * ```kotlin
  * val cache = Cache.Default
  *      .expireAfter(5.minutes, Job())
@@ -46,14 +45,14 @@ class ExpirationCache<I, F : Failure, T>(
 	private val log = loggerFor(this)
 
 	private val lastUpdate = HashMap<I, Instant>()
-	private val lock = Semaphore(1)
+	private val lock = Mutex()
 
 	init {
 		expirationScope.launch(CoroutineName("$this")) {
 			while (isActive) {
 				delay(expireAfter)
 
-				lock.withPermit {
+				lock.withLock("checkExpiredValues()") {
 					val now = Clock.System.now()
 					val iterator = lastUpdate.iterator()
 					while (iterator.hasNext()) {
@@ -71,7 +70,7 @@ class ExpirationCache<I, F : Failure, T>(
 	}
 
 	private suspend fun markAsUpdatedNow(id: I) {
-		lock.withPermit {
+		lock.withLock("markAsUpdatedNow($id)") {
 			log.trace(id) { "Updated now:" }
 			lastUpdate[id] = Clock.System.now()
 		}
@@ -92,26 +91,26 @@ class ExpirationCache<I, F : Failure, T>(
 
 	override suspend fun expire(ids: Collection<I>) {
 		for (ref in ids)
-			lock.withPermit {
+			lock.withLock("expire($ids)") {
 				lastUpdate.remove(ref)
 			}
 		upstream.expire(ids)
 	}
 
 	override suspend fun expireAll() {
-		lock.withPermit {
+		lock.withLock("expireAll()") {
 			lastUpdate.clear()
 		}
 		upstream.expireAll()
 	}
 
-	companion object {
-		/**
-		 * Factory function to easily add a [ExpirationCache] layer to an existing cache chain.
-		 *
-		 * @see ExpirationCache
-		 */
-		fun <I, F : Failure, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
-			ExpirationCache(this, duration, scope)
-	}
+	companion object
 }
+
+/**
+ * Factory function to easily add a [ExpirationCache] layer to an existing cache chain.
+ *
+ * @see ExpirationCache
+ */
+fun <I, F : Failure, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
+	ExpirationCache(this, duration, scope)

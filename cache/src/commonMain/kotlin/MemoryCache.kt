@@ -2,9 +2,8 @@ package opensavvy.cache
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
-import opensavvy.cache.MemoryCache.Companion.cachedInMemory
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.state.coroutines.ProgressiveFlow
@@ -22,12 +21,7 @@ import opensavvy.state.progressive.copy
  * This implementation never frees the cache or invalidates elements inside it.
  * To free memory, add a subsequent layer responsible for it (e.g. [ExpirationCache]).
  *
- * Use the [cachedInMemory] factory for easy cache chaining:
- * ```kotlin
- * val cache = Cache.Default()
- *     .cachedInMemory()
- *     .expireAfter(2.minutes)
- * ```
+ * Use the [cachedInMemory] factory for easy cache chaining.
  */
 class MemoryCache<I, F : Failure, T>(
 	private val upstream: Cache<I, F, T>,
@@ -48,16 +42,16 @@ class MemoryCache<I, F : Failure, T>(
 	 */
 
 	private val cache = HashMap<I, MutableStateFlow<ProgressiveOutcome<F, T>?>>()
-	private val cacheLock = Semaphore(1)
+	private val cacheLock = Mutex()
 
 	private val jobs = HashMap<I, Job>()
-	private val jobsLock = Semaphore(1)
+	private val jobsLock = Mutex()
 
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
 
 	override fun get(id: I): ProgressiveFlow<F, T> = flow {
-		val cached = cacheLock.withPermit { getUnsafe(id) }
+		val cached = cacheLock.withLock("get($id)") { getUnsafe(id) }
 			.onEach { out ->
 				if (out == null) {
 					// Now, someone should make a request to the previous layer.
@@ -73,19 +67,19 @@ class MemoryCache<I, F : Failure, T>(
 	}.onEach { log.trace(it) { "Emit value for $id ->" } }
 
 	private suspend fun attemptTakeResponsibilityPingUpstream(id: I) {
-		jobsLock.withPermit {
+		jobsLock.withLock("takeResponsibility($id)") {
 			val job = jobs[id]
 			if (job == null || !job.isActive) {
 				// No one is currently making the request, I'm taking the responsibility to do it
 
 				val childContext = currentCoroutineContext() +
-						CoroutineName("$this(for = $id)") +
-						this.job
+					CoroutineName("$this(for = $id)") +
+					this.job
 
 				jobs[id] = CoroutineScope(childContext).launch {
 					log.trace(id) { "Subscribing to the previous layer for" }
 
-					val state = cacheLock.withPermit { getUnsafe(id) }
+					val state = cacheLock.withLock("upstreamSubscription($id)") { getUnsafe(id) }
 
 					upstream[id]
 						.onEach { log.trace(it) { "Prev value for $id ->" } }
@@ -109,13 +103,13 @@ class MemoryCache<I, F : Failure, T>(
 	override suspend fun update(values: Collection<Pair<I, T>>) {
 		log.trace(values) { "update" }
 
-		jobsLock.withPermit {
+		jobsLock.withLock("updateJobs($values)") {
 			for ((id, _) in values) {
 				jobs.remove(id)?.cancel("MemoryCache.expire(refs) was called")
 			}
 		}
 
-		cacheLock.withPermit {
+		cacheLock.withLock("updateCache($values)") {
 			for ((id, value) in values) {
 				getUnsafe(id).value = ProgressiveOutcome.Success(value)
 			}
@@ -127,13 +121,13 @@ class MemoryCache<I, F : Failure, T>(
 	override suspend fun expire(ids: Collection<I>) {
 		log.trace(ids) { "expire" }
 
-		jobsLock.withPermit {
+		jobsLock.withLock("expireJobs($ids)") {
 			for (id in ids) {
 				jobs.remove(id)?.cancel("MemoryCache.expire(refs) was called")
 			}
 		}
 
-		cacheLock.withPermit {
+		cacheLock.withLock("expireCache($ids)") {
 			for (id in ids) {
 				val cached = cache[id]
 
@@ -156,12 +150,12 @@ class MemoryCache<I, F : Failure, T>(
 	override suspend fun expireAll() {
 		log.trace { "expireAll" }
 
-		jobsLock.withPermit {
+		jobsLock.withLock("expireAllJobs()") {
 			jobs.values.forEach { it.cancel("MemoryCache.expireAll() was called") }
 			jobs.clear()
 		}
 
-		cacheLock.withPermit {
+		cacheLock.withLock("expireAllCaches()") {
 			val toRemove = ArrayList<I>()
 
 			for ((id, cached) in cache) {
@@ -182,7 +176,26 @@ class MemoryCache<I, F : Failure, T>(
 		upstream.expireAll()
 	}
 
-	companion object {
-		fun <I, F : Failure, T> Cache<I, F, T>.cachedInMemory(job: Job) = MemoryCache(this, job)
+	/**
+	 * Goes through the entire cache and expires all values for which [predicate] returns `true`.
+	 */
+	internal suspend fun expireIf(predicate: (I) -> Boolean) {
+		log.trace { "expireIf" }
+
+		val targets = cacheLock.withLock("expireIf($predicate)") {
+			cache.keys.filter(predicate)
+		}
+
+		expire(targets)
 	}
+
+	companion object
 }
+
+/**
+ * Creates a new cache layer which stores the last queried value for each identifier, and joins requests such that
+ * multiple subscribers to the same value only start a single request.
+ *
+ * For more information, see [MemoryCache].
+ */
+fun <I, F : Failure, T> Cache<I, F, T>.cachedInMemory(job: Job) = MemoryCache(this, job)

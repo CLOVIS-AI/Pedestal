@@ -2,7 +2,6 @@ package opensavvy.cache
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
-import opensavvy.cache.MemoryCache.Companion.cachedInMemory
 import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.Outcome
 import kotlin.coroutines.AbstractCoroutineContextElement
