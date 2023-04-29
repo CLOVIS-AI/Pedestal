@@ -3,19 +3,39 @@ package opensavvy.state.progressive
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome.*
 
-//region Regular
+// region Get or null
 
 /**
  * Returns [Success.value], or `null` if this outcome is not successful.
  */
 val <T : Any> ProgressiveOutcome<*, T>.valueOrNull: T?
-	get() = (this as? Success<T>)?.value
+	get() = (this as? Success)?.value
 
 /**
  * Returns [Failure.failure], or `null` if this outcome is not a failure.
  */
 val <F> ProgressiveOutcome<F, *>.failureOrNull: F?
 	get() = (this as? Failure)?.failure
+
+// endregion
+// region Safe get via Nothing
+
+/**
+ * Returns [Success.value].
+ */
+val <T> ProgressiveOutcome<Nothing, T>.value: T
+	// This cast is safe, because a Success of Nothing is impossible
+	get() = (this as Success).value
+
+/**
+ * Returns [Failure.failure].
+ */
+val <F> ProgressiveOutcome<F, Nothing>.failure: F
+	// This cast is safe, because a Success of Nothing is impossible
+	get() = (this as Failure).failure
+
+// endregion
+// region Conversion
 
 /**
  * Converts this progressive outcome into a [regular outcome][Outcome].

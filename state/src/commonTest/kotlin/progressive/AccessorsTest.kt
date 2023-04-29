@@ -10,6 +10,8 @@ class AccessorsTest {
 
     private object Failed
 
+    // region Get or null
+
     @Test
     fun valueOnSuccess() {
         assertEquals(
@@ -44,6 +46,28 @@ class AccessorsTest {
         )
     }
 
+    // endregion
+    // region Nothing variant
+
+    @Test
+    fun valueOnSuccessNothing() {
+        assertEquals(
+            5,
+            (5.success() as ProgressiveOutcome<Nothing, Int>).value,
+        )
+    }
+
+    @Test
+    fun failureOnFailureNothing() {
+        assertEquals(
+            Failed,
+            (Failed.failed() as ProgressiveOutcome<Failed, Nothing>).failure,
+        )
+    }
+
+    // endregion
+    // region Destructuration
+
     @Test
     fun destructurationOnSuccess() {
         val value: ProgressiveOutcome<*, Int> = ProgressiveOutcome.Success(5, loading(0.23))
@@ -70,4 +94,6 @@ class AccessorsTest {
         assertEquals(null, outcome)
         assertEquals(loading(0.23), progress)
     }
+
+    // endregion
 }
