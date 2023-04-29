@@ -1,12 +1,13 @@
 package opensavvy.state.progressive
 
 import opensavvy.progress.loading
-import opensavvy.state.failure.NotFound
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConditionalTest {
+
+    private object Failed
 
     @Test
     fun success_onSuccess() {
@@ -23,7 +24,7 @@ class ConditionalTest {
     fun failure_onSuccess() {
         var test = false
 
-        ProgressiveOutcome.Failure(NotFound(5)).onSuccess {
+        ProgressiveOutcome.Failure(Failed).onSuccess {
             test = true
         }
 
@@ -56,7 +57,7 @@ class ConditionalTest {
     fun failure_onFailure() {
         var test = false
 
-        ProgressiveOutcome.Failure(NotFound(5)).onFailure {
+        ProgressiveOutcome.Failure(Failed).onFailure {
             test = true
         }
 
@@ -89,7 +90,7 @@ class ConditionalTest {
     fun failure_onIncomplete() {
         var test = false
 
-        ProgressiveOutcome.Failure(NotFound(5)).onIncomplete {
+        ProgressiveOutcome.Failure(Failed).onIncomplete {
             test = true
         }
 
@@ -122,7 +123,7 @@ class ConditionalTest {
     fun loading_onLoading() {
         var test = false
 
-        ProgressiveOutcome.Failure(NotFound(5), loading(0.2)).onLoading {
+        ProgressiveOutcome.Failure(Failed, loading(0.2)).onLoading {
             test = true
         }
 

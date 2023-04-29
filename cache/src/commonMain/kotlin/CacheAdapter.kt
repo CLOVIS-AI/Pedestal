@@ -2,7 +2,6 @@ package opensavvy.cache
 
 import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.coroutines.captureProgress
-import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.Outcome
 
 /**
@@ -11,7 +10,7 @@ import opensavvy.state.outcome.Outcome
  * This is not a valid implementation of a cache (it doesn't do any caching), and only serves as a link between caches
  * and the underlying network APIs.
  */
-class CacheAdapter<I, F : Failure, T>(
+class CacheAdapter<I, F, T>(
 	private val query: suspend (I) -> Outcome<F, T>,
 ) : Cache<I, F, T> {
 
@@ -37,5 +36,5 @@ class CacheAdapter<I, F : Failure, T>(
  *
  * See [CacheAdapter].
  */
-fun <I, F : Failure, T> cache(transform: suspend (I) -> Outcome<F, T>) =
+fun <I, F, T> cache(transform: suspend (I) -> Outcome<F, T>) =
 	CacheAdapter(transform)

@@ -13,6 +13,8 @@ import opensavvy.state.progressive.success as progressiveSuccess
 
 class ConverterTest {
 
+    private data class NotFound(val value: Int)
+
     // region To either
 
     @Test

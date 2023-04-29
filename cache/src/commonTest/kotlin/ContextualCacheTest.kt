@@ -11,7 +11,6 @@ import opensavvy.cache.contextual.cachedInMemory
 import opensavvy.cache.contextual.expireAfter
 import opensavvy.state.arrow.out
 import opensavvy.state.coroutines.now
-import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.success
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,7 +31,7 @@ class ContextualCacheTest {
 		val limit: Int,
 	)
 
-	private fun createCache() = cache<Identifier, Context, Failure, List<Int>> { id, context ->
+	private fun createCache() = cache<Identifier, Context, Nothing, List<Int>> { id, context ->
 		out {
 			data
 				.drop(context.startAt)
@@ -153,7 +152,7 @@ class ContextualCacheTest {
 		val initial = createCache()
 
 		@Suppress("RemoveExplicitTypeArguments") // IDEA is wrong, they are necessary
-		val cache = batchingCache<Identifier, Context, Failure, List<Int>>(backgroundScope) { request ->
+		val cache = batchingCache<Identifier, Context, Nothing, List<Int>>(backgroundScope) { request ->
 			for ((id, context) in request) {
 				emitAll(
 					initial[id, context]

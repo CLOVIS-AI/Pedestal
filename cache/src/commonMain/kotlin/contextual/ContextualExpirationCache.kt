@@ -3,10 +3,9 @@ package opensavvy.cache.contextual
 import kotlinx.coroutines.CoroutineScope
 import opensavvy.cache.expireAfter
 import opensavvy.state.coroutines.ProgressiveFlow
-import opensavvy.state.failure.Failure
 import kotlin.time.Duration
 
-class ContextualExpirationCache<I, C, F : Failure, T>(
+class ContextualExpirationCache<I, C, F, T>(
 	private val upstream: ContextualCache<I, C, F, T>,
 	duration: Duration,
 	scope: CoroutineScope,
@@ -38,5 +37,5 @@ class ContextualExpirationCache<I, C, F : Failure, T>(
 
 }
 
-fun <I, C, F : Failure, T> ContextualCache<I, C, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
+fun <I, C, F, T> ContextualCache<I, C, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
 	ContextualExpirationCache(this, duration, scope)

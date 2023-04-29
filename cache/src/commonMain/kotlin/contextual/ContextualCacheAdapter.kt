@@ -2,7 +2,6 @@ package opensavvy.cache.contextual
 
 import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.coroutines.captureProgress
-import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.Outcome
 
 /**
@@ -11,7 +10,7 @@ import opensavvy.state.outcome.Outcome
  * This is not a valid implementation of a cache (it doesn't do any caching), and only serves as a link
  * between caches and the underlying network APIs.
  */
-class ContextualCacheAdapter<I, C, F : Failure, T>(
+class ContextualCacheAdapter<I, C, F, T>(
 	private val query: suspend (I, C) -> Outcome<F, T>,
 ) : ContextualCache<I, C, F, T> {
 	override fun get(id: I, context: C): ProgressiveFlow<F, T> = captureProgress { query(id, context) }
@@ -40,5 +39,5 @@ class ContextualCacheAdapter<I, C, F : Failure, T>(
  *
  * See [ContextualCacheAdapter].
  */
-fun <I, C, F : Failure, T> cache(transform: suspend (I, C) -> Outcome<F, T>): ContextualCache<I, C, F, T> =
+fun <I, C, F, T> cache(transform: suspend (I, C) -> Outcome<F, T>): ContextualCache<I, C, F, T> =
 	ContextualCacheAdapter(transform)

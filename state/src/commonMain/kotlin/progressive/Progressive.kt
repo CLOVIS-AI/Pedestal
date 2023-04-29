@@ -5,7 +5,6 @@ import opensavvy.progress.done
 import opensavvy.progress.loading
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome.*
-import opensavvy.state.failure.Failure as FailureSupertype
 
 /**
  * A [Outcome] with integrated [Progress] management.
@@ -27,7 +26,7 @@ import opensavvy.state.failure.Failure as FailureSupertype
  *
  * To create progressive outcomes from computations, use the [success] and [failed] factories.
  */
-sealed class ProgressiveOutcome<out F : FailureSupertype, out T> {
+sealed class ProgressiveOutcome<out F, out T> {
 
 	/**
 	 * The current progression of this outcome.
@@ -60,7 +59,7 @@ sealed class ProgressiveOutcome<out F : FailureSupertype, out T> {
 	 * If [progress] is loading, this means the operation has been retried in an attempt to access a more up-to-date
 	 * version.
 	 */
-	data class Failure<F : FailureSupertype>(
+	data class Failure<F>(
 		val failure: F,
 		override val progress: Progress = done(),
 	) : ProgressiveOutcome<F, Nothing>()

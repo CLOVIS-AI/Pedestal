@@ -1,10 +1,11 @@
 package opensavvy.state.progressive
 
-import opensavvy.state.failure.NotFound
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MappingTest {
+
+    private object Failed
 
     @Test
     fun success_map() {
@@ -18,8 +19,8 @@ class MappingTest {
     @Test
     fun failure_map() {
         assertEquals(
-            ProgressiveOutcome.Failure(NotFound(5)),
-            ProgressiveOutcome.Failure(NotFound(5)).map { it.toString() },
+            ProgressiveOutcome.Failure(Failed),
+            ProgressiveOutcome.Failure(Failed).map { it.toString() },
         )
     }
 

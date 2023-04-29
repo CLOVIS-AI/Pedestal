@@ -3,9 +3,8 @@ package opensavvy.cache.contextual
 import kotlinx.coroutines.Job
 import opensavvy.cache.cachedInMemory
 import opensavvy.state.coroutines.ProgressiveFlow
-import opensavvy.state.failure.Failure
 
-class ContextualMemoryCache<I, C, F : Failure, T>(
+class ContextualMemoryCache<I, C, F, T>(
 	upstream: ContextualCache<I, C, F, T>,
 	job: Job,
 ) : ContextualCache<I, C, F, T> {
@@ -33,5 +32,5 @@ class ContextualMemoryCache<I, C, F : Failure, T>(
 
 }
 
-fun <I, C, F : Failure, T> ContextualCache<I, C, F, T>.cachedInMemory(job: Job) =
+fun <I, C, F, T> ContextualCache<I, C, F, T>.cachedInMemory(job: Job) =
 	ContextualMemoryCache(this, job)

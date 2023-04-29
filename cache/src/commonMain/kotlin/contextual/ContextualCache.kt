@@ -3,7 +3,6 @@ package opensavvy.cache.contextual
 import kotlinx.coroutines.flow.Flow
 import opensavvy.cache.Cache
 import opensavvy.state.coroutines.ProgressiveFlow
-import opensavvy.state.failure.Failure
 
 /**
  * Stores information temporarily to avoid unneeded network requests.
@@ -25,7 +24,7 @@ import opensavvy.state.failure.Failure
  * @param F The possible failures when requesting the cache.
  * @param T The possible successful value when requesting the cache.
  */
-interface ContextualCache<I, C, F : Failure, T> {
+interface ContextualCache<I, C, F, T> {
 
 	/**
 	 * Gets the value associated with an [id] and a [context] in this cache.

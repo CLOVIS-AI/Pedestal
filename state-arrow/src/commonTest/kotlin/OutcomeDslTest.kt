@@ -2,8 +2,6 @@ package opensavvy.state.arrow
 
 import arrow.core.left
 import arrow.core.raise.either
-import opensavvy.state.failure.Failure
-import opensavvy.state.failure.NotFound
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.outcome.failed
 import opensavvy.state.outcome.success
@@ -12,25 +10,27 @@ import kotlin.test.assertEquals
 
 class OutcomeDslTest {
 
+    private data class Failed(val value: Any)
+
     @Test
     fun success() {
-        val success = out<Failure, Int> { 2 }
+        val success = out<Failed, Int> { 2 }
 
         assertEquals(2.success(), success)
     }
 
     @Test
     fun failure() {
-        val failure = out<Failure, Int> {
-            raise(NotFound("test"))
+        val failure = out<Failed, Int> {
+            raise(Failed("test"))
         }
 
-        assertEquals(NotFound("test").failed(), failure)
+        assertEquals(Failed("test").failed(), failure)
     }
 
     @Test
     fun bindSuccess() {
-        val success = out<Failure, Int> {
+        val success = out<Failed, Int> {
             Outcome.Success(2).bind()
         }
 
@@ -40,24 +40,24 @@ class OutcomeDslTest {
     @Suppress("IMPLICIT_NOTHING_TYPE_ARGUMENT_IN_RETURN_POSITION") // that's the purpose of the test!
     @Test
     fun bindFailure() {
-        val failure = out<Failure, Int> {
-            Outcome.Failure(NotFound("test")).bind()
+        val failure = out<Failed, Int> {
+            Outcome.Failure(Failed("test")).bind()
         }
 
-        assertEquals(NotFound("test").failed(), failure)
+        assertEquals(Failed("test").failed(), failure)
     }
 
     @Suppress("IMPLICIT_NOTHING_TYPE_ARGUMENT_IN_RETURN_POSITION") // that's the purpose of the test!
     @Test
     fun toEither() {
-        val result = either<Failure, Int> {
+        val result = either<Failed, Int> {
             out {
-                raise(NotFound("test"))
+                raise(Failed("test"))
             }.toEither().bind()
         }
 
         assertEquals(
-            NotFound("test").left(),
+            Failed("test").left(),
             result,
         )
     }

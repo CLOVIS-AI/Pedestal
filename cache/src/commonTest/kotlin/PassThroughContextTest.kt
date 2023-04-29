@@ -2,7 +2,6 @@ package opensavvy.cache
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
-import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.Outcome
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
@@ -19,7 +18,7 @@ class PassThroughContextTest {
 
     @Test
     fun memoryCache() = runTest {
-        val cache = cache<Boolean, Failure, Unit> {
+        val cache = cache<Boolean, Nothing, Unit> {
             println(currentCoroutineContext())
             if (it) {
                 assertNotNull(currentCoroutineContext()[CustomContext])

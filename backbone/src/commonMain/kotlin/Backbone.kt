@@ -1,7 +1,5 @@
 package opensavvy.backbone
 
-import opensavvy.state.failure.Failure
-
 /**
  * The parent interface for an implementation of the Backbone pattern.
  *
@@ -11,7 +9,7 @@ import opensavvy.state.failure.Failure
  * @param F Failures that may be returned when calling [Ref.request].
  * @param R The reference responsible for the object [O].
  */
-interface Backbone<R : Ref<F, O>, F : Failure, O> {
+interface Backbone<R : Ref<F, O>, F, O> {
 
 	companion object
 }

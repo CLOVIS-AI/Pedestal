@@ -1,11 +1,12 @@
 package opensavvy.state.outcome
 
-import opensavvy.state.failure.NotFound
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ConditionalTest {
+
+    private object Failed
 
     @Test
     fun success_onSuccess() {
@@ -22,7 +23,7 @@ class ConditionalTest {
     fun failure_onSuccess() {
         var test = false
 
-        Outcome.Failure(NotFound(5)).onSuccess {
+        Outcome.Failure(Failed).onSuccess {
             test = true
         }
 
@@ -44,7 +45,7 @@ class ConditionalTest {
     fun failure_onFailure() {
         var test = false
 
-        Outcome.Failure(NotFound(5)).onFailure {
+        Outcome.Failure(Failed).onFailure {
             test = true
         }
 

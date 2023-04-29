@@ -33,10 +33,6 @@ There are multiple recommended ways to represent outcomes:
 - success as a regular return type, failures as a context receiver (see Arrow 2.0's `Raise` interface) and progress as a
   context receiver (using `progress`' `ProgressReporter`).
 
-# Package opensavvy.state
-
-Centralized [Failure][opensavvy.state.Failure] management.
-
 # Package opensavvy.state.outcome
 
 Utilities for the [Outcome][opensavvy.state.outcome.Outcome] type, allowing to embed typed error management directly
@@ -44,4 +40,4 @@ into the API without using exceptions.
 
 # Package opensavvy.state.progressive
 
-The [ProgressiveOutcome][opensavvy.state.progressive.ProgressiveOutcome], which combines [Outcome][opensavvy.state.outcome.Outcome] with [Progression][opensavvy.state.Progression].
+The [ProgressiveOutcome][opensavvy.state.progressive.ProgressiveOutcome], which combines [Outcome][opensavvy.state.outcome.Outcome] with [Progress][opensavvy.progress.Progress].

@@ -14,8 +14,6 @@ import opensavvy.progress.coroutines.report
 import opensavvy.progress.loading
 import opensavvy.state.arrow.out
 import opensavvy.state.coroutines.now
-import opensavvy.state.failure.CustomFailure
-import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.valueOrNull
 import opensavvy.state.progressive.ProgressiveOutcome
 import kotlin.test.Test
@@ -32,14 +30,8 @@ class CacheTest {
 	private data class IntId(val id: Int) {
 		override fun toString() = "Id($id)"
 
-		sealed interface Failures : Failure {
-			data class Negative(val id: Int) :
-				CustomFailure(Companion, "Only positive integers are allowed, found $id"),
-				Failures {
-				companion object : Failure.Key {
-					override fun toString() = "Negative"
-				}
-			}
+		sealed interface Failures {
+			data class Negative(val id: Int) : Failures
 		}
 	}
 

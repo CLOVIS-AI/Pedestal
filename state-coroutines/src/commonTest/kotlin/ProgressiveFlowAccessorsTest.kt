@@ -4,7 +4,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import opensavvy.progress.loading
-import opensavvy.state.failure.NotFound
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome
 import kotlin.test.Test
@@ -12,6 +11,8 @@ import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProgressiveFlowAccessorsTest {
+
+    private data class NotFound(val value: Int)
 
     @Test
     fun failure() = runTest {

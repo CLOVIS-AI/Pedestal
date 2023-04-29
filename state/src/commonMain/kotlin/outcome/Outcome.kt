@@ -3,7 +3,6 @@ package opensavvy.state.outcome
 import opensavvy.state.outcome.Outcome.Failure
 import opensavvy.state.outcome.Outcome.Success
 import opensavvy.state.progressive.ProgressiveOutcome
-import opensavvy.state.failure.Failure as FailureSupertype
 
 /**
  * The result of an operation.
@@ -16,7 +15,7 @@ import opensavvy.state.failure.Failure as FailureSupertype
  *
  * To create outcomes from computations, use the [success] and [failed] factories.
  */
-sealed class Outcome<out F : FailureSupertype, out T> {
+sealed class Outcome<out F, out T> {
 
     /**
      * The latest known result of the operation was a success, available as [value].
@@ -28,7 +27,7 @@ sealed class Outcome<out F : FailureSupertype, out T> {
     /**
      * The latest known result of the operation was a failure, available as [failure].
      */
-    data class Failure<F : FailureSupertype>(
+    data class Failure<F>(
         val failure: F,
     ) : Outcome<F, Nothing>()
 }

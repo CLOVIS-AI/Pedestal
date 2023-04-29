@@ -3,14 +3,13 @@ package opensavvy.state.arrow
 import arrow.core.raise.Raise
 import arrow.core.raise.RaiseDSL
 import arrow.core.raise.recover
-import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.Outcome
 import kotlin.experimental.ExperimentalTypeInference
 import kotlin.jvm.JvmInline
 
 @JvmInline
 @RaiseDSL
-value class OutcomeDsl<F : Failure>(private val raise: Raise<F>) :
+value class OutcomeDsl<F>(private val raise: Raise<F>) :
     Raise<F> by raise {
 
     @RaiseDSL
@@ -25,7 +24,7 @@ value class OutcomeDsl<F : Failure>(private val raise: Raise<F>) :
  */
 @OptIn(ExperimentalTypeInference::class)
 @RaiseDSL
-inline fun <F : Failure, T> out(@BuilderInference block: OutcomeDsl<F>.() -> T): Outcome<F, T> =
+inline fun <F, T> out(@BuilderInference block: OutcomeDsl<F>.() -> T): Outcome<F, T> =
     recover(
         block = { Outcome.Success(block(OutcomeDsl(this))) },
         recover = { e: F -> Outcome.Failure(e) },

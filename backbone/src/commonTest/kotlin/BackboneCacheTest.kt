@@ -6,8 +6,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runTest
 import opensavvy.cache.cache
 import opensavvy.state.arrow.out
-import opensavvy.state.failure.CustomFailure
-import opensavvy.state.failure.Failure
 import opensavvy.state.outcome.valueOrNull
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,7 +30,7 @@ class BackboneCacheTest {
 
 		fun of(int: Int) = BasicRef(int.toString(), this)
 
-		object Invalid : CustomFailure(Invalid, "Invalid"), Failure.Key
+		object Invalid
 	}
 
 	@Test
