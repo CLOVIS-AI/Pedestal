@@ -7,6 +7,8 @@ class AccessorsTest {
 
     private object Failed
 
+    // region variant orNull
+
     @Test
     fun valueOnSuccess() {
         assertEquals(
@@ -40,4 +42,25 @@ class AccessorsTest {
             Failed.failed().failureOrNull,
         )
     }
+
+    // endregion
+    // region variant Nothing
+
+    @Test
+    fun valueOnSuccessNothing() {
+        assertEquals(
+            5,
+            (5.success() as Outcome<Nothing, Int>).value,
+        )
+    }
+
+    @Test
+    fun failureOnFailureNothing() {
+        assertEquals(
+            Failed,
+            (Failed.failed() as Outcome<Failed, Nothing>).failure,
+        )
+    }
+
+    // endregion
 }
