@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.*
 import opensavvy.progress.Progress
 import opensavvy.progress.coroutines.report
 import opensavvy.progress.done
-import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.asOutcome
 
@@ -25,10 +24,10 @@ typealias ProgressiveFlow<F, T> = Flow<ProgressiveOutcome<F, T>>
  *
  * @see now Return only the first non-loading value, instead of returning a flow.
  */
-fun <F : Failure, T> ProgressiveFlow<F, T>.filterNotLoading() = this
-    .onEach { report(it.progress) }
-    .filter { it.progress == done() }
-    .mapNotNull { it.asOutcome() }
+fun <F, T> ProgressiveFlow<F, T>.filterNotLoading() = this
+	.onEach { report(it.progress) }
+	.filter { it.progress == done() }
+	.mapNotNull { it.asOutcome() }
 
 /**
  * Suspends until the first complete value is available (success or failure).
@@ -45,6 +44,6 @@ fun <F : Failure, T> ProgressiveFlow<F, T>.filterNotLoading() = this
  * @throws NoSuchElementException In case the flow terminates before emitting a complete element.
  * @see filterNotLoading Return all complete elements instead of just the first one.
  */
-suspend fun <F : Failure, T> ProgressiveFlow<F, T>.now() = this
-    .filterNotLoading()
-    .first()
+suspend fun <F, T> ProgressiveFlow<F, T>.now() = this
+	.filterNotLoading()
+	.first()

@@ -1,13 +1,14 @@
 package opensavvy.state.progressive
 
 import opensavvy.progress.loading
-import opensavvy.state.failure.NotFound
 import opensavvy.state.outcome.Outcome
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 
 class AccessorsTest {
+
+    private object Failed
 
     @Test
     fun valueOnSuccess() {
@@ -22,7 +23,7 @@ class AccessorsTest {
     fun valueOnFailure() {
         assertEquals<Int?>(
             null,
-            NotFound("").failed().valueOrNull,
+            Failed.failed().valueOrNull,
         )
     }
 
@@ -38,8 +39,8 @@ class AccessorsTest {
     @Test
     fun failureOnFailure() {
         assertEquals(
-            NotFound(""),
-            NotFound("").failed().failureOrNull,
+            Failed,
+            Failed.failed().failureOrNull,
         )
     }
 
@@ -54,10 +55,10 @@ class AccessorsTest {
 
     @Test
     fun destructurationOnFailure() {
-        val value: ProgressiveOutcome<*, Int> = ProgressiveOutcome.Failure(NotFound("id"), loading(0.23))
+        val value: ProgressiveOutcome<*, Int> = ProgressiveOutcome.Failure(Failed, loading(0.23))
         val (outcome, progress) = value
 
-        assertEquals(Outcome.Failure(NotFound("id")), outcome)
+        assertEquals(Outcome.Failure(Failed), outcome)
         assertEquals(loading(0.23), progress)
     }
 

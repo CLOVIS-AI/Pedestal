@@ -2,7 +2,6 @@ package opensavvy.cache
 
 import kotlinx.coroutines.flow.Flow
 import opensavvy.state.coroutines.ProgressiveFlow
-import opensavvy.state.failure.Failure
 
 /**
  * Stores information temporarily to avoid unneeded network requests.
@@ -28,14 +27,14 @@ import opensavvy.state.failure.Failure
  * A possible scenario for some data that rarely changes can be:
  * - Cache the data in memory for 5 minutes,
  * - Cache the data in hard storage for 1 hour,
- * - Query the data for real afterwards.
+ * - Query the data for real afterward.
  *
  * Cache chaining is instantiated in the opposite order, like iterators (the last in the chain is the first checked,
  * and delegates to the previous one if they do not have the value).
  * The first element of the chain, and therefore the one responsible for actually starting the request, is [CacheAdapter] or [BatchingCacheAdapter].
  * Note that both have a few implementation differences, it is not recommended to use them directly without chaining under another implementation.
  */
-interface Cache<I, F : Failure, T> {
+interface Cache<I, F, T> {
 
 	/**
 	 * Gets the value associated with an [id] in this cache.

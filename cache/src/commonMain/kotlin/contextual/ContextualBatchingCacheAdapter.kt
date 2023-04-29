@@ -7,10 +7,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import opensavvy.cache.BatchingCacheAdapter
 import opensavvy.state.coroutines.ProgressiveFlow
-import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
 
-class ContextualBatchingCacheAdapter<I, C, F : Failure, T>(
+class ContextualBatchingCacheAdapter<I, C, F, T>(
 	scope: CoroutineScope,
 	workers: Int,
 	queryBatch: (Set<Pair<I, C>>) -> Flow<Triple<I, C, ProgressiveOutcome<F, T>>>,
@@ -45,7 +44,7 @@ class ContextualBatchingCacheAdapter<I, C, F : Failure, T>(
 
 }
 
-fun <I, C, F : Failure, T> batchingCache(
+fun <I, C, F, T> batchingCache(
 	scope: CoroutineScope,
 	workers: Int = 1,
 	transform: suspend FlowCollector<Triple<I, C, ProgressiveOutcome<F, T>>>.(Set<Pair<I, C>>) -> Unit,

@@ -7,7 +7,6 @@ import kotlinx.coroutines.sync.withLock
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.state.coroutines.ProgressiveFlow
-import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.copy
 
@@ -23,7 +22,7 @@ import opensavvy.state.progressive.copy
  *
  * Use the [cachedInMemory] factory for easy cache chaining.
  */
-class MemoryCache<I, F : Failure, T>(
+class MemoryCache<I, F, T>(
 	private val upstream: Cache<I, F, T>,
 	private val job: Job = SupervisorJob(),
 ) : Cache<I, F, T> {
@@ -198,4 +197,4 @@ class MemoryCache<I, F : Failure, T>(
  *
  * For more information, see [MemoryCache].
  */
-fun <I, F : Failure, T> Cache<I, F, T>.cachedInMemory(job: Job) = MemoryCache(this, job)
+fun <I, F, T> Cache<I, F, T>.cachedInMemory(job: Job) = MemoryCache(this, job)

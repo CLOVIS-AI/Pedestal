@@ -1,12 +1,13 @@
 package opensavvy.state.progressive
 
 import opensavvy.progress.loading
-import opensavvy.state.failure.NotFound
 import opensavvy.state.outcome.Outcome
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BuilderTest {
+
+    private object Failed
 
     @Test
     fun withProgressSuccess() {
@@ -19,8 +20,8 @@ class BuilderTest {
     @Test
     fun withProgressFailure() {
         assertEquals(
-            ProgressiveOutcome.Failure(NotFound("test"), loading(0.57)),
-            Outcome.Failure(NotFound("test")).withProgress(loading(0.57)),
+            ProgressiveOutcome.Failure(Failed, loading(0.57)),
+            Outcome.Failure(Failed).withProgress(loading(0.57)),
         )
     }
 }

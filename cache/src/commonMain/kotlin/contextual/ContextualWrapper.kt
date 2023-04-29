@@ -2,12 +2,11 @@ package opensavvy.cache.contextual
 
 import opensavvy.cache.Cache
 import opensavvy.state.coroutines.ProgressiveFlow
-import opensavvy.state.failure.Failure
 
 /**
  * Implementation of [Cache] for a [ContextualCache].
  */
-internal class ContextualWrapper<I, C, F : Failure, T>(
+internal class ContextualWrapper<I, C, F, T>(
 	private val upstream: ContextualCache<I, C, F, T>,
 ) : Cache<Pair<I, C>, F, T> {
 

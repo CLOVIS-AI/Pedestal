@@ -1,10 +1,11 @@
 package opensavvy.state.outcome
 
-import opensavvy.state.failure.NotFound
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class AccessorsTest {
+
+    private object Failed
 
     @Test
     fun valueOnSuccess() {
@@ -19,7 +20,7 @@ class AccessorsTest {
     fun valueOnFailure() {
         assertEquals<Int?>(
             null,
-            NotFound("").failed().valueOrNull,
+            Failed.failed().valueOrNull,
         )
     }
 
@@ -35,8 +36,8 @@ class AccessorsTest {
     @Test
     fun failureOnFailure() {
         assertEquals(
-            NotFound(""),
-            NotFound("").failed().failureOrNull,
+            Failed,
+            Failed.failed().failureOrNull,
         )
     }
 }

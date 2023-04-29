@@ -10,7 +10,6 @@ import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.progress.done
 import opensavvy.state.coroutines.ProgressiveFlow
-import opensavvy.state.failure.Failure
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -23,7 +22,7 @@ import kotlin.time.Duration.Companion.minutes
  *      .expireAfter(5.minutes, Job())
  * ```
  */
-class ExpirationCache<I, F : Failure, T>(
+class ExpirationCache<I, F, T>(
 	/**
 	 * The previous cache layer, from which values will be expired.
 	 */
@@ -112,5 +111,5 @@ class ExpirationCache<I, F : Failure, T>(
  *
  * @see ExpirationCache
  */
-fun <I, F : Failure, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
+fun <I, F, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
 	ExpirationCache(this, duration, scope)

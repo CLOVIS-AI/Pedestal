@@ -2,7 +2,6 @@ package opensavvy.state.progressive
 
 import opensavvy.progress.Progress
 import opensavvy.state.progressive.ProgressiveOutcome.*
-import opensavvy.state.failure.Failure as FailureSupertype
 
 /**
  * Executes [block] if this outcome is [successful][Success].
@@ -19,7 +18,7 @@ inline fun <T> ProgressiveOutcome<*, T>.onSuccess(block: (T) -> Unit) {
  *
  * Otherwise, does nothing.
  */
-inline fun <F : FailureSupertype> ProgressiveOutcome<F, *>.onFailure(block: (F) -> Unit) {
+inline fun <F> ProgressiveOutcome<F, *>.onFailure(block: (F) -> Unit) {
 	if (this is Failure)
 		block(this.failure)
 }

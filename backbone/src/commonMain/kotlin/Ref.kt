@@ -3,7 +3,6 @@ package opensavvy.backbone
 import opensavvy.cache.Cache
 import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.coroutines.now
-import opensavvy.state.failure.Failure
 
 /**
  * A reference to a specific [object][O].
@@ -24,7 +23,7 @@ import opensavvy.state.failure.Failure
  * @param O The object this reference refers to.
  * @param F Failures that may be returned when calling [request].
  */
-interface Ref<F : Failure, O> {
+interface Ref<F, O> {
 
 	/**
 	 * Requests the referenced data.
@@ -40,7 +39,7 @@ interface Ref<F : Failure, O> {
  * Requests the referenced data, returning the first value returned by the cache.
  *
  * This function returns a single value and not a subscription, it is not recommended to use it when being notified of
- * new values is important (e.g. in a UI). This function is intended for non-reactive environments
- * (e.g. server requests, tests…).
+ * new values is important (e.g. in a UI), in which case you should use [Ref.request].
+ * This function is intended for non-reactive environments (e.g. server requests, tests…).
  */
-suspend fun <F : Failure, O> Ref<F, O>.now() = request().now()
+suspend fun <F, O> Ref<F, O>.now() = request().now()

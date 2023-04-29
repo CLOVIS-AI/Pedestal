@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.*
 import opensavvy.logger.Logger.Companion.error
 import opensavvy.logger.loggerFor
 import opensavvy.state.coroutines.ProgressiveFlow
-import opensavvy.state.failure.Failure
 import opensavvy.state.progressive.ProgressiveOutcome
 import kotlin.coroutines.coroutineContext
 
@@ -22,7 +21,7 @@ private typealias CacheStorage<F, T> = CompletableDeferred<StateFlow<Progressive
  *
  * Unlike [CacheAdapter], this class is able to group requests together.
  */
-class BatchingCacheAdapter<I, F : Failure, T>(
+class BatchingCacheAdapter<I, F, T>(
 	scope: CoroutineScope,
 	/**
 	 * The number of workers batching the requests.
@@ -139,7 +138,7 @@ class BatchingCacheAdapter<I, F : Failure, T>(
  *
  * See [BatchingCacheAdapter].
  */
-fun <I, F : Failure, T> batchingCache(
+fun <I, F, T> batchingCache(
 	scope: CoroutineScope,
 	workers: Int = 1,
 	transform: suspend FlowCollector<Pair<I, ProgressiveOutcome<F, T>>>.(Set<I>) -> Unit,

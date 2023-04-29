@@ -1,10 +1,11 @@
 package opensavvy.state.outcome
 
-import opensavvy.state.failure.NotFound
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MappingTest {
+
+    private object Failed
 
     @Test
     fun success_map() {
@@ -18,8 +19,8 @@ class MappingTest {
     @Test
     fun failure_map() {
         assertEquals(
-            Outcome.Failure(NotFound(5)),
-            Outcome.Failure(NotFound(5)).map { it.toString() },
+            Outcome.Failure(Failed),
+            Outcome.Failure(Failed).map { it.toString() },
         )
     }
 

@@ -1,13 +1,11 @@
 package opensavvy.spine
 
-import opensavvy.state.failure.CustomFailure
-import opensavvy.state.failure.Failure
-
-class SpineFailure(
+data class SpineFailure(
     val type: Type,
-    message: String,
-    cause: Failure? = null,
-) : CustomFailure(Companion, "$type: $message", cause) {
+    val message: String,
+) {
+
+    override fun toString() = "$type: “$message”"
 
     enum class Type {
         Unauthenticated,
@@ -17,6 +15,4 @@ class SpineFailure(
         InvalidState,
         ;
     }
-
-    companion object : Failure.Key
 }

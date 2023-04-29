@@ -14,7 +14,7 @@ val <T : Any> ProgressiveOutcome<*, T>.valueOrNull: T?
 /**
  * Returns [Failure.failure], or `null` if this outcome is not a failure.
  */
-val <F : opensavvy.state.failure.Failure> ProgressiveOutcome<F, *>.failureOrNull: F?
+val <F> ProgressiveOutcome<F, *>.failureOrNull: F?
 	get() = (this as? Failure)?.failure
 
 /**
@@ -26,7 +26,7 @@ val <F : opensavvy.state.failure.Failure> ProgressiveOutcome<F, *>.failureOrNull
  * val (outcome, progression) = /* ProgressiveOutcome */
  * ```
  */
-fun <F : opensavvy.state.failure.Failure, T> ProgressiveOutcome<F, T>.asOutcome() = when (this) {
+fun <F, T> ProgressiveOutcome<F, T>.asOutcome() = when (this) {
 	is Success -> Outcome.Success(value)
 	is Failure -> Outcome.Failure(failure)
 	is Incomplete -> null
@@ -38,7 +38,7 @@ fun <F : opensavvy.state.failure.Failure, T> ProgressiveOutcome<F, T>.asOutcome(
 /**
  * Syntax sugar for [asOutcome].
  */
-operator fun <F : opensavvy.state.failure.Failure, T> ProgressiveOutcome<F, T>.component1() = asOutcome()
+operator fun <F, T> ProgressiveOutcome<F, T>.component1() = asOutcome()
 
 /**
  * Syntax sugar for [ProgressiveOutcome.progress].
