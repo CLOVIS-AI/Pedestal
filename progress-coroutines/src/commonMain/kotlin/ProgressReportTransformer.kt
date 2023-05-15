@@ -4,6 +4,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import opensavvy.progress.loading
 import opensavvy.progress.report.ProgressReporter
+import opensavvy.progress.report.emptyProgressReporter
 import opensavvy.progress.report.reduceToInterval
 
 /**
@@ -15,7 +16,7 @@ suspend fun <R> transformProgress(
     block: suspend () -> R
 ): R {
     val upstreamReporter = currentCoroutineContext()[CoroutineProgressReporter.Key]
-        ?: ProgressReporter.NoOp
+        ?: emptyProgressReporter()
 
     val reporter = createChildReporter(upstreamReporter)
         .asCoroutineContext()
