@@ -44,7 +44,7 @@ dependencies {
 }
 ```
 
-Currently, we only publish builds for Kotlin/JVM and Kotlin/JS (IR only).
+Currently, we only publish builds for Kotlin/JVM, Kotlin/JS (IR only) and Kotlin/Native for iOS.
 This project has very little platform-specific code, and would be easy to port to any other platform—we just don't have the need for it.
 If you are interested in another platform, we encourage contributions that add the relevant CI configuration to test and deploy for that platform.
 
