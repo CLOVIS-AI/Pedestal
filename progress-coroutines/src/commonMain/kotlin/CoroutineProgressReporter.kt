@@ -20,7 +20,7 @@ class CoroutineProgressReporter(
 ) : AbstractCoroutineContextElement(Key),
     ProgressReporter by reporter {
 
-    override fun toString() = reporter.toString()
+    override fun toString() = "$reporter.asCoroutineContext()"
 
     object Key : CoroutineContext.Key<CoroutineProgressReporter>
 }

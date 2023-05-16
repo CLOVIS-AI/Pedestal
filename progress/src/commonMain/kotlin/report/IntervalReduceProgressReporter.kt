@@ -29,6 +29,8 @@ private class IntervalReduceProgressReporter(
         upstream.report(loading(min + (received.normalized * width)))
     }
 
+    override fun toString() = "$upstream.reduceToInterval($min..$max)"
+
     companion object {
         val defaultDone = loading(1.0)
         val defaultUnquantified = loading(0.5)

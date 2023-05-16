@@ -29,4 +29,13 @@ class MapProgressReporterTest {
         reporter.report(loading(0.2))
         assertEquals(loading(0.4), value)
     }
+
+    @Test
+    fun string() {
+        val reporter = emptyProgressReporter()
+            .reduceToInterval(0.1, 0.2)
+            .map { it }
+
+        assertEquals("NoOpProgressReporter.reduceToInterval(0.1..0.2).map()", reporter.toString())
+    }
 }

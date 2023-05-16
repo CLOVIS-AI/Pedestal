@@ -6,6 +6,8 @@ import opensavvy.progress.Progress
 // is a foot-gun.
 private object NoOpProgressReporter : ProgressReporter {
     override fun report(progress: Progress) {}
+
+    override fun toString() = "NoOpProgressReporter"
 }
 
 /**

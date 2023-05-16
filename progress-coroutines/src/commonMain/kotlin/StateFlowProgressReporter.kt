@@ -18,5 +18,5 @@ class StateFlowProgressReporter : ProgressReporter {
         state.value = progress
     }
 
-    override fun toString() = state.value.toString()
+    override fun toString() = "StateFlowProgressReporter(progress=${progress.value})"
 }

@@ -11,7 +11,7 @@ private class MapProgressReporter(
         upstream.report(transform(progress))
     }
 
-    override fun toString() = "Mapped($upstream)"
+    override fun toString() = "$upstream.map()"
 }
 
 /**
