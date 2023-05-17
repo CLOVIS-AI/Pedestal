@@ -27,6 +27,9 @@ tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
 		externalDocumentationLink {
 			url.set(URL("https://api.ktor.io/"))
 		}
+		externalDocumentationLink {
+			url.set(URL("https://apidocs.arrow-kt.io"))
+		}
 	}
 }
 
