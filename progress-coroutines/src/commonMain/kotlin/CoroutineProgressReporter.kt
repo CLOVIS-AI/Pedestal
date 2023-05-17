@@ -36,6 +36,29 @@ fun ProgressReporter.asCoroutineContext() =
  *
  * If there is no progress reporter in the current context, this function does nothing.
  *
+ * ### Example
+ *
+ * ```kotlin
+ * suspend fun main() {
+ *     reportProgress(::println) {
+ *         task1()
+ *     }
+ * }
+ *
+ * suspend fun task1() {
+ *     report(loading(0.0))
+ *     delay(500)
+ *     report(loading(0.5))
+ *     delay(500)
+ *     report(done())
+ * }
+ * ```
+ * ```text
+ * Loading(0%)
+ * Loading(50%)
+ * Done
+ * ```
+ *
  * @see CoroutineProgressReporter
  */
 suspend fun report(progress: Progress) {
@@ -45,6 +68,23 @@ suspend fun report(progress: Progress) {
 
 /**
  * Captures all calls to [report] in [block] and transmits them to [onProgress].
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * suspend fun main() {
+ *     // Function reference syntax
+ *     reportProgress(::println) {
+ *         // All 'report' calls in this block will be printed
+ *         someComplicatedTask()
+ *     }
+ *
+ *     // Lambda syntax
+ *     reportProgress({ println(it) }) {
+ *         someComplicatedTask()
+ *     }
+ * }
+ * ```
  */
 suspend fun reportProgress(onProgress: (Progress) -> Unit, block: suspend () -> Unit) {
     withContext(ProgressReporter { onProgress(it) }.asCoroutineContext()) {
