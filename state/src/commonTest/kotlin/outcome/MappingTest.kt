@@ -24,4 +24,23 @@ class MappingTest {
         )
     }
 
+    @Test
+    fun success_mapFailure() {
+        assertEquals(
+            Outcome.Success(5),
+            Outcome.Success(5).mapFailure {
+                @Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
+                it.toString()
+            }
+        )
+    }
+
+    @Test
+    fun failure_mapFailure() {
+        assertEquals(
+            Outcome.Failure("5"),
+            Outcome.Failure(5).mapFailure { it.toString() }
+        )
+    }
+
 }
