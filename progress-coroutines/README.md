@@ -61,8 +61,7 @@ suspend fun main() {
 ```
 
 Instead of reacting with a callback on progress events, it is also possible to collect events into
-a [StateFlow][kotlinx.coroutines.flow.StateFlow]
-using [StateFlowReporter][opensavvy.progress.coroutines.StateFlowReporter].
+a [StateFlow][kotlinx.coroutines.flow.StateFlow] using [StateFlowProgressReporter][opensavvy.progress.coroutines.StateFlowProgressReporter].
 
 Finally, sub-tasks can be represented with the help
 of [mapProgressTo][opensavvy.progress.coroutines.mapProgressTo]:
