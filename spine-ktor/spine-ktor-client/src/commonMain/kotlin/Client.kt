@@ -14,6 +14,8 @@ import opensavvy.spine.SpineFailure
 import opensavvy.spine.ktor.toHttp
 import opensavvy.spine.ktor.toSpine
 import opensavvy.state.arrow.out
+import kotlin.js.JsName
+import kotlin.jvm.JvmName
 
 /**
  * Executes a [HttpClient] request, with the information declared in an [Operation].
@@ -40,8 +42,8 @@ import opensavvy.state.arrow.out
  * @param configuration Additional configuration passed to Ktor's `request` function.
  * This configuration is applied after the parameters from this request are applied, it is possible to override data set by this function.
  */
-suspend inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params : Parameters, Context : Any> HttpClient.request(
-	operation: Operation<Resource, In, Out, Params, Context>,
+suspend inline fun <Resource : Any, reified In : Any, reified Failure : Any, reified Out : Any, reified Params : Parameters, Context : Any> HttpClient.request(
+	operation: Operation<Resource, In, Failure, Out, Params, Context>,
 	id: Id,
 	input: In,
 	parameters: Params,
@@ -91,9 +93,79 @@ suspend inline fun <Resource : Any, reified In : Any, reified Out : Any, reified
 		if (result.status.isSuccess()) {
 			result.body<Out>()
 		} else {
-			val body = result.body<String>().ifBlank { "${result.status} with no provided body" }
 			val kind = result.status.toSpine()
-			raise(SpineFailure(kind, body))
+
+			val failure = try {
+				SpineFailure(kind, result.body<Failure>())
+			} catch (e: NoTransformationFoundException) {
+				SpineFailure(kind, result.body<String>().ifBlank { "${result.status} with no provided body" })
+			}
+
+			raise(failure)
+		}
+	}
+}
+
+// Yes, this is a copy-paste of the function above.
+// For some reason, the compiler does not allow 'Nothing' as a reified type parameter, so I have to create an overload
+// without that parameter. And because the entire function has to be inline, it has to be a copy.
+// Spine is deprecated anyway, and will be completely rewritten when I have the time.
+@JvmName("requestNoFailure")
+@JsName("requestNoFailure")
+suspend inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params : Parameters, Context : Any> HttpClient.request(
+	operation: Operation<Resource, In, Nothing, Out, Params, Context>,
+	id: Id,
+	input: In,
+	parameters: Params,
+	context: Context,
+	contentType: ContentType = ContentType.Application.Json,
+	crossinline onResponse: (HttpResponse) -> Unit = {},
+	crossinline configuration: HttpRequestBuilder.() -> Unit = {},
+) = out {
+	mapProgressTo(0.0..0.1) {
+		operation.validate(id, input, parameters, context).bind()
+	}
+
+	val result = mapProgressTo(0.1..0.9) {
+		request {
+			method = operation.kind.toHttp()
+
+			url {
+				// {baseUrl}/{service}/{path-to-resource}/{path-to-method}
+
+				// /{service}
+				appendPathSegments(id.service.segment)
+
+				// /{path-to-resource}
+				appendPathSegments(id.resource.segments.map { it.segment })
+
+				// /{path-to-method}  (if present)
+				operation.route?.let { route ->
+					appendPathSegments(route.segments.map { it.segment })
+				}
+			}
+
+			for ((name, value) in parameters.data)
+				parameter(name, value)
+
+			contentType(contentType)
+			setBody(input)
+
+			configuration()
+		}
+	}
+
+	mapProgressTo(0.9..0.95) {
+		onResponse(result)
+	}
+
+	mapProgressTo(0.95..1.0) {
+		if (result.status.isSuccess()) {
+			result.body<Out>()
+		} else {
+			val kind = result.status.toSpine()
+
+			raise(SpineFailure(kind, result.body<String>().ifBlank { "${result.status} with no provided body" }))
 		}
 	}
 }

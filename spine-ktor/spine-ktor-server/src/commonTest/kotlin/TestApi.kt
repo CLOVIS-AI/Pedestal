@@ -33,6 +33,10 @@ data class User(val id: Id, val name: String, val archived: Boolean) {
 	class SearchParams : Parameters() {
 		var includeArchived: Boolean by parameter("includeArchived")
 	}
+
+	sealed interface Failures {
+		data class InvalidUsername(val username: String) : Failures
+	}
 }
 
 //endregion
@@ -40,17 +44,17 @@ data class User(val id: Id, val name: String, val archived: Boolean) {
 
 class TestApi : Service("test") {
 
-	inner class Users : StaticResource<List<Id>, User.SearchParams, Unit>("users") {
-		inner class Unique : DynamicResource<User, Unit>("user") {
+	inner class Users : StaticResource<List<Id>, Nothing, User.SearchParams, Unit>("users") {
+		inner class Unique : DynamicResource<User, Nothing, Unit>("user") {
 
-			val archive = action<Unit, Unit, Parameters.Empty>(Route / "archive")
+			val archive = action<Unit, Nothing, Unit, Parameters.Empty>(Route / "archive")
 
-			val unarchive = action<Unit, Unit, Parameters.Empty>(Route / "reopen")
+			val unarchive = action<Unit, Nothing, Unit, Parameters.Empty>(Route / "reopen")
 
-			val delete = delete<Unit>()
+			val delete = delete<Unit, Nothing>()
 		}
 
-		val create = create<User.New, User, Parameters.Empty>()
+		val create = create<User.New, User.Failures.InvalidUsername, User, Parameters.Empty>()
 
 		val id = Unique()
 	}

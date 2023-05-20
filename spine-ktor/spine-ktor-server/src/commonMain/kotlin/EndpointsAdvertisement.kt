@@ -8,7 +8,7 @@ import opensavvy.spine.Route
 import opensavvy.spine.Route.Companion.div
 import opensavvy.spine.ktor.toHttp
 
-fun ApplicationCall.advertiseEndpointsFor(operation: Operation<*, *, *, *, *>, id: Id) {
+fun ApplicationCall.advertiseEndpointsFor(operation: Operation<*, *, *, *, *, *>, id: Id) {
 	val resource = operation.resource
 
 	val link = resource.operations
