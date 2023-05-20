@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="allTests" />
+          <option value="check" />
           <option value="koverMergedHtmlReport" />
         </list>
       </option>
@@ -19,7 +19,7 @@
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
     <DebugAllEnabled>false</DebugAllEnabled>
-    <ForceTestExec>false</ForceTestExec>
+    <RunAsTest>true</RunAsTest>
     <method v="2" />
   </configuration>
 </component>
