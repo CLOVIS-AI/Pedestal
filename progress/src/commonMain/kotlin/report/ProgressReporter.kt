@@ -8,7 +8,8 @@ import opensavvy.progress.Progress
  * Instances of this interface can be created by a caller and passed to a downstream user.
  * The downstream user can then call the [report] function to communicate its progress to the caller.
  *
- * @see emptyProgressReporter Singleton implementation of a progress reporter than does nothing.
+ * If you are attempting to call a function which requires an instance of [ProgressReporter], but you do not care about
+ * the progress events, you can use [emptyProgressReporter] to access a no-op implementation.
  */
 fun interface ProgressReporter {
 

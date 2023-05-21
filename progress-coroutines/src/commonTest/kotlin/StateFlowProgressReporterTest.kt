@@ -25,7 +25,7 @@ class StateFlowProgressReporterTest {
             reporter.report(loading(0.3))
             yield()
 
-            assertEquals("Loading(30%)", reporter.toString())
+            assertEquals("StateFlowProgressReporter(progress=Loading(30%))", reporter.toString())
 
             reporter.report(done())
             yield()

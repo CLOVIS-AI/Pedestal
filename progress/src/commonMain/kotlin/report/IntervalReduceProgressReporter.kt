@@ -29,6 +29,8 @@ private class IntervalReduceProgressReporter(
         upstream.report(loading(min + (received.normalized * width)))
     }
 
+    override fun toString() = "$upstream.reduceToInterval($min..$max)"
+
     companion object {
         val defaultDone = loading(1.0)
         val defaultUnquantified = loading(0.5)
@@ -51,6 +53,14 @@ fun ProgressReporter.reduceToInterval(
 
 /**
  * Creates a new reporter that proportionally confines progress events to [interval].
+ *
+ * Example usage:
+ * ```kotlin
+ * val reporter = ProgressReporter { println(it) }
+ *     .reduceToInterval(0.2..0.4)
+ *
+ * reporter.report(loading(0.1)) // prints 'Loading(22%)'
+ * ```
  *
  * @param treatDoneAs When a [Progress.Done] is received, it will be treated as if that value was received.
  * @param treatUnquantifiedAs When a [Progress.Loading.Unquantified] is received, it will be treated as if that value was received.

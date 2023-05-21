@@ -8,12 +8,11 @@ The release notes and changelogs are [available here](https://gitlab.com/opensav
 
 This project contains the following modules:
 
-- [Pedestal Logger](logger/README.md) is a simple logger implementation for multiplatform projects.
-- [Pedestal Progress](progress/README.md) models asynchronous task progression.
-- [Pedestal State](state/README.md) is a state management library based on KotlinX.Coroutines and Arrow to represent
-  values that change over time, domain failures, and progression of long-running tasks.
-- [Pedestal Cache](cache/README.md) is a collection of cache implementations for Pedestal State which helps with reducing network traffic on the entire stack.
-- [Pedestal Backbone](backbone/README.md) helps with exposing multiple implementations of the same API transparently, facilitating architectural modifications with automatic caching and state management for performant reactive applications.
+- [Pedestal Logger](https://opensavvy.gitlab.io/pedestal/documentation/logger/index.html) is a simple logger implementation for multiplatform projects.
+- [Pedestal Progress](https://opensavvy.gitlab.io/pedestal/documentation/progress/index.html) models the progress of an asynchronous task and its subtasks (companion: [KotlinX.Coroutines](https://opensavvy.gitlab.io/pedestal/documentation/progress-coroutines/index.html)).
+- [Pedestal State](https://opensavvy.gitlab.io/pedestal/documentation/state/index.html) models the success or failure of an operation, without losing progress information (companions: [KotlinX.Coroutines](https://opensavvy.gitlab.io/pedestal/documentation/state-coroutines/index.html), [Arrow](https://opensavvy.gitlab.io/pedestal/documentation/state-arrow/index.html)).
+- [Pedestal Cache](https://opensavvy.gitlab.io/pedestal/documentation/cache/index.html) is a collection of reactive cache implementations to aggressively reduce bandwidth usage with easy integration with reactive UI frameworks, like React or Compose.
+- [Pedestal Backbone](https://opensavvy.gitlab.io/pedestal/documentation/backbone/index.html) is an opinionated architectural pattern, using aggressive caching in all layers of a multiplatform application to entirely abstract away mutability behind coroutines.
 
 Pedestal focuses heavily on Kotlin and attempts to depend on as few external dependencies as possible.
 Where possible, compatibility modules are provided to interoperate with other ecosystems.
@@ -44,7 +43,7 @@ dependencies {
 }
 ```
 
-Currently, we only publish builds for Kotlin/JVM and Kotlin/JS (IR only).
+Currently, we only publish builds for Kotlin/JVM, Kotlin/JS (IR only) and Kotlin/Native for iOS.
 This project has very little platform-specific code, and would be easy to port to any other platform—we just don't have the need for it.
 If you are interested in another platform, we encourage contributions that add the relevant CI configuration to test and deploy for that platform.
 
@@ -52,10 +51,13 @@ If you are interested in another platform, we encourage contributions that add t
 - [Artifact list](https://gitlab.com/opensavvy/pedestal/-/packages)
 - [Breaking changes migration guide](docs/MIGRATION_GUIDE.md)
 
-## Development
+## Contribution
+
+To report a problem or request a new feature, [please create an issue](https://gitlab.com/opensavvy/pedestal/-/issues/new).
+To learn how to contribute to the project, [please read our wiki](https://gitlab.com/opensavvy/wiki/-/blob/main/README.md).
 
 Pedestal is managed by Gradle, which requires a valid Java installation.
-On Windows, substitute `./gradlew` by `gradlew.bat` in the given commands.
+On Windows, substitute `./gradlew` by `gradlew.bat` in the following commands.
 
 Gradle is invoked by running `./gradlew <tasks here>` in the project root.
 
@@ -64,7 +66,4 @@ Gradle is invoked by running `./gradlew <tasks here>` in the project root.
 - `./gradlew <project>:<task>` to execute a task from another project (for example, `./gradlew backbone:tasks` to get
   the list of tasks in the Backbone project).
 
-## Contribution
-
-To learn how to contribute to the
-project, [please read our wiki](https://gitlab.com/opensavvy/wiki/-/blob/main/README.md).
+We recommend using IntelliJ IDEA (Community or Ultimate), for which we provide the configuration (run configurations, coding style…).
