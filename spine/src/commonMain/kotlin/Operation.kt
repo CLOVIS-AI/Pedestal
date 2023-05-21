@@ -4,13 +4,13 @@ import arrow.core.raise.Raise
 import opensavvy.state.arrow.out
 import kotlin.js.JsName
 
-typealias OperationValidator<In, Params, Context> = suspend Operation.ValidatorScope<In, Params, Context>.() -> Unit
+typealias OperationValidator<In, Params, Failure, Context> = suspend Operation.ValidatorScope<In, Params, Failure, Context>.() -> Unit
 
-class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Context : Any>(
+class Operation<Resource : Any, In : Any, Failure : Any, Out : Any, Params : Parameters, Context : Any>(
 	val resource: ResourceGroup.AbstractResource<Resource, Context>,
 	val kind: Kind,
 	val route: Route? = null,
-	@JsName("_validate") private val validate: OperationValidator<In, Params, Context>,
+	@JsName("_validate") private val validate: OperationValidator<In, Params, Failure, Context>,
 ) {
 
 	/**
@@ -20,7 +20,7 @@ class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Contex
 	 */
 	fun idOf(vararg dynamic: String) = resource.idOf(*dynamic)
 
-	suspend fun validate(id: Id, body: In, parameters: Params, context: Context) = out {
+	suspend fun validate(id: Id, body: In, parameters: Params, context: Context) = out<SpineFailure<Failure>, Unit> {
 		val scope = ValidatorScope(this, id, body, parameters, context)
 		scope.validate()
 	}
@@ -67,8 +67,8 @@ class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Contex
 		Delete,
 	}
 
-	class ValidatorScope<In : Any, Params : Parameters, Context> internal constructor(
-		private val scope: Raise<SpineFailure>,
+	class ValidatorScope<In : Any, Params : Parameters, Failure : Any, Context> internal constructor(
+		private val scope: Raise<SpineFailure<Failure>>,
 
 		val id: Id,
 
@@ -77,5 +77,5 @@ class Operation<Resource : Any, In : Any, Out : Any, Params : Parameters, Contex
 		val parameters: Params,
 
 		val context: Context,
-	) : Raise<SpineFailure> by scope
+	) : Raise<SpineFailure<Failure>> by scope
 }

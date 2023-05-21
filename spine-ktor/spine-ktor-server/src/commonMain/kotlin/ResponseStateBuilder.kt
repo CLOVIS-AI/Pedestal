@@ -9,8 +9,8 @@ import opensavvy.spine.SpineFailure
 /**
  * Information available in [route].
  */
-class ResponseStateBuilder<In, Params : Parameters?, Context>(
-	builder: Raise<SpineFailure>,
+class ResponseStateBuilder<In, Failure : Any, Params : Parameters?, Context>(
+	builder: Raise<SpineFailure<Failure>>,
 
 	/**
 	 * The identifier of the resource being requested.
@@ -36,4 +36,4 @@ class ResponseStateBuilder<In, Params : Parameters?, Context>(
 	 * The current request's context.
 	 */
 	val context: Context,
-) : Raise<SpineFailure> by builder
+) : Raise<SpineFailure<Failure>> by builder

@@ -11,11 +11,11 @@ fun <O : Any> ApplicationCall.generateId(resource: ResourceGroup.AbstractResourc
 	var cursor: ResourceGroup = resource
 	while (cursor is ResourceGroup.AbstractResource<*, *>) {
 		values += when (cursor) {
-			is ResourceGroup.StaticResource<*, *, *> -> {
+			is ResourceGroup.StaticResource<*, *, *, *> -> {
 				cursor.route.segment
 			}
 
-			is ResourceGroup.DynamicResource<*, *> -> {
+			is ResourceGroup.DynamicResource<*, *, *> -> {
 				val name = cursor.name
 				val value = parameters[name]
 					?: error("Missing path parameter: '{$name}' in '${resource.routeTemplate}'")

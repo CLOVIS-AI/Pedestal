@@ -18,15 +18,15 @@ sealed class ResourceGroup {
 	 *
 	 * If no static resources were registered, this collection is empty.
 	 */
-	val staticRoutes: Map<Route.Segment, StaticResource<*, *, *>> get() = _staticRoutes
-	private val _staticRoutes: HashMap<Route.Segment, StaticResource<*, *, *>> = HashMap()
+	val staticRoutes: Map<Route.Segment, StaticResource<*, *, *, *>> get() = _staticRoutes
+	private val _staticRoutes: HashMap<Route.Segment, StaticResource<*, *, *, *>> = HashMap()
 
 	/**
 	 * The [dynamic resource][DynamicResource] that appears as a direct child of this resource group.
 	 *
 	 * If no dynamic resource were registered, this property is `null`.
 	 */
-	var dynamicRoute: DynamicResource<*, *>? = null
+	var dynamicRoute: DynamicResource<*, *, *>? = null
 		private set
 
 	/**
@@ -74,13 +74,13 @@ sealed class ResourceGroup {
 		 */
 		abstract val parent: ResourceGroup
 
-		protected val _operations = ArrayList<Operation<*, *, *, *, Context>>()
-		val operations: List<Operation<*, *, *, *, Context>> get() = _operations
+		protected val _operations = ArrayList<Operation<*, *, *, *, *, Context>>()
+		val operations: List<Operation<*, *, *, *, *, Context>> get() = _operations
 
 		/**
 		 * Validates that [id] identifies this resource.
 		 */
-		fun Raise<SpineFailure>.validateCorrectId(id: Id) {
+		fun Raise<SpineFailure<Nothing>>.validateCorrectId(id: Id) {
 			ensure(
 				id.service == service.name
 			) {
@@ -106,7 +106,7 @@ sealed class ResourceGroup {
 
 				@Suppress("NAME_SHADOWING") // necessary for smart cast because 'resource' is mutable
 				when (val resource: AbstractResource<*, *> = resource) {
-					is StaticResource<*, *, *> -> {
+					is StaticResource<*, *, *, *> -> {
 						ensure(
 							segment == resource.route
 						) {
@@ -117,7 +117,7 @@ sealed class ResourceGroup {
 						}
 					}
 
-					is DynamicResource<*, *> -> {
+					is DynamicResource<*, *, *> -> {
 						// There are no constraints on what IDs look like.
 						// If we expect an ID, we can't make any verification on the value.
 					}
@@ -145,36 +145,36 @@ sealed class ResourceGroup {
 		 * For example, you can override this function to check access rights for read operations.
 		 * By default, this function does nothing.
 		 */
-		open suspend fun Raise<SpineFailure>.validateId(id: Id, context: Context) {}
+		open suspend fun Raise<SpineFailure<Nothing>>.validateId(id: Id, context: Context) {}
 
-		protected fun <In : Any, Out : Any, Params : Parameters> create(
+		protected fun <In : Any, Failure : Any, Out : Any, Params : Parameters> create(
 			route: Route? = null,
-			validate: OperationValidator<In, Params, Context> = { },
-		) = Operation<O, In, Identified<Out>, Params, Context>(this, Operation.Kind.Create, route, validate)
+			validate: OperationValidator<In, Params, Failure, Context> = { },
+		) = Operation<O, In, Failure, Identified<Out>, Params, Context>(this, Operation.Kind.Create, route, validate)
 			.apply { _operations += this }
 
-		protected fun <In : Any, Params : Parameters> edit(
+		protected fun <In : Any, Failure : Any, Params : Parameters> edit(
 			route: Route? = null,
-			validate: OperationValidator<In, Params, Context> = { },
-		) = Operation<O, In, Unit, Params, Context>(this, Operation.Kind.Edit, route) {
+			validate: OperationValidator<In, Params, Failure, Context> = { },
+		) = Operation<O, In, Failure, Unit, Params, Context>(this, Operation.Kind.Edit, route) {
 			validateCorrectId(id)
 			validateId(id, context)
 			Operation.ValidatorScope(this, id, body, parameters, context).validate()
 		}.apply { _operations += this }
 
-		protected fun <In : Any, Out : Any, Params : Parameters> action(
+		protected fun <In : Any, Failure : Any, Out : Any, Params : Parameters> action(
 			route: Route,
-			validate: OperationValidator<In, Params, Context> = { },
-		) = Operation<O, In, Out, Params, Context>(this, Operation.Kind.Action, route) {
+			validate: OperationValidator<In, Params, Failure, Context> = { },
+		) = Operation<O, In, Failure, Out, Params, Context>(this, Operation.Kind.Action, route) {
 			validateCorrectId(id)
 			validateId(id, context)
 			Operation.ValidatorScope(this, id, body, parameters, context).validate()
 		}.apply { _operations += this }
 
-		protected fun <In : Any> delete(
+		protected fun <In : Any, Failure : Any> delete(
 			route: Route? = null,
-			validate: OperationValidator<In, Parameters.Empty, Context> = { },
-		) = Operation<O, In, Unit, Parameters.Empty, Context>(this, Operation.Kind.Delete, route) {
+			validate: OperationValidator<In, Parameters.Empty, Failure, Context> = { },
+		) = Operation<O, In, Failure, Unit, Parameters.Empty, Context>(this, Operation.Kind.Delete, route) {
 			validateCorrectId(id)
 			validateId(id, context)
 			Operation.ValidatorScope(this, id, body, parameters, context).validate()
@@ -212,7 +212,7 @@ sealed class ResourceGroup {
 	 * For example, top-level resources tend to be static: `/users`.
 	 * Static resources may also appear as children of other resources: `/users/{id}/emails`.
 	 */
-	abstract inner class StaticResource<O : Any, GetParams : Parameters, Context : Any> protected constructor(route: String) :
+	abstract inner class StaticResource<O : Any, Failure : Any, GetParams : Parameters, Context : Any> protected constructor(route: String) :
 		AbstractResource<O, Context>() {
 
 		val route = Route.Segment(route)
@@ -229,11 +229,11 @@ sealed class ResourceGroup {
 		 *
 		 * You should override this function if the parameters impact the access rights.
 		 */
-		open suspend fun Raise<SpineFailure>.validateGetParams(id: Id, params: GetParams, context: Context) {}
+		open suspend fun Raise<Nothing>.validateGetParams(id: Id, params: GetParams, context: Context) {}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
 		val get =
-			Operation<O, Unit, O, GetParams, Context>(this, Operation.Kind.Read) {
+			Operation<O, Unit, Failure, O, GetParams, Context>(this, Operation.Kind.Read) {
 				validateCorrectId(id)
 				validateId(id, context)
 				validateGetParams(id, parameters, context)
@@ -257,7 +257,7 @@ sealed class ResourceGroup {
 	/**
 	 * A template for resources identified by IDs.
 	 */
-	abstract inner class DynamicResource<O : Any, Context : Any> protected constructor(
+	abstract inner class DynamicResource<O : Any, Failure : Any, Context : Any> protected constructor(
 		/**
 		 * The name of the identifier.
 		 *
@@ -274,7 +274,7 @@ sealed class ResourceGroup {
 		}
 
 		@Suppress("LeakingThis") // Not dangerous because Operation's constructor does nothing
-		val get = Operation<O, Unit, O, Parameters.Empty, Context>(this, Operation.Kind.Read) {
+		val get = Operation<O, Unit, Failure, O, Parameters.Empty, Context>(this, Operation.Kind.Read) {
 			validateCorrectId(id)
 			validateId(id, context)
 		}.apply { _operations += this }

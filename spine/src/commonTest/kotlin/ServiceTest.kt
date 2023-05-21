@@ -35,12 +35,12 @@ private data class User(val name: String, val admin: Boolean) {
 	data class Rename(val name: String)
 }
 
-private class Context(val user: Ref<SpineFailure, User>)
+private class Context(val user: Ref<SpineFailure<Nothing>, User>)
 
 private class Api : Service("v2") {
-	inner class Departments : StaticResource<List<Id>, Department.SearchParams, Context>("departments") {
-		inner class Unique : DynamicResource<Department, Context>("department") {
-			inner class Users : StaticResource<List<Id>, Parameters.Empty, Context>("users")
+	inner class Departments : StaticResource<List<Id>, Nothing, Department.SearchParams, Context>("departments") {
+		inner class Unique : DynamicResource<Department, Nothing, Context>("department") {
+			inner class Users : StaticResource<List<Id>, Nothing, Parameters.Empty, Context>("users")
 
 			val users = Users()
 		}
@@ -48,20 +48,20 @@ private class Api : Service("v2") {
 		val id = Unique()
 	}
 
-	inner class Users : StaticResource<List<Id>, Parameters.Empty, Context>("users") {
-		inner class Unique : DynamicResource<User, Context>("user") {
-			inner class Departments : StaticResource<List<Id>, Parameters.Empty, Context>("departments")
+	inner class Users : StaticResource<List<Id>, Nothing, Parameters.Empty, Context>("users") {
+		inner class Unique : DynamicResource<User, Nothing, Context>("user") {
+			inner class Departments : StaticResource<List<Id>, Nothing, Parameters.Empty, Context>("departments")
 
-			val join = action<Unit, Unit, Parameters.Empty>(Route / "join")
+			val join = action<Unit, Nothing, Unit, Parameters.Empty>(Route / "join")
 
-			val leave = action<Unit, Unit, Parameters.Empty>(Route / "leave")
+			val leave = action<Unit, Nothing, Unit, Parameters.Empty>(Route / "leave")
 
-			val rename = edit<User.Rename, Parameters.Empty>(Route / "name")
+			val rename = edit<User.Rename, Nothing, Parameters.Empty>(Route / "name")
 
 			val departments = Departments()
 		}
 
-		val create = create<User.New, User, Parameters.Empty>()
+		val create = create<User.New, Nothing, User, Parameters.Empty>()
 
 		val id = Unique()
 	}
