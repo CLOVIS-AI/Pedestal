@@ -14,6 +14,14 @@ import opensavvy.state.progressive.ProgressiveOutcome
  * - [Failure] if a failed result is available (see [Failure.failure]).
  *
  * To create outcomes from computations, use the [success] and [failed] factories.
+ *
+ * ### Arrow
+ *
+ * Outcome is essentially identical to Arrow's Either. When using Arrow, we recommend using Either most of the time
+ * because of all the convenience functions and DSLs it has. Using our companion library `state-arrow`, it is possible
+ * to use Outcome in the Raise DSL.
+ *
+ * Because of this, we will keep Outcome as simple as possible, and avoid adding too much sugar.
  */
 sealed class Outcome<out F, out T> {
 

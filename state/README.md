@@ -20,18 +20,16 @@ notably [Arrow](https://arrow-kt.io/docs/patterns/error_handling/). These librar
 syntax sugar for this style of error management, but they lack a representation for intermediate values (for example,
 the current progress of an information).
 
-Originally, `state` was built upon Arrow. Today, `state` is independent of Arrow, but it doesn't duplicate all the nice
-tooling provided by Arrow: we recommend using our provided `state-arrow` compatibility layer to use in your
-projects. `state` itself is kept as small as possible to help interoperability with projects that do not use Arrow.
+Originally, `state` was built on top of Arrow. Today, `state` is independent of Arrow, but it doesn't duplicate all the nice
+tooling provided by Arrow. We recommend using both projects together thanks to our `state-arrow` compatibility layer.
+`state` itself is kept as small as possible to help interoperability with projects that do not use Arrow.
 
 There are multiple recommended ways to represent outcomes:
 
-- success, failures and progress in a wrapper object (
-  see [ProgressiveOutcome][opensavvy.state.progressive.ProgressiveOutcome]),
-- success and failures in a wrapper object (see `state-arrow`'s `Outcome`) and progress by asynchronous context calls (
-  see `progress-coroutines`'s `CoroutineProgressReporter`),
-- success as a regular return type, failures as a context receiver (see Arrow 2.0's `Raise` interface) and progress as a
-  context receiver (using `progress`' `ProgressReporter`).
+- success, failures and progress in a wrapper object (see [ProgressiveOutcome][opensavvy.state.progressive.ProgressiveOutcome]),
+- success and failures in a wrapper object (see [Outcome][opensavvy.state.outcome.Outcome]) and progress by asynchronous context calls (see `progress-coroutines`'s `CoroutineProgressReporter`),
+- success as a regular return type, failures as a context receiver (see Arrow 2.0's [`Raise`](https://apidocs.arrow-kt.io/arrow-core/arrow.core.raise/-raise/index.html) interface) and progress as a
+  context receiver (using `progress`' [ProgressReporter][opensavvy.progress.report.ProgressReporter]).
 
 # Package opensavvy.state.outcome
 
