@@ -5,6 +5,7 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.*
 import opensavvy.progress.coroutines.mapProgressTo
 import opensavvy.spine.Id
 import opensavvy.spine.Operation
@@ -98,6 +99,8 @@ suspend inline fun <Resource : Any, reified In : Any, reified Failure : Any, rei
 			val failure = try {
 				SpineFailure(kind, result.body<Failure>())
 			} catch (e: NoTransformationFoundException) {
+				SpineFailure(kind, result.body<String>().ifBlank { "${result.status} with no provided body" })
+			} catch (e: JsonConvertException) {
 				SpineFailure(kind, result.body<String>().ifBlank { "${result.status} with no provided body" })
 			}
 
