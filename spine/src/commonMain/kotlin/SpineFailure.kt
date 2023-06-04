@@ -18,7 +18,7 @@ sealed class SpineFailure<out Payload : Any> {
 
     data class Payload<Payload : Any>(
         override val type: Type,
-        override val payload: Payload?,
+        override val payload: Payload,
     ) : SpineFailure<Payload>() {
 
         override fun toString() = "$type: “${payload}”"
@@ -41,5 +41,5 @@ fun SpineFailure(
 
 fun <Payload : Any> SpineFailure(
     type: SpineFailure.Type,
-    payload: Payload?,
+    payload: Payload,
 ) = SpineFailure.Payload(type, payload)

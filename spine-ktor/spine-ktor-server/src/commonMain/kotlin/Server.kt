@@ -104,7 +104,7 @@ inline fun <Resource : Any, reified In : Any, reified Failure : Any, reified Out
 					Server.log.warn(it.type) { it.toString() }
 					when (it) {
 						is SpineFailure.Message -> call.respond(it.type.toHttp(), it.message ?: "No message")
-						is SpineFailure.Payload -> call.respond(it.type.toHttp(), it.payload ?: "No message")
+						is SpineFailure.Payload -> call.respond(it.type.toHttp(), it.payload)
 					}
 				},
 				ifRight = {
@@ -175,7 +175,7 @@ inline fun <Resource : Any, reified In : Any, reified Out : Any, reified Params 
 					Server.log.warn(it.type) { it.toString() }
 					when (it) {
 						is SpineFailure.Message -> call.respond(it.type.toHttp(), it.message ?: "No message")
-						is SpineFailure.Payload -> call.respond(it.type.toHttp(), it.payload ?: "No message")
+						is SpineFailure.Payload -> call.respond(it.type.toHttp(), it.payload)
 					}
 				},
 				ifRight = {
