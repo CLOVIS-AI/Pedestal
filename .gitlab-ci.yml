@@ -32,7 +32,7 @@ workflow:
   image: macos-12-xcode-13
 
   tags:
-    - shared-macos-amd64
+    - saas-macos-medium-m1
 
 publish:
   extends: [ .jvm ]
