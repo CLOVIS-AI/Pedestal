@@ -1,16 +1,17 @@
 package opensavvy.cache.contextual
 
 import kotlinx.coroutines.Job
+import opensavvy.cache.MemoryCache
 import opensavvy.cache.cachedInMemory
 import opensavvy.state.coroutines.ProgressiveFlow
 
-class ContextualMemoryCache<I, C, F, T>(
+internal class ContextualMemoryCache<I, C, F, T>(
 	upstream: ContextualCache<I, C, F, T>,
 	job: Job,
 ) : ContextualCache<I, C, F, T> {
 
 	private val cache = ContextualWrapper(upstream)
-		.cachedInMemory(job)
+		.cachedInMemory(job) as MemoryCache<Pair<I, C>, F, T>
 
 	override fun get(id: I, context: C): ProgressiveFlow<F, T> =
 		cache[id to context]
@@ -32,5 +33,10 @@ class ContextualMemoryCache<I, C, F, T>(
 
 }
 
-fun <I, C, F, T> ContextualCache<I, C, F, T>.cachedInMemory(job: Job) =
+/**
+ * In-memory [ContextualCache] layer.
+ *
+ * @see opensavvy.cache.cachedInMemory Non-contextual equivalent
+ */
+fun <I, C, F, T> ContextualCache<I, C, F, T>.cachedInMemory(job: Job): ContextualCache<I, C, F, T> =
 	ContextualMemoryCache(this, job)
