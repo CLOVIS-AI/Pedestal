@@ -3,14 +3,10 @@ package opensavvy.cache
 import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.coroutines.captureProgress
 import opensavvy.state.outcome.Outcome
+import opensavvy.state.outcome.success
+import kotlin.jvm.JvmName
 
-/**
- * Cache implementation aimed to be the first link in a cache chain.
- *
- * This is not a valid implementation of a cache (it doesn't do any caching), and only serves as a link between caches
- * and the underlying network APIs.
- */
-class CacheAdapter<I, F, T>(
+internal class CacheAdapter<I, F, T>(
 	private val query: suspend (I) -> Outcome<F, T>,
 ) : Cache<I, F, T> {
 
@@ -32,9 +28,51 @@ class CacheAdapter<I, F, T>(
 }
 
 /**
- * Creates a cache layer that intercepts requests.
+ * Cache implementation which calls a given [transform] suspending function.
  *
- * See [CacheAdapter].
+ * This adapter is meant to be used as the first layer in a layer chain.
+ * By itself, it does no caching (all calls to [get][Cache.get] call [transform]).
+ * To learn more about layer chaining, or about the type parameters, see [Cache].
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * object NegativeNumber
+ *
+ * val squaredRoot = cache<Double, NegativeNumber, Double> {
+ *     if (it >= 0) {
+ *         sqrt(it).success()
+ *     } else {
+ *         NegativeInteger.failed()
+ *     }
+ * }
+ *
+ * println(squaredRoot[25.0].now()) // Success(5.0)
+ * println(squaredRoot[-5.0].now()) // Failure(NegativeNumber)
+ * ```
  */
-fun <I, F, T> cache(transform: suspend (I) -> Outcome<F, T>) =
+fun <I, F, T> cache(transform: suspend (I) -> Outcome<F, T>): Cache<I, F, T> =
 	CacheAdapter(transform)
+
+/**
+ * Cache implementation which calls a given [transform] suspending function.
+ *
+ * The [transform] function is considered always successful.
+ * This allows to bypass the cache's error encoding.
+ * For more information, see [InfallibleCache].
+ *
+ * This adapter is meant to be used as the first layer in a layer chain.
+ * By itself, it does no caching (all calls to [get][Cache.get] call [transform]).
+ * To learn more about layer chaining, or about the type parameters, see [Cache].
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * val squared = cache<Int, Int> { it * 2 }
+ *
+ * println(squared[5]) // Success(25)
+ * ```
+ */
+@JvmName("infallibleCache")
+fun <I, T> cache(transform: suspend (I) -> T): InfallibleCache<I, T> =
+	CacheAdapter { transform(it).success() }

@@ -22,7 +22,7 @@ import kotlin.time.Duration.Companion.minutes
  *      .expireAfter(5.minutes, Job())
  * ```
  */
-class ExpirationCache<I, F, T>(
+internal class ExpirationCache<I, F, T>(
 	/**
 	 * The previous cache layer, from which values will be expired.
 	 */
@@ -107,9 +107,26 @@ class ExpirationCache<I, F, T>(
 }
 
 /**
- * Factory function to easily add a [ExpirationCache] layer to an existing cache chain.
+ * Age-based [Cache] expiration strategy.
  *
- * @see ExpirationCache
+ * ### General behavior
+ *
+ * The cache starts a worker in [scope]. Every [duration], all values which have not been updated
+ * for at least [duration] are expired in the previous layer.
+ *
+ * This layer considers any non-loading value returned by [get][Cache.get] to be new.
+ *
+ * If [scope] is cancelled, requests made to this cache continue to work as normal, but no values are ever expired anymore.
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * val scope: CoroutineScope = …
+ *
+ * val powersOfTwo = cache<Int, Int> { it * 2 }
+ *     .cachedInMemory(scope.coroutineContext.job)
+ *     .expireAfter(10.minutes, scope)
+ * ```
  */
-fun <I, F, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope) =
+fun <I, F, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope): Cache<I, F, T> =
 	ExpirationCache(this, duration, scope)

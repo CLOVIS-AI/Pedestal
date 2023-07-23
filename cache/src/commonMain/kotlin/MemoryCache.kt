@@ -10,19 +10,7 @@ import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.copy
 
-/**
- * In-memory [Cache] implementation.
- *
- * Updates from the previous cache layer are stored in a dictionary.
- * When [get] is called, results are returned from the dictionary if available.
- * Otherwise, the query is transmitted to the previous layer.
- *
- * This implementation never frees the cache or invalidates elements inside it.
- * To free memory, add a subsequent layer responsible for it (e.g. [ExpirationCache]).
- *
- * Use the [cachedInMemory] factory for easy cache chaining.
- */
-class MemoryCache<I, F, T>(
+internal class MemoryCache<I, F, T>(
 	private val upstream: Cache<I, F, T>,
 	private val job: Job = SupervisorJob(),
 ) : Cache<I, F, T> {
@@ -192,9 +180,49 @@ class MemoryCache<I, F, T>(
 }
 
 /**
- * Creates a new cache layer which stores the last queried value for each identifier, and joins requests such that
- * multiple subscribers to the same value only start a single request.
+ * In-memory [Cache] layer.
  *
- * For more information, see [MemoryCache].
+ * ### General behavior
+ *
+ * Updates from the previous cache layer are stored in a dictionary.
+ * When [get][Cache.get] is called, results are returned from the dictionary if available.
+ * Otherwise, the request is transmitted to the previous layer.
+ *
+ * This implementation frees elements only when [expire][Cache.expire] is called.
+ * To free memory automatically, add a subsequent layer responsible for it (e.g. [expireAfter]).
+ *
+ * ### Observability
+ *
+ * If multiple callers request the same value concurrently, a single cache request is started. All subscribers receive
+ * all events as if they started the request themselves.
+ *
+ * The flow returned by [Cache.get] is infinite: callers can subscribe to it for as long as they want.
+ * If a request is started, for any reason, all subscribers to the flow observe the progress events as well as the final result.
+ *
+ * When a new request is started, all existing subscribers see the loading events of the new request with the old results.
+ * For example, if the previous request gave `A`, and the new request has three progress steps followed by the result `B`,
+ * an existing subscriber will see the values:
+ * - `A`, done
+ * - `A`, 25% loading
+ * - `A`, 50% loading
+ * - `A`, 75% loading
+ * - `B`, done
+ *
+ * This is useful for GUIs: the application can communicate that a request is ongoing and the value may be outdated,
+ * while still having a value to show.
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * val scope: CoroutineScope = …
+ *
+ * val powersOfTwo = cache<Int, Int> { it * 2 }
+ *     .cachedInMemory(scope.coroutineContext.job)
+ *     .expireAfter(10.minutes, scope)
+ * ```
+ *
+ * @param job The [Job] instance in which requests transmitted to the previous layers are started in.
+ * Cancelling this job makes the cache unable to query any new values, and cancels any ongoing request.
  */
-fun <I, F, T> Cache<I, F, T>.cachedInMemory(job: Job) = MemoryCache(this, job)
+fun <I, F, T> Cache<I, F, T>.cachedInMemory(job: Job): Cache<I, F, T> =
+	MemoryCache(this, job)

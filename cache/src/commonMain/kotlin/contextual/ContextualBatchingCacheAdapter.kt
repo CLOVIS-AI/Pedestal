@@ -6,10 +6,11 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import opensavvy.cache.BatchingCacheAdapter
+import opensavvy.cache.Cache
 import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.progressive.ProgressiveOutcome
 
-class ContextualBatchingCacheAdapter<I, C, F, T>(
+internal class ContextualBatchingCacheAdapter<I, C, F, T>(
 	scope: CoroutineScope,
 	workers: Int,
 	queryBatch: (Set<Pair<I, C>>) -> Flow<Triple<I, C, ProgressiveOutcome<F, T>>>,
@@ -44,11 +45,20 @@ class ContextualBatchingCacheAdapter<I, C, F, T>(
 
 }
 
+/**
+ * Cache implementation which collects cache requests into batches which are queried at the same time.
+ *
+ * This adapter is meant to be used as the first layer in a layer chain. By itself, it does no caching (all calls to [get][ContextualCache.get] call [transform]).
+ * To learn more about layer chaining, see [Cache].
+ * To learn more about the type parameters, see [ContextualCache].
+ *
+ * @see opensavvy.cache.batchingCache Non-contextual equivalent
+ */
 fun <I, C, F, T> batchingCache(
 	scope: CoroutineScope,
 	workers: Int = 1,
 	transform: suspend FlowCollector<Triple<I, C, ProgressiveOutcome<F, T>>>.(Set<Pair<I, C>>) -> Unit,
-) = ContextualBatchingCacheAdapter<I, C, F, T>(
+): ContextualCache<I, C, F, T> = ContextualBatchingCacheAdapter(
 	scope,
 	workers,
 ) {
