@@ -1,16 +1,11 @@
 package opensavvy.cache.contextual
 
+import opensavvy.cache.Cache
 import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.coroutines.captureProgress
 import opensavvy.state.outcome.Outcome
 
-/**
- * Cache implementation aimed to be the first link in a cache chain.
- *
- * This is not a valid implementation of a cache (it doesn't do any caching), and only serves as a link
- * between caches and the underlying network APIs.
- */
-class ContextualCacheAdapter<I, C, F, T>(
+internal class ContextualCacheAdapter<I, C, F, T>(
 	private val query: suspend (I, C) -> Outcome<F, T>,
 ) : ContextualCache<I, C, F, T> {
 	override fun get(id: I, context: C): ProgressiveFlow<F, T> = captureProgress { query(id, context) }
@@ -35,9 +30,34 @@ class ContextualCacheAdapter<I, C, F, T>(
 }
 
 /**
- * Creates a cache layer that intercepts requests.
+ * Cache implementation which calls a given [transform] suspending function.
  *
- * See [ContextualCacheAdapter].
+ * This adapter is meant to be used as the first layer in a layer chain. By itself, it does no caching (all calls to [get][ContextualCache.get]  call [transform]).
+ * To learn more about layer chaining, see [Cache].
+ * To learn more about the type parameters, see [ContextualCache].
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * class User
+ * class SearchFilters
+ * data class Page(val number: Int)
+ * data class Post(…)
+ *
+ * suspend fun getTimeline(filters: SearchFilters, user: User, page: Page): List<Post> = …
+ *
+ * val cachedTimeline = cache<SearchFilters, Pair<User, Page>, Nothing, List<Post>> { it, (user, page) ->
+ *     getTimeline(filters, user, page).success()
+ * }
+ *
+ * val me = User()
+ * val filters = SearchFilters()
+ *
+ * println(cachedTimeline[filters, me to Page(0)].now())
+ * println(cachedTimeline[filters, me to Page(1)].now())
+ * ```
+ *
+ * @see opensavvy.cache.cache Non-contextual equivalent
  */
 fun <I, C, F, T> cache(transform: suspend (I, C) -> Outcome<F, T>): ContextualCache<I, C, F, T> =
 	ContextualCacheAdapter(transform)
