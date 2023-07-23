@@ -2,6 +2,7 @@ package opensavvy.cache
 
 import kotlinx.coroutines.flow.Flow
 import opensavvy.state.coroutines.ProgressiveFlow
+import opensavvy.state.progressive.ProgressiveOutcome
 
 /**
  * Stores information temporarily to avoid unneeded network requests.
@@ -31,8 +32,12 @@ import opensavvy.state.coroutines.ProgressiveFlow
  *
  * Cache chaining is instantiated in the opposite order, like iterators (the last in the chain is the first checked,
  * and delegates to the previous one if they do not have the value).
- * The first element of the chain, and therefore the one responsible for actually starting the request, is [CacheAdapter] or [BatchingCacheAdapter].
+ * The first element of the chain, and therefore the one responsible for actually starting the request, is [cache] or [batchingCache].
  * Note that both have a few implementation differences, it is not recommended to use them directly without chaining under another implementation.
+ *
+ * @param I An identifier representing a cached object. Two identifiers refer to the same object if their [equals][Any.equals] method returns `true`.
+ * @param F The type of possible failures which may happen when requesting a value. If the cached operation cannot fail, or if you're using another error-handling strategy, see [InfallibleCache].
+ * @param T The type of cached object.
  */
 interface Cache<I, F, T> {
 
@@ -101,3 +106,15 @@ interface Cache<I, F, T> {
 	suspend fun expireAll()
 
 }
+
+/**
+ * Stores information temporarily to avoid unneeded network requests, with no error strategy.
+ *
+ * By default, [Cache] represents errors as an alternative object, using [ProgressiveOutcome].
+ * When caching an operation which cannot fail, or an operation which uses some other kind of
+ * error handling strategy (exceptions, custom sealed classes…) it can be convenient to avoid
+ * Cache's default error encoding completely.
+ *
+ * This type alias represents the opting-out of Cache's default error encoding.
+ */
+typealias InfallibleCache<I, T> = Cache<I, Nothing, T>
