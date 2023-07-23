@@ -1,0 +1,3 @@
+tasks:
+  - name: Start daemon and show possible commands to the user
+    command: ./gradlew projects
