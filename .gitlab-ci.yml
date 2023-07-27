@@ -45,6 +45,19 @@ publish:
     - if: $CI_COMMIT_TAG
   interruptible: false
 
+publish-ossrh:
+  extends: [ .jvm ]
+  stage: publish
+  script:
+    - export SIGNING_KEY_RING=$(mktemp)
+    - <$SIGNING_KEY_RING_B64 base64 -d >$SIGNING_KEY_RING
+    - >
+      ./gradlew 
+      publishAllPublicationsToSonatypeRepository
+  rules:
+    - if: $CI_COMMIT_TAG
+  interruptible: false
+
 publish:ios:
   extends: [ .ios ]
   stage: publish
@@ -54,6 +67,19 @@ publish:ios:
       publishIosArm64PublicationToGitLabRepository
       publishIosSimulatorArm64PublicationToGitLabRepository
       publishIosX64PublicationToGitLabRepository
+  rules:
+    - if: $CI_COMMIT_TAG
+  interruptible: false
+
+publish-ossrh:ios:
+  extends: [ .ios ]
+  stage: publish
+  script:
+    - >
+      ./gradlew 
+      publishIosArm64PublicationToSonatypeRepository
+      publishIosSimulatorArm64PublicationToSonatypeRepository
+      publishIosX64PublicationToSonatypeRepository
   rules:
     - if: $CI_COMMIT_TAG
   interruptible: false
