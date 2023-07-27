@@ -20,7 +20,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(projects.state)
-                api("io.arrow-kt:arrow-core:_")
+                api(Arrow.core)
 
                 implementation(projects.logger)
             }

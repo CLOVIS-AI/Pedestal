@@ -30,9 +30,9 @@ kotlin {
 
 				implementation(Ktor.client.logging)
 				implementation(Ktor.server.testHost)
-				implementation("io.ktor:ktor-server-content-negotiation:_")
-				implementation("io.ktor:ktor-client-content-negotiation:_")
-				implementation("io.ktor:ktor-serialization-kotlinx-json:_")
+				implementation(Ktor.server.contentNegotiation)
+				implementation(Ktor.client.contentNegotiation)
+				implementation(Ktor.plugins.serialization.kotlinx.json)
 			}
 		}
 	}
