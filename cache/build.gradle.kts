@@ -36,6 +36,12 @@ kotlin {
 	}
 }
 
+metadata {
+	name.set("Pedestal Cache")
+	description.set("Multiplatform observable asynchronous cache algorithms")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/cache/index.html")
+}
+
 kover {
 	verify {
 		rule {

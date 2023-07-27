@@ -28,6 +28,12 @@ kotlin {
 	}
 }
 
+metadata {
+	name.set("Pedestal Cache (Blocking)")
+	description.set("Blocking wrappers for Pedestal Cache")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/cache-blocking/index.html")
+}
+
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
 	dokkaSourceSets.configureEach {
 		includes.from("${project.projectDir}/README.md")

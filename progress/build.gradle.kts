@@ -33,6 +33,12 @@ kotlin {
     }
 }
 
+metadata {
+    name.set("Pedestal Progress")
+    description.set("Universal progress representation")
+    homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/progress/index.html")
+}
+
 kover {
     verify {
         rule {

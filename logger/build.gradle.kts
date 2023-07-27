@@ -37,6 +37,12 @@ kotlin {
 	}
 }
 
+metadata {
+	name.set("Pedestal Logger")
+	description.set("Simple multiplatform logger")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/logger/index.html")
+}
+
 kover {
 	verify {
 		rule {

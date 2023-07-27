@@ -39,6 +39,12 @@ kotlin {
     }
 }
 
+metadata {
+    name.set("Pedestal State (Kotlin Coroutines compatibility)")
+    description.set("Progress-aware failure states")
+    homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/state-coroutines/index.html")
+}
+
 kover {
     verify {
         rule {

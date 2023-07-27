@@ -36,6 +36,12 @@ kotlin {
     }
 }
 
+metadata {
+    name.set("Pedestal Progress (Kotlin Coroutines compatibility)")
+    description.set("Coroutine-aware universal progress representation")
+    homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/progress-coroutines/index.html")
+}
+
 kover {
     verify {
         rule {
