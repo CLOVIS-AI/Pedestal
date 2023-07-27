@@ -40,17 +40,8 @@ metadata {
     name.set("Pedestal State (Arrow compatibility)")
     description.set("Progress-aware failure states")
     homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/state-arrow/index.html")
-}
 
-kover {
-    verify {
-        rule {
-            name = "Minimal code coverage"
-            bound {
-                minValue = 80
-            }
-        }
-    }
+    minimalCoverage.set(80)
 }
 
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {

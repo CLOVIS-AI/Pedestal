@@ -43,17 +43,8 @@ metadata {
     name.set("Pedestal State (Kotlin Coroutines compatibility)")
     description.set("Progress-aware failure states")
     homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/state-coroutines/index.html")
-}
 
-kover {
-    verify {
-        rule {
-            name = "Minimal code coverage"
-            bound {
-                minValue = 80
-            }
-        }
-    }
+    minimalCoverage.set(80)
 }
 
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {

@@ -37,17 +37,8 @@ metadata {
     name.set("Pedestal Progress")
     description.set("Universal progress representation")
     homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/progress/index.html")
-}
 
-kover {
-    verify {
-        rule {
-            name = "Minimal code coverage"
-            bound {
-                minValue = 90
-            }
-        }
-    }
+    minimalCoverage.set(90)
 }
 
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {

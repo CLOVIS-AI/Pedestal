@@ -14,6 +14,8 @@ interface StructureExtension {
 	val name: Property<String>
 	val description: Property<String>
 	val homeUrl: Property<String>
+
+	val minimalCoverage: Property<Int>
 }
 
 val config = extensions.create<StructureExtension>("metadata")
@@ -38,6 +40,17 @@ tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
 		}
 		externalDocumentationLink {
 			url.set(URL("https://apidocs.arrow-kt.io"))
+		}
+	}
+}
+
+kover {
+	verify {
+		rule {
+			name = "Minimal code coverage"
+			bound {
+				minValue = config.minimalCoverage.orNull
+			}
 		}
 	}
 }
