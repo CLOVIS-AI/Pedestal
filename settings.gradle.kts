@@ -16,6 +16,7 @@ include(
 	"progress",
 	"progress-coroutines",
 	"cache",
+	"cache-blocking",
 	"backbone",
 	"spine",
 	"spine-ktor",
