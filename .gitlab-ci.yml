@@ -50,7 +50,7 @@ publish-ossrh:
   stage: publish
   script:
     - export SIGNING_KEY_RING=$(mktemp)
-    - <$SIGNING_KEY_RING_B64 base64 -d >$SIGNING_KEY_RING
+    - <"$SIGNING_KEY_RING_B64" base64 -d >"$SIGNING_KEY_RING"
     - >
       ./gradlew 
       publishAllPublicationsToSonatypeRepository
@@ -75,6 +75,8 @@ publish-ossrh:ios:
   extends: [ .ios ]
   stage: publish
   script:
+    - export SIGNING_KEY_RING=$(mktemp)
+    - <"$SIGNING_KEY_RING_B64" base64 -d >"$SIGNING_KEY_RING"
     - >
       ./gradlew 
       publishIosArm64PublicationToSonatypeRepository
