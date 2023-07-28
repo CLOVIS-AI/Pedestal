@@ -5,6 +5,8 @@ Simple multiplatform [Logger][opensavvy.logger.Logger] interface that delegates 
 - JVM: Slf4J
 - JS: `console` API
 
+<a href="https://search.maven.org/search?q=g:%22dev.opensavvy.pedestal%22%20AND%20a:%22logger%22"><img src="https://img.shields.io/maven-central/v/dev.opensavvy.pedestal/logger.svg?label=Maven%20Central"></a>
+
 Example usage:
 
 ```kotlin

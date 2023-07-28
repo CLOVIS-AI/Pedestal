@@ -2,6 +2,8 @@
 
 Micro-library to represent the state of an unfinished task.
 
+<a href="https://search.maven.org/search?q=g:%22dev.opensavvy.pedestal%22%20AND%20a:%22progress%22"><img src="https://img.shields.io/maven-central/v/dev.opensavvy.pedestal/progress.svg?label=Maven%20Central"></a>
+
 It is often recommended to communicate the progress of any task that doesn't finish instantly to the user.
 However, this is often forgotten and implemented as a last-minute addition.
 Pedestal Progress brings a lightweight and easy to use solution.
