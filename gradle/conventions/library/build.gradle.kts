@@ -1,10 +1,8 @@
-import org.gradle.kotlin.dsl.`kotlin-dsl`
-
 plugins {
 	`kotlin-dsl`
 }
 
-group = "opensavvy.pedestal"
+group = "dev.opensavvy.pedestal"
 
 dependencies {
 	implementation(project(":versioning"))

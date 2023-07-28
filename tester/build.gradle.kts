@@ -42,3 +42,9 @@ kotlin {
 		val iosX64Main by getting { iosMain.dependsOn(this) }
 	}
 }
+
+metadata {
+	name.set("Pedestal Tester (DEPRECATED)")
+	description.set("Multiplatform test helpers")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/tester/index.html")
+}

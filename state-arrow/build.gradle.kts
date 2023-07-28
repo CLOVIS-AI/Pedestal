@@ -20,7 +20,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(projects.state)
-                api("io.arrow-kt:arrow-core:_")
+                api(Arrow.core)
 
                 implementation(projects.logger)
             }
@@ -36,15 +36,12 @@ kotlin {
     }
 }
 
-kover {
-    verify {
-        rule {
-            name = "Minimal code coverage"
-            bound {
-                minValue = 80
-            }
-        }
-    }
+metadata {
+    name.set("Pedestal State (Arrow compatibility)")
+    description.set("Progress-aware failure states")
+    homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/state-arrow/index.html")
+
+    minimalCoverage.set(80)
 }
 
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {

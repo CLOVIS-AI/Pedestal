@@ -36,15 +36,12 @@ kotlin {
 	}
 }
 
-kover {
-	verify {
-		rule {
-			name = "Minimal code coverage"
-			bound {
-				minValue = 90
-			}
-		}
-	}
+metadata {
+	name.set("Pedestal Cache")
+	description.set("Multiplatform observable asynchronous cache algorithms")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/cache/index.html")
+
+	minimalCoverage.set(90)
 }
 
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {

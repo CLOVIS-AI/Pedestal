@@ -47,3 +47,9 @@ kover {
 		}
 	}
 }
+
+metadata {
+	name.set("Spine for Ktor (DEPRECATED)")
+	description.set("Multiplatform API declaration")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/spine-ktor/index.html")
+}

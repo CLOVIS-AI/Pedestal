@@ -2,6 +2,8 @@
 
 Lightweight pattern to integrate reactive caching in all layers of a multiplatform application.
 
+<a href="https://search.maven.org/search?q=g:%22dev.opensavvy.pedestal%22%20AND%20a:%22backbone%22"><img src="https://img.shields.io/maven-central/v/dev.opensavvy.pedestal/backbone.svg?label=Maven%20Central"></a>
+
 ## The problem
 
 The core of modern applications is often sending data between machines.

@@ -30,10 +30,16 @@ kotlin {
 
 				implementation(Ktor.client.logging)
 				implementation(Ktor.server.testHost)
-				implementation("io.ktor:ktor-server-content-negotiation:_")
-				implementation("io.ktor:ktor-client-content-negotiation:_")
-				implementation("io.ktor:ktor-serialization-kotlinx-json:_")
+				implementation(Ktor.server.contentNegotiation)
+				implementation(Ktor.client.contentNegotiation)
+				implementation(Ktor.plugins.serialization.kotlinx.json)
 			}
 		}
 	}
+}
+
+metadata {
+	name.set("Spine for Ktor server (DEPRECATED)")
+	description.set("Multiplatform API declaration")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/spine-ktor/spine-ktor-server/index.html")
 }

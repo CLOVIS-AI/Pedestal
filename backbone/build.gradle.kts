@@ -38,15 +38,12 @@ kotlin {
 	}
 }
 
-kover {
-	verify {
-		rule {
-			name = "Minimal code coverage"
-			bound {
-				minValue = 80
-			}
-		}
-	}
+metadata {
+	name.set("Pedestal Backbone")
+	description.set("Layered software architecture with aggressive caching")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/backbone/index.html")
+
+	minimalCoverage.set(80)
 }
 
 tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {

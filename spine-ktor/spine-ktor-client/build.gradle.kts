@@ -31,3 +31,9 @@ kotlin {
 		}
 	}
 }
+
+metadata {
+	name.set("Spine for Ktor client (DEPRECATED)")
+	description.set("Multiplatform API declaration")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/spine-ktor/spine-ktor-client/index.html")
+}

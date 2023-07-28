@@ -29,8 +29,11 @@ OpenSavvy Pedestal is used by these projects:
 You can easily add any module using Gradle:
 
 ```kotlin
-// First, add the OpenSavvy repository
 repositories {
+  // Pedestal is available on Maven Central
+  mavenCentral()
+
+  // Or, if you prefer, Pedestal is also available in our own maven repository
 	maven {
 		name = "OpenSavvy Pedestal"
 		url = uri("https://gitlab.com/api/v4/projects/37325377/packages/maven")
@@ -39,7 +42,7 @@ repositories {
 
 // You can now add a dependency on the various modules:
 dependencies {
-    implementation("opensavvy.pedestal:backbone:<the version you want>")
+  implementation("dev.opensavvy.pedestal:backbone:<the version you want>")
 }
 ```
 
@@ -48,7 +51,8 @@ This project has very little platform-specific code, and would be easy to port t
 If you are interested in another platform, we encourage contributions that add the relevant CI configuration to test and deploy for that platform.
 
 - [Release list](https://gitlab.com/opensavvy/pedestal/-/releases)
-- [Artifact list](https://gitlab.com/opensavvy/pedestal/-/packages)
+- [Artifact list for MavenCentral](https://search.maven.org/search?q=g:dev.opensavvy.pedestal)
+- [Artifact list for the GitLab Repository](https://gitlab.com/opensavvy/pedestal/-/packages)
 - [Breaking changes migration guide](docs/MIGRATION_GUIDE.md)
 
 ## Contribution
