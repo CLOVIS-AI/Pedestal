@@ -46,7 +46,7 @@ class ContextualCacheTest {
 	fun read() = runTest {
 		val cache = createCache()
 			.cachedInMemory(backgroundScope.coroutineContext.job)
-			.expireAfter(2.minutes, backgroundScope)
+			.expireAfter(2.minutes, backgroundScope, testClock)
 
 		val expected = (0 until 100).toList().success()
 		val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
@@ -58,7 +58,7 @@ class ContextualCacheTest {
 	fun expire() = runTest {
 		val cache = createCache()
 			.cachedInMemory(backgroundScope.coroutineContext.job)
-			.expireAfter(2.minutes, backgroundScope)
+			.expireAfter(2.minutes, backgroundScope, testClock)
 
 		// Update with invalid values, so we can notice whether they are expired+queried or not
 		cache.update(Identifier(even = true, odd = true), Context(0, 100), (0 until 10).toList())
