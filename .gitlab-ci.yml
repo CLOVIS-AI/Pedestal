@@ -1,32 +1,21 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
+  - docker
+  - build
   - test
-  - publish
-
-sast:
-  stage: test
+  - deploy
 
 include:
-  - template: Security/SAST.gitlab-ci.yml
+  - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/version.gitlab-ci.yml
+  - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/mirror.gitlab-ci.yml
+  - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/gradle.gitlab-ci.yml
+  - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/docker.gitlab-ci.yml
 
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
-
-.jvm:
-  image: archlinux:base
-  before_script:
-    - pacman -Syu --noconfirm git jre-openjdk-headless
-  variables:
-    JAVA_HOME: /usr/lib/jvm/default
 
 .ios:
   image: macos-12-xcode-13
@@ -34,246 +23,58 @@ workflow:
   tags:
     - saas-macos-medium-m1
 
-publish:
-  extends: [ .jvm ]
-  stage: publish
+# region Check
+
+check-jvm:
+  extends: [ .os.gradle ]
+  needs: [ os.version ]
+  stage: test
+
   script:
     - >
-      ./gradlew 
-      publishAllPublicationsToGitLabRepository
-  rules:
-    - if: $CI_COMMIT_TAG
-  interruptible: false
+      ./gradlew koverMergedHtmlReport koverVerify
+      -PappVersion=$project_version
+    - mv build/reports/kover/merged/html coverage
 
-publish-ossrh:
-  extends: [ .jvm ]
-  stage: publish
-  script:
-    - export SIGNING_KEY_RING=$(mktemp)
-    - <"$SIGNING_KEY_RING_B64" base64 -d >"$SIGNING_KEY_RING"
-    - >
-      ./gradlew 
-      publishAllPublicationsToSonatypeRepository
-  rules:
-    - if: $CI_COMMIT_TAG
-  interruptible: false
-
-publish:ios:
-  extends: [ .ios ]
-  stage: publish
-  script:
-    - >
-      ./gradlew 
-      publishIosArm64PublicationToGitLabRepository
-      publishIosSimulatorArm64PublicationToGitLabRepository
-      publishIosX64PublicationToGitLabRepository
-  rules:
-    - if: $CI_COMMIT_TAG
-  interruptible: false
-
-publish-ossrh:ios:
-  extends: [ .ios ]
-  stage: publish
-  script:
-    - export SIGNING_KEY_RING=$(mktemp)
-    - <"$SIGNING_KEY_RING_B64" base64 -d >"$SIGNING_KEY_RING"
-    - >
-      ./gradlew 
-      publishIosArm64PublicationToSonatypeRepository
-      publishIosSimulatorArm64PublicationToSonatypeRepository
-      publishIosX64PublicationToSonatypeRepository
-  rules:
-    - if: $CI_COMMIT_TAG
-  interruptible: false
-
-.test-jvm:
-  extends: [ .jvm ]
-  variables:
-    module_path: $module
-  script:
-    - ./gradlew $module:koverReport $module:koverVerify  # implies running the JVM tests
-  after_script:
-    - mkdir -p test-report-$module_path
-    - mv $module_path/build/reports/tests/jvmTest test-report-$module_path/test
-    - mv $module_path/build/reports/kover/html test-report-$module_path/coverage
-    - mv $module_path/build/reports/kover/xml/report.xml test-report-$module_path/coverage.xml
-    - values=$(cat test-report-$module_path/coverage.xml | tail -7 | head -5 | grep 'INSTRUCTION' | cut -d ' ' -f 3,4 | sed 's/missed="//;s/" covered="/ /;s/"\/>//')
-    - missed=$(<<<$values cut -d ' ' -f 1)
-    - covered=$(<<<$values cut -d ' ' -f 2)
-    - echo "Coverage $(($covered * 100 / ($covered + $missed)))%"
-  coverage: '/Coverage \d+%/'
   artifacts:
     paths:
-      - test-report-$module_path
-    expose_as: 'Test and coverage report'
-    reports:
-      junit: $module_path/build/test-results/jvmTest/**.xml
-    when: always
+      - coverage
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG/documentation
+    url: https://$CI_PROJECT_NAMESPACE.$CI_PAGES_DOMAIN/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/coverage/index.html
+    deployment_tier: development
+    auto_stop_in: 1 week
   interruptible: true
 
-.test-jvm-convert-coverage:
-  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.8
-  variables:
-    module_path: $module
-  script:
-    - python /opt/cover2cover.py test-report-$module_path/coverage.xml $CI_PROJECT_DIR/$module_path/src/main/kotlin/ > cobertura.xml
-  artifacts:
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: cobertura.xml
-  interruptible: true
-
-logger:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: logger
-
-logger:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: logger:test:jvm
-      artifacts: true
-  variables:
-    module: logger
-
-progress:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: progress
-
-progress:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: progress:test:jvm
-      artifacts: true
-  variables:
-    module: progress
-
-progress-coroutines:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: progress-coroutines
-
-progress-coroutines:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: progress-coroutines:test:jvm
-      artifacts: true
-  variables:
-    module: progress-coroutines
-
-state:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: state
-
-state:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: state:test:jvm
-      artifacts: true
-  variables:
-    module: state
-
-state-arrow:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: state-arrow
-
-state-arrow:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: state-arrow:test:jvm
-      artifacts: true
-  variables:
-    module: state-arrow
-
-state-coroutines:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: state-coroutines
-
-state-coroutines:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: state-coroutines:test:jvm
-      artifacts: true
-  variables:
-    module: state-coroutines
-
-cache:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: cache
-
-cache:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: cache:test:jvm
-      artifacts: true
-  variables:
-    module: cache
-
-backbone:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: backbone
-
-backbone:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: backbone:test:jvm
-      artifacts: true
-  variables:
-    module: backbone
-
-spine:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: spine
-
-spine:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: spine:test:jvm
-      artifacts: true
-  variables:
-    module: spine
-
-spine-ktor:test:jvm:
-  extends: [ .test-jvm ]
-  variables:
-    module: spine-ktor:spine-ktor-server
-    module_path: spine-ktor/spine-ktor-server
-
-spine-ktor:convert-coverage:
-  extends: [ .test-jvm-convert-coverage ]
-  needs:
-    - job: spine-ktor:test:jvm
-      artifacts: true
-  variables:
-    module: spine-ktor:spine-ktor-server
-    module_path: spine-ktor/spine-ktor-server
-
-test:ios:
-  extends: [ .ios ]
+check-ios:
+  extends: [ .os.gradle ]
+  needs: [ os.version ]
+  stage: test
 
   script:
     - >
-      ./gradlew
-      iosSimulatorArm64Test
+      ./gradlew iosSimulatorArm64Test
+      -PappVersion=$project_version
+
+  interruptible: true
+
+# endregion
+# region Documentation
 
 dokka:
-  extends: [ .jvm ]
-  needs: [ ]
+  extends: [ .os.gradle ]
+  needs: [ os.version ]
+  stage: build
+
   script:
-    - ./gradlew dokkaHtmlMultiModule
+    - >
+      ./gradlew dokkaHtmlMultiModule
+      -PappVersion=$project_version
     - mv build/dokka/htmlMultiModule documentation
+
   artifacts:
     paths:
       - documentation
-    expose_as: "Documentation"
   environment:
     name: review/$CI_COMMIT_REF_SLUG/documentation
     url: https://$CI_PROJECT_NAMESPACE.$CI_PAGES_DOMAIN/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/documentation/index.html
@@ -283,7 +84,7 @@ dokka:
 
 pages:
   image: alpine:latest
-  stage: publish
+  stage: deploy
   needs:
     - job: dokka
       artifacts: true
@@ -296,3 +97,28 @@ pages:
   rules:
     - if: $CI_COMMIT_TAG
   interruptible: false
+
+# endregion
+# region Automatically mirror the previous layer of the playground
+
+mirror-playground:
+  stage: deploy
+  extends: [ .os.mirror ]
+  needs: [ ]
+
+  variables:
+    url: "$playground_parent"
+    name: "$playground_parent_name"
+    key: "$playground_mirroring_key"
+    key_public: "$playground_mirroring_key_public"
+
+  rules:
+    - if: $playground_parent == null || $playground_parent_name == null
+      when: never
+    - if: $playground_mirroring_key == null || $playground_mirroring_key_public == null
+      when: never
+    - if: $CI_PIPELINE_SOURCE == 'schedule'
+    - when: manual
+      allow_failure: true
+
+# endregion

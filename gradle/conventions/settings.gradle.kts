@@ -5,17 +5,22 @@ dependencyResolutionManagement {
 		mavenCentral()
 		gradlePluginPortal()
 	}
-}
 
-plugins {
-	id("de.fayard.refreshVersions") version "0.51.0"
+	versionCatalogs {
+		create("libs") {
+			from(files("../libs.versions.toml"))
+		}
+	}
 }
 
 include(
-	"versioning",
-	"structure",
+	"base",
+	"kotlin",
 	"library",
+	"documentation",
 )
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 buildCache {
 	val username = System.getenv("GRADLE_BUILD_CACHE_CREDENTIALS")?.split(':')?.get(0)
