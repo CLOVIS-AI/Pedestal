@@ -47,7 +47,7 @@ check-jvm:
   interruptible: true
 
 check-ios:
-  extends: [ .os.gradle ]
+  extends: [ .os.gradle, .ios ]
   needs: [ os.version ]
   stage: test
 

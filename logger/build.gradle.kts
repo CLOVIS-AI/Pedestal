@@ -1,9 +1,10 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import java.net.URL
-
 plugins {
-	id("opensavvy.gradle.library")
+	id("conventions.base")
+	id("conventions.kotlin")
+	id("conventions.library")
+	id("conventions.documentation")
 }
 
 kotlin {
@@ -27,7 +28,7 @@ kotlin {
 
 		val jvmMain by getting {
 			dependencies {
-				implementation("org.slf4j:slf4j-api:_")
+				implementation(libs.slf4j)
 			}
 		}
 
@@ -38,22 +39,12 @@ kotlin {
 	}
 }
 
-metadata {
-	name.set("Pedestal Logger")
-	description.set("Simple multiplatform logger")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/logger/index.html")
-
+coverage {
 	minimalCoverage.set(90)
 }
 
-tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
-	dokkaSourceSets.configureEach {
-		includes.from("${project.projectDir}/README.md")
-
-		sourceLink {
-			localDirectory.set(file("src"))
-			remoteUrl.set(URL("https://gitlab.com/opensavvy/pedestal/-/blob/main/logger/src"))
-			remoteLineSuffix.set("#L")
-		}
-	}
+library {
+	name.set("Pedestal Logger")
+	description.set("Simple multiplatform logger")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/logger/index.html")
 }

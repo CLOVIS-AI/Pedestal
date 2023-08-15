@@ -1,8 +1,10 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-	id("opensavvy.gradle.library")
-	kotlin("plugin.serialization")
+	id("conventions.base")
+	id("conventions.kotlin")
+	id("conventions.library")
+	alias(libs.plugins.kotlinx.serialization)
 }
 
 kotlin {
@@ -17,8 +19,8 @@ kotlin {
 			dependencies {
 				api(projects.spine)
 
-				api(KotlinX.serialization.core)
-				api(Ktor.plugins.http)
+				api(libs.kotlinx.serialization.core)
+				api(libs.ktor.http)
 
 				implementation(projects.logger)
 			}
@@ -28,27 +30,14 @@ kotlin {
 			dependencies {
 				implementation(projects.tester)
 
-				implementation(KotlinX.coroutines.test)
-				implementation(KotlinX.serialization.json)
+				implementation(libs.kotlinx.coroutines.test)
+				implementation(libs.kotlinx.serialization.json)
 			}
 		}
 	}
 }
 
-koverMerged.enable()
-
-kover {
-	verify {
-		rule {
-			name = "Minimal code coverage"
-			bound {
-				minValue = 80
-			}
-		}
-	}
-}
-
-metadata {
+library {
 	name.set("Spine for Ktor (DEPRECATED)")
 	description.set("Multiplatform API declaration")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/spine-ktor/index.html")
