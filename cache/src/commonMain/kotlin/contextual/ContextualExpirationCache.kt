@@ -1,6 +1,7 @@
 package opensavvy.cache.contextual
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.datetime.Clock
 import opensavvy.cache.expireAfter
 import opensavvy.state.coroutines.ProgressiveFlow
 import kotlin.time.Duration
@@ -8,11 +9,12 @@ import kotlin.time.Duration
 internal class ContextualExpirationCache<I, C, F, T>(
 	private val upstream: ContextualCache<I, C, F, T>,
 	duration: Duration,
+	clock: Clock,
 	scope: CoroutineScope,
 ) : ContextualCache<I, C, F, T> {
 
 	private val cache = ContextualWrapper(upstream)
-		.expireAfter(duration, scope)
+		.expireAfter(duration, scope, clock)
 
 	override fun get(id: I, context: C): ProgressiveFlow<F, T> =
 		cache[id to context]
@@ -42,5 +44,10 @@ internal class ContextualExpirationCache<I, C, F, T>(
  *
  * @see opensavvy.cache.expireAfter Non-contextual equivalent
  */
+fun <I, C, F, T> ContextualCache<I, C, F, T>.expireAfter(duration: Duration, scope: CoroutineScope, clock: Clock): ContextualCache<I, C, F, T> =
+	ContextualExpirationCache(this, duration, clock, scope)
+
+@Suppress("DeprecatedCallableAddReplaceWith")
+@Deprecated(message = "Specifying the clock explicitly will become mandatory in 2.0.")
 fun <I, C, F, T> ContextualCache<I, C, F, T>.expireAfter(duration: Duration, scope: CoroutineScope): ContextualCache<I, C, F, T> =
-	ContextualExpirationCache(this, duration, scope)
+	ContextualExpirationCache(this, duration, Clock.System, scope)

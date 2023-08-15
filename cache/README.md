@@ -28,7 +28,7 @@ val scope: CoroutineScope = TODO()
 
 val powersOfTwo = cache<Int, Int> { it * 2 }
 	.cachedInMemory(scope.coroutineContext.job)
-	.expireAfter(10.minutes, scope)
+	.expireAfter(10.minutes, scope, clock)
 
 println(powersOfTwo[5].now())
 ```

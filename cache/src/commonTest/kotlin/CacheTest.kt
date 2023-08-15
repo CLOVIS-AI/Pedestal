@@ -114,7 +114,7 @@ class CacheTest {
 	@Test
 	fun expiringDefaultCache() = runTest {
 		val cache = adapter()
-			.expireAfter(1.seconds, backgroundScope)
+			.expireAfter(1.seconds, backgroundScope, testClock)
 
 		testCache(cache)
 	}
@@ -123,7 +123,7 @@ class CacheTest {
 	fun expiringMemoryCache() = runTest {
 		val cache = adapter()
 			.cachedInMemory(coroutineContext.job)
-			.expireAfter(1.seconds, backgroundScope)
+			.expireAfter(1.seconds, backgroundScope, testClock)
 
 		testCache(cache)
 	}
@@ -132,7 +132,7 @@ class CacheTest {
 	fun expiringMemoryCacheUpdateExpire() = runTest {
 		val cache = adapter()
 			.cachedInMemory(coroutineContext.job)
-			.expireAfter(1.seconds, backgroundScope)
+			.expireAfter(1.seconds, backgroundScope, testClock)
 
 		testUpdateExpire(cache)
 	}
@@ -141,7 +141,7 @@ class CacheTest {
 	fun expiringMemoryCacheExpirationLayer() = runTest {
 		val cache = adapter()
 			.cachedInMemory(coroutineContext.job)
-			.expireAfter(1.seconds, backgroundScope)
+			.expireAfter(1.seconds, backgroundScope, testClock)
 
 		testAutoExpiration(cache)
 	}
@@ -150,7 +150,7 @@ class CacheTest {
 	fun expireAll() = runTest {
 		val cache = adapter()
 			.cachedInMemory(coroutineContext.job)
-			.expireAfter(1.seconds, backgroundScope)
+			.expireAfter(1.seconds, backgroundScope, testClock)
 
 		log.info { "Initial values" }
 		val id0 = IntId(0)
@@ -182,7 +182,7 @@ class CacheTest {
 			}
 		}
 			.cachedInMemory(coroutineContext.job)
-			.expireAfter(1.seconds, backgroundScope)
+			.expireAfter(1.seconds, backgroundScope, testClock)
 
 		log.info { "Initial values" }
 		val id0 = IntId(0)

@@ -34,6 +34,7 @@ internal class ExpirationCache<I, F, T>(
 	 * Instead, the implementation guarantees that the data will be expired between [expireAfter] and [expireAfter] * 2.
 	 */
 	private val expireAfter: Duration = 5.minutes,
+	private val clock: Clock,
 	/**
 	 * The asynchronous context in which the cleaner runs.
 	 *
@@ -52,7 +53,7 @@ internal class ExpirationCache<I, F, T>(
 				delay(expireAfter)
 
 				lock.withLock("checkExpiredValues()") {
-					val now = Clock.System.now()
+					val now = clock.now()
 					val iterator = lastUpdate.iterator()
 					while (iterator.hasNext()) {
 						val (id, instant) = iterator.next()
@@ -71,7 +72,7 @@ internal class ExpirationCache<I, F, T>(
 	private suspend fun markAsUpdatedNow(id: I) {
 		lock.withLock("markAsUpdatedNow($id)") {
 			log.trace(id) { "Updated now:" }
-			lastUpdate[id] = Clock.System.now()
+			lastUpdate[id] = clock.now()
 		}
 	}
 
@@ -125,8 +126,13 @@ internal class ExpirationCache<I, F, T>(
  *
  * val powersOfTwo = cache<Int, Int> { it * 2 }
  *     .cachedInMemory(scope.coroutineContext.job)
- *     .expireAfter(10.minutes, scope)
+ *     .expireAfter(10.minutes, scope, clock)
  * ```
  */
+fun <I, F, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope, clock: Clock): Cache<I, F, T> =
+	ExpirationCache(this, duration, clock, scope)
+
+@Suppress("DeprecatedCallableAddReplaceWith")
+@Deprecated(message = "Specifying the clock explicitly will become mandatory in 2.0.")
 fun <I, F, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope): Cache<I, F, T> =
-	ExpirationCache(this, duration, scope)
+	ExpirationCache(this, duration, Clock.System, scope)
