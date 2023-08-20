@@ -3,16 +3,16 @@ package opensavvy.cache
 import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.coroutines.captureProgress
 import opensavvy.state.outcome.Outcome
-import opensavvy.state.outcome.success
+import opensavvy.state.outcome.successful
 import kotlin.jvm.JvmName
 
-internal class CacheAdapter<I, F, T>(
-	private val query: suspend (I) -> Outcome<F, T>,
-) : Cache<I, F, T> {
+internal class CacheAdapter<I, F, V>(
+	private val query: suspend (I) -> Outcome<F, V>,
+) : Cache<I, F, V> {
 
-	override fun get(id: I): ProgressiveFlow<F, T> = captureProgress { query(id) }
+	override fun get(id: I): ProgressiveFlow<F, V> = captureProgress { query(id) }
 
-	override suspend fun update(values: Collection<Pair<I, T>>) {
+	override suspend fun update(values: Collection<Pair<I, V>>) {
 		// This cache layer has no state, nothing to do
 	}
 
@@ -51,7 +51,7 @@ internal class CacheAdapter<I, F, T>(
  * println(squaredRoot[-5.0].now()) // Failure(NegativeNumber)
  * ```
  */
-fun <I, F, T> cache(transform: suspend (I) -> Outcome<F, T>): Cache<I, F, T> =
+fun <Identifier, Failure, Value> cache(transform: suspend (Identifier) -> Outcome<Failure, Value>): Cache<Identifier, Failure, Value> =
 	CacheAdapter(transform)
 
 /**
@@ -74,5 +74,5 @@ fun <I, F, T> cache(transform: suspend (I) -> Outcome<F, T>): Cache<I, F, T> =
  * ```
  */
 @JvmName("infallibleCache")
-fun <I, T> cache(transform: suspend (I) -> T): InfallibleCache<I, T> =
-	CacheAdapter { transform(it).success() }
+fun <Identifier, Value> cache(transform: suspend (Identifier) -> Value): InfallibleCache<Identifier, Value> =
+	CacheAdapter { transform(it).successful() }

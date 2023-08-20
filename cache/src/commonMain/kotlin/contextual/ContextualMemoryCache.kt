@@ -5,18 +5,18 @@ import opensavvy.cache.MemoryCache
 import opensavvy.cache.cachedInMemory
 import opensavvy.state.coroutines.ProgressiveFlow
 
-internal class ContextualMemoryCache<I, C, F, T>(
-	upstream: ContextualCache<I, C, F, T>,
+internal class ContextualMemoryCache<I, C, F, V>(
+	upstream: ContextualCache<I, C, F, V>,
 	job: Job,
-) : ContextualCache<I, C, F, T> {
+) : ContextualCache<I, C, F, V> {
 
 	private val cache = ContextualWrapper(upstream)
-		.cachedInMemory(job) as MemoryCache<Pair<I, C>, F, T>
+		.cachedInMemory(job) as MemoryCache<Pair<I, C>, F, V>
 
-	override fun get(id: I, context: C): ProgressiveFlow<F, T> =
+	override fun get(id: I, context: C): ProgressiveFlow<F, V> =
 		cache[id to context]
 
-	override suspend fun update(values: Collection<Triple<I, C, T>>) =
+	override suspend fun update(values: Collection<Triple<I, C, V>>) =
 		cache.update(values.map { (id, context, value) -> id to context to value })
 
 	override suspend fun expire(ids: Collection<I>) {
@@ -38,5 +38,5 @@ internal class ContextualMemoryCache<I, C, F, T>(
  *
  * @see opensavvy.cache.cachedInMemory Non-contextual equivalent
  */
-fun <I, C, F, T> ContextualCache<I, C, F, T>.cachedInMemory(job: Job): ContextualCache<I, C, F, T> =
+fun <Identifier, Context, Failure, Value> ContextualCache<Identifier, Context, Failure, Value>.cachedInMemory(job: Job): ContextualCache<Identifier, Context, Failure, Value> =
 	ContextualMemoryCache(this, job)

@@ -22,11 +22,11 @@ import kotlin.time.Duration.Companion.minutes
  *      .expireAfter(5.minutes, Job())
  * ```
  */
-internal class ExpirationCache<I, F, T>(
+internal class ExpirationCache<I, F, V>(
 	/**
 	 * The previous cache layer, from which values will be expired.
 	 */
-	private val upstream: Cache<I, F, T>,
+	private val upstream: Cache<I, F, V>,
 	/**
 	 * After how much time should the values from the previous cache layer be expired.
 	 *
@@ -41,7 +41,7 @@ internal class ExpirationCache<I, F, T>(
 	 * Cancelling this job will cancel the expiration job, after which this cache will stop expiring data.
 	 */
 	expirationScope: CoroutineScope,
-) : Cache<I, F, T> {
+) : Cache<I, F, V> {
 	private val log = loggerFor(this)
 
 	private val lastUpdate = HashMap<I, Instant>()
@@ -76,14 +76,14 @@ internal class ExpirationCache<I, F, T>(
 		}
 	}
 
-	override fun get(id: I): ProgressiveFlow<F, T> = upstream[id]
+	override fun get(id: I): ProgressiveFlow<F, V> = upstream[id]
 		.onEach {
 			if (it.progress == done())
 				markAsUpdatedNow(id)
 			// else: it's still loading, no need to count it as done
 		}
 
-	override suspend fun update(values: Collection<Pair<I, T>>) {
+	override suspend fun update(values: Collection<Pair<I, V>>) {
 		// When the upstream is updated, it will signal the modification through the 'get' function,
 		// which will catch. No need to update anything else here.
 		upstream.update(values)
@@ -129,10 +129,10 @@ internal class ExpirationCache<I, F, T>(
  *     .expireAfter(10.minutes, scope, clock)
  * ```
  */
-fun <I, F, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope, clock: Clock): Cache<I, F, T> =
+fun <Identifier, Failure, Value> Cache<Identifier, Failure, Value>.expireAfter(duration: Duration, scope: CoroutineScope, clock: Clock): Cache<Identifier, Failure, Value> =
 	ExpirationCache(this, duration, clock, scope)
 
 @Suppress("DeprecatedCallableAddReplaceWith")
 @Deprecated(message = "Specifying the clock explicitly will become mandatory in 2.0.")
-fun <I, F, T> Cache<I, F, T>.expireAfter(duration: Duration, scope: CoroutineScope): Cache<I, F, T> =
+fun <Identifier, Failure, Value> Cache<Identifier, Failure, Value>.expireAfter(duration: Duration, scope: CoroutineScope): Cache<Identifier, Failure, Value> =
 	ExpirationCache(this, duration, Clock.System, scope)

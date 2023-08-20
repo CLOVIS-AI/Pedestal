@@ -5,12 +5,12 @@ import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.coroutines.captureProgress
 import opensavvy.state.outcome.Outcome
 
-internal class ContextualCacheAdapter<I, C, F, T>(
-	private val query: suspend (I, C) -> Outcome<F, T>,
-) : ContextualCache<I, C, F, T> {
-	override fun get(id: I, context: C): ProgressiveFlow<F, T> = captureProgress { query(id, context) }
+internal class ContextualCacheAdapter<I, C, F, V>(
+	private val query: suspend (I, C) -> Outcome<F, V>,
+) : ContextualCache<I, C, F, V> {
+	override fun get(id: I, context: C): ProgressiveFlow<F, V> = captureProgress { query(id, context) }
 
-	override suspend fun update(values: Collection<Triple<I, C, T>>) {
+	override suspend fun update(values: Collection<Triple<I, C, V>>) {
 		// This cache layer has no state, nothing to do
 	}
 
@@ -59,5 +59,5 @@ internal class ContextualCacheAdapter<I, C, F, T>(
  *
  * @see opensavvy.cache.cache Non-contextual equivalent
  */
-fun <I, C, F, T> cache(transform: suspend (I, C) -> Outcome<F, T>): ContextualCache<I, C, F, T> =
+fun <Identifier, Context, Failure, Value> cache(transform: suspend (Identifier, Context) -> Outcome<Failure, Value>): ContextualCache<Identifier, Context, Failure, Value> =
 	ContextualCacheAdapter(transform)

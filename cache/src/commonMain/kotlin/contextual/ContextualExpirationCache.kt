@@ -6,20 +6,20 @@ import opensavvy.cache.expireAfter
 import opensavvy.state.coroutines.ProgressiveFlow
 import kotlin.time.Duration
 
-internal class ContextualExpirationCache<I, C, F, T>(
-	private val upstream: ContextualCache<I, C, F, T>,
+internal class ContextualExpirationCache<I, C, F, V>(
+	private val upstream: ContextualCache<I, C, F, V>,
 	duration: Duration,
 	clock: Clock,
 	scope: CoroutineScope,
-) : ContextualCache<I, C, F, T> {
+) : ContextualCache<I, C, F, V> {
 
 	private val cache = ContextualWrapper(upstream)
 		.expireAfter(duration, scope, clock)
 
-	override fun get(id: I, context: C): ProgressiveFlow<F, T> =
+	override fun get(id: I, context: C): ProgressiveFlow<F, V> =
 		cache[id to context]
 
-	override suspend fun update(values: Collection<Triple<I, C, T>>) =
+	override suspend fun update(values: Collection<Triple<I, C, V>>) =
 		cache.update(values.map { (id, context, value) -> id to context to value })
 
 	override suspend fun expire(ids: Collection<I>) {
@@ -44,10 +44,10 @@ internal class ContextualExpirationCache<I, C, F, T>(
  *
  * @see opensavvy.cache.expireAfter Non-contextual equivalent
  */
-fun <I, C, F, T> ContextualCache<I, C, F, T>.expireAfter(duration: Duration, scope: CoroutineScope, clock: Clock): ContextualCache<I, C, F, T> =
+fun <Identifier, Context, Failure, Value> ContextualCache<Identifier, Context, Failure, Value>.expireAfter(duration: Duration, scope: CoroutineScope, clock: Clock): ContextualCache<Identifier, Context, Failure, Value> =
 	ContextualExpirationCache(this, duration, clock, scope)
 
 @Suppress("DeprecatedCallableAddReplaceWith")
 @Deprecated(message = "Specifying the clock explicitly will become mandatory in 2.0.")
-fun <I, C, F, T> ContextualCache<I, C, F, T>.expireAfter(duration: Duration, scope: CoroutineScope): ContextualCache<I, C, F, T> =
+fun <Identifier, Context, Failure, Value> ContextualCache<Identifier, Context, Failure, Value>.expireAfter(duration: Duration, scope: CoroutineScope): ContextualCache<Identifier, Context, Failure, Value> =
 	ContextualExpirationCache(this, duration, Clock.System, scope)

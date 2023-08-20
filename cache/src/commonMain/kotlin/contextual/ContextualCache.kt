@@ -19,12 +19,12 @@ import opensavvy.state.coroutines.ProgressiveFlow
  * In all other regards (cache states, cache chaining…), this interface is identical to [Cache].
  * [Cache] can be seen as a specialization of this interface for the case where the context is [Unit].
  *
- * @param I The identifier used to request from the cache.
- * @param C The context which differentiates between cache results.
- * @param F The possible failures when requesting the cache.
- * @param T The possible successful value when requesting the cache.
+ * @param Identifier The identifier used to request from the cache.
+ * @param Context The context which differentiates between cache results.
+ * @param Failure The possible failures when requesting the cache.
+ * @param Value The possible successful value when requesting the cache.
  */
-interface ContextualCache<I, C, F, T> {
+interface ContextualCache<Identifier, Context, Failure, Value> {
 
 	/**
 	 * Gets the value associated with an [id] and a [context] in this cache.
@@ -33,7 +33,7 @@ interface ContextualCache<I, C, F, T> {
 	 * program, such as inside the body of a UI component. You can then subscribe to the [Flow] to access the actual
 	 * values.
 	 */
-	operator fun get(id: I, context: C): ProgressiveFlow<F, T>
+	operator fun get(id: Identifier, context: Context): ProgressiveFlow<Failure, Value>
 
 	/**
 	 * Forces the cache to accept [value] as a more recent value for the given [id] and [context] than whatever it
@@ -41,7 +41,7 @@ interface ContextualCache<I, C, F, T> {
 	 *
 	 * All layers are updated.
 	 */
-	suspend fun update(id: I, context: C, value: T) {
+	suspend fun update(id: Identifier, context: Context, value: Value) {
 		update(listOf(Triple(id, context, value)))
 	}
 
@@ -51,7 +51,7 @@ interface ContextualCache<I, C, F, T> {
 	 *
 	 * All layers are updated.
 	 */
-	suspend fun update(values: Collection<Triple<I, C, T>>)
+	suspend fun update(values: Collection<Triple<Identifier, Context, Value>>)
 
 	/**
 	 * Tells the cache that the values it stores for the given [id] are out of date, no matter the context,
@@ -59,7 +59,7 @@ interface ContextualCache<I, C, F, T> {
 	 *
 	 * All layers are updated.
 	 */
-	suspend fun expire(id: I) {
+	suspend fun expire(id: Identifier) {
 		expire(listOf(id))
 	}
 
@@ -69,7 +69,7 @@ interface ContextualCache<I, C, F, T> {
 	 *
 	 * All layers are updated.
 	 */
-	suspend fun expire(id: I, context: C) {
+	suspend fun expire(id: Identifier, context: Context) {
 		expireContextual(listOf(id to context))
 	}
 
@@ -79,7 +79,7 @@ interface ContextualCache<I, C, F, T> {
 	 *
 	 * All layers are updated.
 	 */
-	suspend fun expire(ids: Collection<I>)
+	suspend fun expire(ids: Collection<Identifier>)
 
 	/**
 	 * Tells the cache that the values it stores for the given [ids] are out of date,
@@ -87,7 +87,7 @@ interface ContextualCache<I, C, F, T> {
 	 *
 	 * All layers are updated.
 	 */
-	suspend fun expireContextual(ids: Collection<Pair<I, C>>)
+	suspend fun expireContextual(ids: Collection<Pair<Identifier, Context>>)
 
 	/**
 	 * Tells the cache that all values are out of date, and should be queried again the next time they are requested.
