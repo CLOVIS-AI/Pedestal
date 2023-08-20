@@ -15,13 +15,13 @@ import opensavvy.state.outcome.value
  *
  * To instantiate this class, see the [blocking] helper.
  *
- * @param I The identifier used to request from the cache
- * @param C The context which differentiates between cache results.
- * @param F The possible failures when requesting from the cache.
- * @param T The possible successful values when requesting from the cache.
+ * @param Identifier The identifier used to request from the cache
+ * @param Context The context which differentiates between cache results.
+ * @param Failure The possible failures when requesting from the cache.
+ * @param Value The possible successful values when requesting from the cache.
  */
-class BlockingContextualCache<I, C, F, T>(
-	private val upstream: ContextualCache<I, C, F, T>,
+class BlockingContextualCache<Identifier, Context, Failure, Value> internal constructor(
+	private val upstream: ContextualCache<Identifier, Context, Failure, Value>,
 ) {
 
 	/**
@@ -29,7 +29,7 @@ class BlockingContextualCache<I, C, F, T>(
 	 *
 	 * Unlike [ContextualCache.get], this function does not allow subscribing to the value to see its changes over time.
 	 */
-	operator fun get(id: I, context: C): Outcome<F, T> = runBlocking {
+	operator fun get(id: Identifier, context: Context): Outcome<Failure, Value> = runBlocking {
 		upstream[id, context].now()
 	}
 
@@ -38,7 +38,7 @@ class BlockingContextualCache<I, C, F, T>(
 	 *
 	 * For more information, see [ContextualCache.update].
 	 */
-	operator fun set(id: I, context: C, value: T) = runBlocking {
+	operator fun set(id: Identifier, context: Context, value: Value) = runBlocking {
 		upstream.update(id, context, value)
 	}
 
@@ -48,7 +48,7 @@ class BlockingContextualCache<I, C, F, T>(
 	 *
 	 * For more information, see [ContextualCache.update].
 	 */
-	fun update(values: Collection<Triple<I, C, T>>) = runBlocking {
+	fun update(values: Collection<Triple<Identifier, Context, Value>>) = runBlocking {
 		upstream.update(values)
 	}
 
@@ -58,14 +58,14 @@ class BlockingContextualCache<I, C, F, T>(
 	 *
 	 * For more information, see [ContextualCache.update].
 	 */
-	fun update(vararg values: Triple<I, C, T>) = update(values.asList())
+	fun update(vararg values: Triple<Identifier, Context, Value>) = update(values.asList())
 
 	/**
 	 * Tells the cache that the value it stores for [id] is out-of-date for all contexts, and should be queried again the next time it is requested.
 	 *
 	 * For more information, see [ContextualCache.expire].
 	 */
-	fun expire(id: I) = runBlocking {
+	fun expire(id: Identifier) = runBlocking {
 		upstream.expire(id)
 	}
 
@@ -74,7 +74,7 @@ class BlockingContextualCache<I, C, F, T>(
 	 *
 	 * For more information, see [ContextualCache.expire].
 	 */
-	fun expire(id: I, context: C) = runBlocking {
+	fun expire(id: Identifier, context: Context) = runBlocking {
 		upstream.expire(id, context)
 	}
 
@@ -83,7 +83,7 @@ class BlockingContextualCache<I, C, F, T>(
 	 *
 	 * For more information, see [ContextualCache.expire].
 	 */
-	fun expire(ids: Collection<I>) = runBlocking {
+	fun expire(ids: Collection<Identifier>) = runBlocking {
 		upstream.expire(ids)
 	}
 
@@ -92,7 +92,7 @@ class BlockingContextualCache<I, C, F, T>(
 	 *
 	 * For more information, see [ContextualCache.expire].
 	 */
-	fun expireContextual(ids: Collection<Pair<I, C>>) = runBlocking {
+	fun expireContextual(ids: Collection<Pair<Identifier, Context>>) = runBlocking {
 		upstream.expireContextual(ids)
 	}
 
@@ -111,7 +111,7 @@ class BlockingContextualCache<I, C, F, T>(
  *
  * For more information, see [BlockingCache.get] and [Cache.get].
  */
-fun <I, C, T> BlockingContextualCache<I, C, Nothing, T>.getValue(id: I, context: C): T =
+fun <Identifier, Context, Value> BlockingContextualCache<Identifier, Context, Nothing, Value>.getValue(id: Identifier, context: Context): Value =
 	get(id, context).value
 
 /**
@@ -161,5 +161,5 @@ fun <I, C, T> BlockingContextualCache<I, C, Nothing, T>.getValue(id: I, context:
  * cachingJob.cancel()
  * ```
  */
-fun <I, C, F, T> ContextualCache<I, C, F, T>.blocking() =
+fun <Identifier, Context, Failure, Value> ContextualCache<Identifier, Context, Failure, Value>.blocking() =
 	BlockingContextualCache(this)
