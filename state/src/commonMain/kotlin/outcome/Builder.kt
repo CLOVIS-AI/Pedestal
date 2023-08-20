@@ -1,5 +1,5 @@
 package opensavvy.state.outcome
 
-fun <T> T.success() = Outcome.Success(this)
+fun <Value> Value.success() = Outcome.Success(this)
 
-fun <F> F.failed() = Outcome.Failure(this)
+fun <Failure> Failure.failed() = Outcome.Failure(this)

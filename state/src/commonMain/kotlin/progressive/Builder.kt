@@ -9,7 +9,7 @@ import opensavvy.state.outcome.Outcome
  *
  * Because regular outcomes cannot be unfinished, this function never returns [ProgressiveOutcome.Incomplete].
  */
-fun <F, T> Outcome<F, T>.withProgress(progress: Progress = done()) = when (this) {
+fun <Failure, Value> Outcome<Failure, Value>.withProgress(progress: Progress = done()) = when (this) {
 	is Outcome.Success -> ProgressiveOutcome.Success(value, progress)
 	is Outcome.Failure -> ProgressiveOutcome.Failure(failure, progress)
 }
@@ -17,7 +17,7 @@ fun <F, T> Outcome<F, T>.withProgress(progress: Progress = done()) = when (this)
 /**
  * Replaces the [progress] information from this progressive outcome.
  */
-fun <F, T> ProgressiveOutcome<F, T>.copy(progress: Progress.Loading) = when (this) {
+fun <Failure, Value> ProgressiveOutcome<Failure, Value>.copy(progress: Progress.Loading) = when (this) {
 	is ProgressiveOutcome.Incomplete -> ProgressiveOutcome.Incomplete(progress)
 	is ProgressiveOutcome.Failure -> ProgressiveOutcome.Failure(failure, progress)
 	is ProgressiveOutcome.Success -> ProgressiveOutcome.Success(value, progress)
@@ -26,9 +26,9 @@ fun <F, T> ProgressiveOutcome<F, T>.copy(progress: Progress.Loading) = when (thi
 /**
  * Convenience function to instantiate a [ProgressiveOutcome.Success].
  */
-fun <T> T.success(progress: Progress = done()) = ProgressiveOutcome.Success(this, progress)
+fun <Value> Value.success(progress: Progress = done()) = ProgressiveOutcome.Success(this, progress)
 
 /**
  * Convenience function to instantiate a [ProgressiveOutcome.Failure].
  */
-fun <F> F.failed(progress: Progress = done()) = ProgressiveOutcome.Failure(this, progress)
+fun <Failure> Failure.failed(progress: Progress = done()) = ProgressiveOutcome.Failure(this, progress)

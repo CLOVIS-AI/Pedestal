@@ -1,6 +1,5 @@
 package opensavvy.state.outcome
 
-import opensavvy.state.outcome.Outcome.Failure
 import opensavvy.state.outcome.Outcome.Success
 
 /**
@@ -8,8 +7,8 @@ import opensavvy.state.outcome.Outcome.Success
  *
  * Otherwise, does nothing.
  */
-inline fun <T> Outcome<*, T>.onSuccess(block: (T) -> Unit) {
-    if (this is Success<T>)
+inline fun <Value> Outcome<*, Value>.onSuccess(block: (Value) -> Unit) {
+	if (this is Success<Value>)
         block(this.value)
 }
 
@@ -18,7 +17,7 @@ inline fun <T> Outcome<*, T>.onSuccess(block: (T) -> Unit) {
  *
  * Otherwise, does nothing.
  */
-inline fun <F> Outcome<F, *>.onFailure(block: (F) -> Unit) {
-	if (this is Failure)
+inline fun <Failure> Outcome<Failure, *>.onFailure(block: (Failure) -> Unit) {
+	if (this is Outcome.Failure)
 		block(this.failure)
 }

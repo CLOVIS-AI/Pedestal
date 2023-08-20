@@ -26,7 +26,7 @@ import opensavvy.state.progressive.ProgressiveOutcome.*
  *
  * To create progressive outcomes from computations, use the [success] and [failed] factories.
  */
-sealed class ProgressiveOutcome<out F, out T> {
+sealed class ProgressiveOutcome<out Failure, out Value> {
 
 	/**
 	 * The current progression of this outcome.
@@ -48,10 +48,10 @@ sealed class ProgressiveOutcome<out F, out T> {
 	 * If [progress] is loading, this means the operation has been retried in an attempt to access a more up-to-date
 	 * version.
 	 */
-	data class Success<T>(
-		val value: T,
+	data class Success<Value>(
+		val value: Value,
 		override val progress: Progress = done(),
-	) : ProgressiveOutcome<Nothing, T>()
+	) : ProgressiveOutcome<Nothing, Value>()
 
 	/**
 	 * The latest known result of the operation was a failure, available as [failure].
@@ -59,9 +59,9 @@ sealed class ProgressiveOutcome<out F, out T> {
 	 * If [progress] is loading, this means the operation has been retried in an attempt to access a more up-to-date
 	 * version.
 	 */
-	data class Failure<F>(
-		val failure: F,
+	data class Failure<Failure>(
+		val failure: Failure,
 		override val progress: Progress = done(),
-	) : ProgressiveOutcome<F, Nothing>()
+	) : ProgressiveOutcome<Failure, Nothing>()
 
 }

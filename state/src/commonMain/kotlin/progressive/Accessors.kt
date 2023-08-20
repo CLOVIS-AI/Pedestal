@@ -8,14 +8,14 @@ import opensavvy.state.progressive.ProgressiveOutcome.*
 /**
  * Returns [Success.value], or `null` if this outcome is not successful.
  */
-val <T : Any> ProgressiveOutcome<*, T>.valueOrNull: T?
+val <Value : Any> ProgressiveOutcome<*, Value>.valueOrNull: Value?
 	get() = (this as? Success)?.value
 
 /**
- * Returns [Failure.failure], or `null` if this outcome is not a failure.
+ * Returns [Failure.failure][ProgressiveOutcome.Failure.failure], or `null` if this outcome is not a failure.
  */
-val <F> ProgressiveOutcome<F, *>.failureOrNull: F?
-	get() = (this as? Failure)?.failure
+val <Failure> ProgressiveOutcome<Failure, *>.failureOrNull: Failure?
+	get() = (this as? ProgressiveOutcome.Failure)?.failure
 
 // endregion
 // region Safe get via Nothing
@@ -23,16 +23,16 @@ val <F> ProgressiveOutcome<F, *>.failureOrNull: F?
 /**
  * Returns [Success.value].
  */
-val <T> ProgressiveOutcome<Nothing, T>.value: T
+val <Value> ProgressiveOutcome<Nothing, Value>.value: Value
 	// This cast is safe, because a Success of Nothing is impossible
 	get() = (this as Success).value
 
 /**
- * Returns [Failure.failure].
+ * Returns [Failure.failure][ProgressiveOutcome.Failure.failure].
  */
-val <F> ProgressiveOutcome<F, Nothing>.failure: F
+val <Failure> ProgressiveOutcome<Failure, Nothing>.failure: Failure
 	// This cast is safe, because a Success of Nothing is impossible
-	get() = (this as Failure).failure
+	get() = (this as ProgressiveOutcome.Failure).failure
 
 // endregion
 // region Conversion
@@ -46,9 +46,9 @@ val <F> ProgressiveOutcome<F, Nothing>.failure: F
  * val (outcome, progression) = /* ProgressiveOutcome */
  * ```
  */
-fun <F, T> ProgressiveOutcome<F, T>.asOutcome() = when (this) {
+fun <Failure, Value> ProgressiveOutcome<Failure, Value>.asOutcome() = when (this) {
 	is Success -> Outcome.Success(value)
-	is Failure -> Outcome.Failure(failure)
+	is ProgressiveOutcome.Failure -> Outcome.Failure(failure)
 	is Incomplete -> null
 }
 
@@ -58,7 +58,7 @@ fun <F, T> ProgressiveOutcome<F, T>.asOutcome() = when (this) {
 /**
  * Syntax sugar for [asOutcome].
  */
-operator fun <F, T> ProgressiveOutcome<F, T>.component1() = asOutcome()
+operator fun <Failure, Value> ProgressiveOutcome<Failure, Value>.component1() = asOutcome()
 
 /**
  * Syntax sugar for [ProgressiveOutcome.progress].
