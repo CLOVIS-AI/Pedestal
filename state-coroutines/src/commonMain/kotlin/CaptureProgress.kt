@@ -8,11 +8,11 @@ import opensavvy.logger.loggerFor
 import opensavvy.progress.Progress
 import opensavvy.progress.coroutines.CoroutineProgressReporter
 import opensavvy.state.outcome.Outcome
+import opensavvy.state.outcome.failed
 import opensavvy.state.progressive.ProgressiveOutcome
-import opensavvy.state.progressive.failed
 import opensavvy.state.progressive.withProgress
 
-private fun <F, T> ProducerScope<ProgressiveOutcome<F, T>>.progressExtractor() = CoroutineProgressReporter {
+private fun <Failure, Value> ProducerScope<ProgressiveOutcome<Failure, Value>>.progressExtractor() = CoroutineProgressReporter {
     if (it is Progress.Loading) {
         val result = trySend(ProgressiveOutcome.Incomplete(it))
 
@@ -35,9 +35,9 @@ private fun <F, T> ProducerScope<ProgressiveOutcome<F, T>>.progressExtractor() =
  * If possible, prefer using the [failed] builder.
  */
 @Suppress("RemoveExplicitTypeArguments") // IDEA bug, they are necessary here
-fun <F, T> Flow<Outcome<F, T>>.captureProgress(): Flow<ProgressiveOutcome<F, T>> = channelFlow {
+fun <Failure, Value> Flow<Outcome<Failure, Value>>.captureProgress(): Flow<ProgressiveOutcome<Failure, Value>> = channelFlow {
     this@captureProgress
-        .flowOn(progressExtractor<F, T>())
+        .flowOn(progressExtractor<Failure, Value>())
         .map { it.withProgress() }
         .onEach { send(it) }
         .collect()
@@ -50,7 +50,7 @@ fun <F, T> Flow<Outcome<F, T>>.captureProgress(): Flow<ProgressiveOutcome<F, T>>
  * of channels, which are more expensive.
  * If possible, prefer using the [failed] builder.
  */
-fun <F, T> captureProgress(block: suspend () -> Outcome<F, T>): Flow<ProgressiveOutcome<F, T>> = channelFlow {
+fun <Failure, Value> captureProgress(block: suspend () -> Outcome<Failure, Value>): Flow<ProgressiveOutcome<Failure, Value>> = channelFlow {
     withContext(progressExtractor()) {
         send(block().withProgress())
     }
