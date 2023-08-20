@@ -16,7 +16,7 @@ class AccessorsTest {
     fun valueOnSuccess() {
         assertEquals(
             5,
-            5.success().valueOrNull,
+            5.successfulWithProgress().valueOrNull,
         )
     }
 
@@ -25,7 +25,7 @@ class AccessorsTest {
     fun valueOnFailure() {
         assertEquals<Int?>(
             null,
-            Failed.failed().valueOrNull,
+            Failed.failedWithProgress().valueOrNull,
         )
     }
 
@@ -34,7 +34,7 @@ class AccessorsTest {
     fun failureOnSuccess() {
         assertEquals(
             null,
-            5.success().failureOrNull,
+            5.successfulWithProgress().failureOrNull,
         )
     }
 
@@ -42,7 +42,7 @@ class AccessorsTest {
     fun failureOnFailure() {
         assertEquals(
             Failed,
-            Failed.failed().failureOrNull,
+            Failed.failedWithProgress().failureOrNull,
         )
     }
 
@@ -53,7 +53,7 @@ class AccessorsTest {
     fun valueOnSuccessNothing() {
         assertEquals(
             5,
-            (5.success() as ProgressiveOutcome<Nothing, Int>).value,
+            (5.successfulWithProgress() as ProgressiveOutcome<Nothing, Int>).value,
         )
     }
 
@@ -61,7 +61,7 @@ class AccessorsTest {
     fun failureOnFailureNothing() {
         assertEquals(
             Failed,
-            (Failed.failed() as ProgressiveOutcome<Failed, Nothing>).failure,
+            (Failed.failedWithProgress() as ProgressiveOutcome<Failed, Nothing>).failure,
         )
     }
 

@@ -24,7 +24,7 @@ import opensavvy.state.progressive.ProgressiveOutcome.*
  * val (out, progression) = /* ProgressiveOutcome */
  * ```
  *
- * To create progressive outcomes from computations, use the [success] and [failed] factories.
+ * To create progressive outcomes from computations, use the [successfulWithProgress] and [failedWithProgress] factories.
  */
 sealed class ProgressiveOutcome<out Failure, out Value> {
 
