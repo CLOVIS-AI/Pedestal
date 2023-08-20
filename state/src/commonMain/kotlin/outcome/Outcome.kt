@@ -13,7 +13,7 @@ import opensavvy.state.progressive.ProgressiveOutcome
  * - [Success] if a successful result is available (see [Success.value]),
  * - [Failure] if a failed result is available (see [Failure.failure]).
  *
- * To create outcomes from computations, use the [success] and [failed] factories.
+ * To create outcomes from computations, use the [successful] and [failed] factories.
  *
  * ### Arrow
  *
