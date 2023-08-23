@@ -30,30 +30,36 @@ You can easily add any module using Gradle:
 
 ```kotlin
 repositories {
-  // Pedestal is available on Maven Central
-  mavenCentral()
+    // Pedestal is available on Maven Central
+    mavenCentral()
 
-  // Or, if you prefer, Pedestal is also available in our own maven repository
-	maven {
-		name = "OpenSavvy Pedestal"
-		url = uri("https://gitlab.com/api/v4/projects/37325377/packages/maven")
-	}
+    // Or, if you prefer, Pedestal is also available in our own maven repository
+    maven {
+        name = "OpenSavvy Pedestal"
+        url = uri("https://gitlab.com/api/v4/projects/37325377/packages/maven")
+    }
 }
 
 // You can now add a dependency on the various modules:
 dependencies {
-  implementation("dev.opensavvy.pedestal:backbone:<the version you want>")
+    implementation("dev.opensavvy.pedestal:backbone:<the version you want>")
 }
 ```
-
-Currently, we only publish builds for Kotlin/JVM, Kotlin/JS (IR only) and Kotlin/Native for iOS.
-This project has very little platform-specific code, and would be easy to port to any other platform—we just don't have the need for it.
-If you are interested in another platform, we encourage contributions that add the relevant CI configuration to test and deploy for that platform.
 
 - [Release list](https://gitlab.com/opensavvy/pedestal/-/releases)
 - [Artifact list for MavenCentral](https://search.maven.org/search?q=g:dev.opensavvy.pedestal)
 - [Artifact list for the GitLab Repository](https://gitlab.com/opensavvy/pedestal/-/packages)
 - [Breaking changes migration guide](docs/MIGRATION_GUIDE.md)
+
+Supported platforms:
+
+- Kotlin/JVM
+- Kotlin/JS (IR only)
+- Kotlin/Native for iOS
+- Kotlin/Native for LinuxX64
+
+This project has very little platform-specific code, and would be easy to port to any other platform.
+If you are interested in another platform, we encourage contributions that add the relevant CI configuration to test and deploy for that platform.
 
 ## Contribution
 
