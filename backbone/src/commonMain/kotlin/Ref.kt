@@ -5,7 +5,7 @@ import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.coroutines.now
 
 /**
- * A reference to a specific [object][O].
+ * A reference to a specific [object][Value].
  *
  * A reference is a small object that allows to pass around an object from an API without querying it.
  * A reference should always be immutable.
@@ -20,17 +20,17 @@ import opensavvy.state.coroutines.now
  * When implementing this interface, it is common to provide functions to all mutating methods from the matching
  * [Backbone] as wrappers to it. This makes using the reference easier.
  *
- * @param O The object this reference refers to.
- * @param F Failures that may be returned when calling [request].
+ * @param Value The object this reference refers to.
+ * @param Failure Failures that may be returned when calling [request].
  */
-interface Ref<F, O> {
+interface Ref<Failure, Value> {
 
 	/**
 	 * Requests the referenced data.
 	 *
 	 * It is encouraged, but not mandatory, to implement this method using [Cache].
 	 */
-	fun request(): ProgressiveFlow<F, O>
+	fun request(): ProgressiveFlow<Failure, Value>
 
 	companion object
 }
@@ -42,4 +42,4 @@ interface Ref<F, O> {
  * new values is important (e.g. in a UI), in which case you should use [Ref.request].
  * This function is intended for non-reactive environments (e.g. server requests, tests…).
  */
-suspend fun <F, O> Ref<F, O>.now() = request().now()
+suspend fun <Failure, Value> Ref<Failure, Value>.now() = request().now()

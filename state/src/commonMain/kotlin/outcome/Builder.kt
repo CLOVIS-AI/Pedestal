@@ -1,5 +1,8 @@
 package opensavvy.state.outcome
 
-fun <T> T.success() = Outcome.Success(this)
+@Deprecated("The 'success' builder has been renamed to 'successful'", replaceWith = ReplaceWith("successful()", "opensavvy.state.outcome.successful"))
+fun <Value> Value.success() = Outcome.Success(this)
 
-fun <F> F.failed() = Outcome.Failure(this)
+fun <Value> Value.successful() = Outcome.Success(this)
+
+fun <Failure> Failure.failed() = Outcome.Failure(this)

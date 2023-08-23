@@ -3,13 +3,13 @@ package opensavvy.state.arrow
 import arrow.core.left
 import arrow.core.right
 import opensavvy.progress.loading
+import opensavvy.state.outcome.failed
+import opensavvy.state.outcome.successful
 import opensavvy.state.progressive.ProgressiveOutcome
+import opensavvy.state.progressive.failedWithProgress
+import opensavvy.state.progressive.successfulWithProgress
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import opensavvy.state.outcome.failed as outcomeFailed
-import opensavvy.state.outcome.success as outcomeSuccess
-import opensavvy.state.progressive.failed as progressiveFailed
-import opensavvy.state.progressive.success as progressiveSuccess
 
 class ConverterTest {
 
@@ -21,7 +21,7 @@ class ConverterTest {
     fun outcomeSuccess() {
         assertEquals(
             5.right(),
-            5.outcomeSuccess().toEither()
+            5.successful().toEither()
         )
     }
 
@@ -29,7 +29,7 @@ class ConverterTest {
     fun outcomeFailure() {
         assertEquals(
             NotFound(5).left(),
-            NotFound(5).outcomeFailed().toEither()
+            NotFound(5).failed().toEither()
         )
     }
 
@@ -37,7 +37,7 @@ class ConverterTest {
     fun progressiveSuccess() {
         assertEquals(
             5.right(),
-            5.progressiveSuccess().toEither(),
+            5.successfulWithProgress().toEither(),
         )
     }
 
@@ -45,7 +45,7 @@ class ConverterTest {
     fun progressiveFailure() {
         assertEquals(
             NotFound(5).left(),
-            NotFound(5).progressiveFailed().toEither(),
+            NotFound(5).failedWithProgress().toEither(),
         )
     }
 
@@ -63,7 +63,7 @@ class ConverterTest {
     @Test
     fun toOutcomeSuccess() {
         assertEquals(
-            5.outcomeSuccess(),
+            5.successful(),
             5.right().toOutcome()
         )
     }
@@ -71,7 +71,7 @@ class ConverterTest {
     @Test
     fun toOutcomeFailure() {
         assertEquals(
-            NotFound(5).outcomeFailed(),
+            NotFound(5).failed(),
             NotFound(5).left().toOutcome()
         )
     }
@@ -79,7 +79,7 @@ class ConverterTest {
     @Test
     fun toProgressiveSuccess() {
         assertEquals(
-            5.progressiveSuccess(progress = loading(0.5)),
+            5.successfulWithProgress(progress = loading(0.5)),
             5.right().toOutcome(progress = loading(0.5)),
         )
     }
@@ -87,7 +87,7 @@ class ConverterTest {
     @Test
     fun toProgressiveFailure() {
         assertEquals(
-            NotFound(5).progressiveFailed(progress = loading(0.5)),
+            NotFound(5).failedWithProgress(progress = loading(0.5)),
             NotFound(5).left().toOutcome(progress = loading(0.5)),
         )
     }

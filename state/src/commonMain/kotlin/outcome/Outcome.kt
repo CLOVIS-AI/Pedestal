@@ -13,7 +13,7 @@ import opensavvy.state.progressive.ProgressiveOutcome
  * - [Success] if a successful result is available (see [Success.value]),
  * - [Failure] if a failed result is available (see [Failure.failure]).
  *
- * To create outcomes from computations, use the [success] and [failed] factories.
+ * To create outcomes from computations, use the [successful] and [failed] factories.
  *
  * ### Arrow
  *
@@ -23,19 +23,19 @@ import opensavvy.state.progressive.ProgressiveOutcome
  *
  * Because of this, we will keep Outcome as simple as possible, and avoid adding too much sugar.
  */
-sealed class Outcome<out F, out T> {
+sealed class Outcome<out Failure, out Value> {
 
     /**
      * The latest known result of the operation was a success, available as [value].
      */
-    data class Success<T>(
-        val value: T,
-    ) : Outcome<Nothing, T>()
+    data class Success<Value>(
+        val value: Value,
+    ) : Outcome<Nothing, Value>()
 
     /**
      * The latest known result of the operation was a failure, available as [failure].
      */
-    data class Failure<F>(
-        val failure: F,
-    ) : Outcome<F, Nothing>()
+    data class Failure<Failure>(
+        val failure: Failure,
+    ) : Outcome<Failure, Nothing>()
 }

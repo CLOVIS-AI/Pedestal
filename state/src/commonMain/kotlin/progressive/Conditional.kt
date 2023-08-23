@@ -8,8 +8,8 @@ import opensavvy.state.progressive.ProgressiveOutcome.*
  *
  * Otherwise, does nothing.
  */
-inline fun <T> ProgressiveOutcome<*, T>.onSuccess(block: (T) -> Unit) {
-	if (this is Success<T>)
+inline fun <Value> ProgressiveOutcome<*, Value>.onSuccess(block: (Value) -> Unit) {
+	if (this is Success<Value>)
 		block(this.value)
 }
 
@@ -18,8 +18,8 @@ inline fun <T> ProgressiveOutcome<*, T>.onSuccess(block: (T) -> Unit) {
  *
  * Otherwise, does nothing.
  */
-inline fun <F> ProgressiveOutcome<F, *>.onFailure(block: (F) -> Unit) {
-	if (this is Failure)
+inline fun <Failure> ProgressiveOutcome<Failure, *>.onFailure(block: (Failure) -> Unit) {
+	if (this is ProgressiveOutcome.Failure)
 		block(this.failure)
 }
 

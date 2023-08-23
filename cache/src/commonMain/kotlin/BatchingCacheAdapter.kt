@@ -11,7 +11,7 @@ import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.progressive.ProgressiveOutcome
 import kotlin.coroutines.coroutineContext
 
-private typealias CacheStorage<F, T> = CompletableDeferred<StateFlow<ProgressiveOutcome<F, T>>>
+private typealias CacheStorage<F, V> = CompletableDeferred<StateFlow<ProgressiveOutcome<F, V>>>
 
 /**
  * Cache implementation aimed to be the first link in a cache chain.
@@ -21,7 +21,7 @@ private typealias CacheStorage<F, T> = CompletableDeferred<StateFlow<Progressive
  *
  * Unlike [CacheAdapter], this class is able to group requests together.
  */
-internal class BatchingCacheAdapter<I, F, T>(
+internal class BatchingCacheAdapter<I, F, V>(
 	scope: CoroutineScope,
 	/**
 	 * The number of workers batching the requests.
@@ -32,17 +32,17 @@ internal class BatchingCacheAdapter<I, F, T>(
 	 * Increasing the number of workers may increase latency.
 	 */
 	workers: Int = 1,
-	val queryBatch: (Set<I>) -> Flow<Pair<I, ProgressiveOutcome<F, T>>>,
-) : Cache<I, F, T> {
+	val queryBatch: (Set<I>) -> Flow<Pair<I, ProgressiveOutcome<F, V>>>,
+) : Cache<I, F, V> {
 
 	private val log = loggerFor(this)
 
-	private val requests: SendChannel<Pair<I, CacheStorage<F, T>>>
+	private val requests: SendChannel<Pair<I, CacheStorage<F, V>>>
 
 	init {
 		require(workers > 0) { "There must be at least 1 worker: found $workers" }
 
-		val requests = Channel<Pair<I, CacheStorage<F, T>>>()
+		val requests = Channel<Pair<I, CacheStorage<F, V>>>()
 		this.requests = requests
 
 		repeat(workers) {
@@ -52,14 +52,14 @@ internal class BatchingCacheAdapter<I, F, T>(
 		}
 	}
 
-	private suspend fun worker(requests: ReceiveChannel<Pair<I, CacheStorage<F, T>>>) {
+	private suspend fun worker(requests: ReceiveChannel<Pair<I, CacheStorage<F, V>>>) {
 		while (coroutineContext.isActive) {
 			val batch = HashSet<I>()
 
 			// Store the results
 			// We have to store lists of Deferred in case multiple requests to the same Ref happen to be in the same
 			// batch.
-			val results = HashMap<I, MutableList<CacheStorage<F, T>>>()
+			val results = HashMap<I, MutableList<CacheStorage<F, V>>>()
 
 			run {
 				// Suspend until a first request arrives
@@ -80,11 +80,11 @@ internal class BatchingCacheAdapter<I, F, T>(
 					.add(promise)
 			}
 
-			val states = HashMap<I, MutableStateFlow<ProgressiveOutcome<F, T>>>()
+			val states = HashMap<I, MutableStateFlow<ProgressiveOutcome<F, V>>>()
 
 			// Tell all clients that their request is starting
 			for ((id, promises) in results) {
-				val state: MutableStateFlow<ProgressiveOutcome<F, T>> =
+				val state: MutableStateFlow<ProgressiveOutcome<F, V>> =
 					MutableStateFlow(ProgressiveOutcome.Incomplete())
 
 				for (promise in promises) {
@@ -110,15 +110,15 @@ internal class BatchingCacheAdapter<I, F, T>(
 		}
 	}
 
-	override fun get(id: I): ProgressiveFlow<F, T> = flow {
-		val promise = CompletableDeferred<StateFlow<ProgressiveOutcome<F, T>>>()
+	override fun get(id: I): ProgressiveFlow<F, V> = flow {
+		val promise = CompletableDeferred<StateFlow<ProgressiveOutcome<F, V>>>()
 
 		requests.send(id to promise)
 
 		emitAll(promise.await().filterNotNull())
 	}
 
-	override suspend fun update(values: Collection<Pair<I, T>>) {
+	override suspend fun update(values: Collection<Pair<I, V>>) {
 		// This cache layer has no state, nothing to do
 	}
 
@@ -190,11 +190,11 @@ internal class BatchingCacheAdapter<I, F, T>(
  * @param scope The coroutine scope in which the workers are started.
  * @param workers The number of parallel workers which should be started (at least 1).
  */
-fun <I, F, T> batchingCache(
+fun <Identifier, Failure, Value> batchingCache(
 	scope: CoroutineScope,
 	workers: Int = 1,
-	transform: suspend FlowCollector<Pair<I, ProgressiveOutcome<F, T>>>.(Set<I>) -> Unit,
-): Cache<I, F, T> = BatchingCacheAdapter(scope, workers) { ids ->
+	transform: suspend FlowCollector<Pair<Identifier, ProgressiveOutcome<Failure, Value>>>.(Set<Identifier>) -> Unit,
+): Cache<Identifier, Failure, Value> = BatchingCacheAdapter(scope, workers) { ids ->
 	flow {
 		transform(ids)
 	}

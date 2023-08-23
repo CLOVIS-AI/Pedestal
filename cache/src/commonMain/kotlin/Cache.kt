@@ -35,11 +35,11 @@ import opensavvy.state.progressive.ProgressiveOutcome
  * The first element of the chain, and therefore the one responsible for actually starting the request, is [cache] or [batchingCache].
  * Note that both have a few implementation differences, it is not recommended to use them directly without chaining under another implementation.
  *
- * @param I An identifier representing a cached object. Two identifiers refer to the same object if their [equals][Any.equals] method returns `true`.
- * @param F The type of possible failures which may happen when requesting a value. If the cached operation cannot fail, or if you're using another error-handling strategy, see [InfallibleCache].
- * @param T The type of cached object.
+ * @param Identifier An identifier representing a cached object. Two identifiers refer to the same object if their [equals][Any.equals] method returns `true`.
+ * @param Failure The type of possible failures which may happen when requesting a value. If the cached operation cannot fail, or if you're using another error-handling strategy, see [InfallibleCache].
+ * @param Value The type of cached object.
  */
-interface Cache<I, F, T> {
+interface Cache<Identifier, Failure, Value> {
 
 	/**
 	 * Gets the value associated with an [id] in this cache.
@@ -48,14 +48,14 @@ interface Cache<I, F, T> {
 	 * such as inside the body of a UI component.
 	 * You can then subscribe to the [Flow] to access the actual values.
 	 */
-	operator fun get(id: I): ProgressiveFlow<F, T>
+	operator fun get(id: Identifier): ProgressiveFlow<Failure, Value>
 
 	/**
 	 * Forces the cache to accept [value] as a more recent value for the given [id] than whatever it was previously storing.
 	 *
 	 * All layers are updated.
 	 */
-	suspend fun update(id: I, value: T) {
+	suspend fun update(id: Identifier, value: Value) {
 		update(listOf(id to value))
 	}
 
@@ -70,7 +70,7 @@ interface Cache<I, F, T> {
 	 *
 	 * All layers are updated.
 	 */
-	suspend fun update(values: Collection<Pair<I, T>>)
+	suspend fun update(values: Collection<Pair<Identifier, Value>>)
 
 	/**
 	 * Forces the cache to accept the given [values] as more recent for their associated identifier than whatever was
@@ -78,7 +78,7 @@ interface Cache<I, F, T> {
 	 *
 	 * This overload is provided for convenience, see [update].
 	 */
-	suspend fun update(vararg values: Pair<I, T>) = update(values.asList())
+	suspend fun update(vararg values: Pair<Identifier, Value>) = update(values.asList())
 
 	/**
 	 * Tells the cache that the value it stores for [id] is out of date, and should be queried again the next time it is
@@ -86,7 +86,7 @@ interface Cache<I, F, T> {
 	 *
 	 * All layers are updated.
 	 */
-	suspend fun expire(id: I) {
+	suspend fun expire(id: Identifier) {
 		expire(listOf(id))
 	}
 
@@ -96,7 +96,7 @@ interface Cache<I, F, T> {
 	 *
 	 * All layers are updated.
 	 */
-	suspend fun expire(ids: Collection<I>)
+	suspend fun expire(ids: Collection<Identifier>)
 
 	/**
 	 * Tells the cache that all values are out of date, and should be queried again the next time they are requested.
@@ -117,4 +117,4 @@ interface Cache<I, F, T> {
  *
  * This type alias represents the opting-out of Cache's default error encoding.
  */
-typealias InfallibleCache<I, T> = Cache<I, Nothing, T>
+typealias InfallibleCache<Identifier, Value> = Cache<Identifier, Nothing, Value>

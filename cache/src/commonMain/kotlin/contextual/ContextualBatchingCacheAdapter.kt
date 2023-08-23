@@ -10,11 +10,11 @@ import opensavvy.cache.Cache
 import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.progressive.ProgressiveOutcome
 
-internal class ContextualBatchingCacheAdapter<I, C, F, T>(
+internal class ContextualBatchingCacheAdapter<I, C, F, V>(
 	scope: CoroutineScope,
 	workers: Int,
-	queryBatch: (Set<Pair<I, C>>) -> Flow<Triple<I, C, ProgressiveOutcome<F, T>>>,
-) : ContextualCache<I, C, F, T> {
+	queryBatch: (Set<Pair<I, C>>) -> Flow<Triple<I, C, ProgressiveOutcome<F, V>>>,
+) : ContextualCache<I, C, F, V> {
 
 	private val batching = BatchingCacheAdapter(
 		scope,
@@ -24,10 +24,10 @@ internal class ContextualBatchingCacheAdapter<I, C, F, T>(
 			.map { (id, context, value) -> id to context to value }
 	}
 
-	override fun get(id: I, context: C): ProgressiveFlow<F, T> =
+	override fun get(id: I, context: C): ProgressiveFlow<F, V> =
 		batching[id to context]
 
-	override suspend fun update(values: Collection<Triple<I, C, T>>) {
+	override suspend fun update(values: Collection<Triple<I, C, V>>) {
 		// This cache layer has no state, nothing to do
 	}
 
@@ -54,11 +54,11 @@ internal class ContextualBatchingCacheAdapter<I, C, F, T>(
  *
  * @see opensavvy.cache.batchingCache Non-contextual equivalent
  */
-fun <I, C, F, T> batchingCache(
+fun <Identifier, Context, Failure, Value> batchingCache(
 	scope: CoroutineScope,
 	workers: Int = 1,
-	transform: suspend FlowCollector<Triple<I, C, ProgressiveOutcome<F, T>>>.(Set<Pair<I, C>>) -> Unit,
-): ContextualCache<I, C, F, T> = ContextualBatchingCacheAdapter(
+	transform: suspend FlowCollector<Triple<Identifier, Context, ProgressiveOutcome<Failure, Value>>>.(Set<Pair<Identifier, Context>>) -> Unit,
+): ContextualCache<Identifier, Context, Failure, Value> = ContextualBatchingCacheAdapter(
 	scope,
 	workers,
 ) {

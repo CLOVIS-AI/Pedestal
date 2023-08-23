@@ -14,13 +14,13 @@ import opensavvy.state.outcome.value
  *
  * To instantiate this class, see the [blocking] helper.
  *
- * @param I An identifier representing a cached object.
- * @param F A cache value that represents a failure.
- * @param T A cache value that represents a success.
+ * @param Identifier An identifier representing a cached object.
+ * @param Failure A cache value that represents a failure.
+ * @param Value A cache value that represents a success.
  * @property upstream The underlying cache instance.
  */
-class BlockingCache<I, F, T>(
-	private val upstream: Cache<I, F, T>,
+class BlockingCache<Identifier, Failure, Value> internal constructor(
+	private val upstream: Cache<Identifier, Failure, Value>,
 ) {
 
 	/**
@@ -28,7 +28,7 @@ class BlockingCache<I, F, T>(
 	 *
 	 * Unlike [Cache.get], this function does not allow subscribing to the value to see its changes over time.
 	 */
-	operator fun get(id: I): Outcome<F, T> = runBlocking {
+	operator fun get(id: Identifier): Outcome<Failure, Value> = runBlocking {
 		upstream[id].now()
 	}
 
@@ -37,7 +37,7 @@ class BlockingCache<I, F, T>(
 	 *
 	 * For more information, see [Cache.update].
 	 */
-	operator fun set(id: I, value: T) = runBlocking {
+	operator fun set(id: Identifier, value: Value) = runBlocking {
 		upstream.update(id, value)
 	}
 
@@ -47,7 +47,7 @@ class BlockingCache<I, F, T>(
 	 *
 	 * For more information, see [Cache.update].
 	 */
-	fun update(values: Collection<Pair<I, T>>) = runBlocking {
+	fun update(values: Collection<Pair<Identifier, Value>>) = runBlocking {
 		upstream.update(values)
 	}
 
@@ -57,14 +57,14 @@ class BlockingCache<I, F, T>(
 	 *
 	 * For more information, see [Cache.update].
 	 */
-	fun update(vararg values: Pair<I, T>) = update(values.asList())
+	fun update(vararg values: Pair<Identifier, Value>) = update(values.asList())
 
 	/**
 	 * Tells the cache that the value it stores for [id] is out-of-date, and should be queried again the next time it is requested.
 	 *
 	 * For more information, see [Cache.expire].
 	 */
-	fun expire(id: I) {
+	fun expire(id: Identifier) {
 		expire(listOf(id))
 	}
 
@@ -73,7 +73,7 @@ class BlockingCache<I, F, T>(
 	 *
 	 * For more information, see [Cache.expire].
 	 */
-	fun expire(ids: Collection<I>) = runBlocking {
+	fun expire(ids: Collection<Identifier>) = runBlocking {
 		upstream.expire(ids)
 	}
 
@@ -92,7 +92,7 @@ class BlockingCache<I, F, T>(
  *
  * For more information, see [BlockingCache.get] and [Cache.get].
  */
-fun <I, T> BlockingCache<I, Nothing, T>.getValue(id: I): T =
+fun <Identifier, Value> BlockingCache<Identifier, Nothing, Value>.getValue(id: Identifier): Value =
 	get(id).value
 
 /**
@@ -126,5 +126,5 @@ fun <I, T> BlockingCache<I, Nothing, T>.getValue(id: I): T =
  * cachingJob.cancel()
  * ```
  */
-fun <I, F, T> Cache<I, F, T>.blocking() =
+fun <Identifier, Failure, Value> Cache<Identifier, Failure, Value>.blocking() =
 	BlockingCache(this)

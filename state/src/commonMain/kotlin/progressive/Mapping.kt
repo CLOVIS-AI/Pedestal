@@ -7,7 +7,7 @@ package opensavvy.state.progressive
  *
  * @see mapFailure Map the failure state instead of the success state.
  */
-inline fun <F, T, U> ProgressiveOutcome<F, T>.map(transform: (T) -> U) = when (this) {
+inline fun <Failure, InputValue, OutputValue> ProgressiveOutcome<Failure, InputValue>.map(transform: (InputValue) -> OutputValue) = when (this) {
     is ProgressiveOutcome.Incomplete -> this
     is ProgressiveOutcome.Failure -> this
     is ProgressiveOutcome.Success -> ProgressiveOutcome.Success(transform(this.value), this.progress)
@@ -20,7 +20,7 @@ inline fun <F, T, U> ProgressiveOutcome<F, T>.map(transform: (T) -> U) = when (t
  *
  * @see map Map the success state instead of the failure state.
  */
-inline fun <F, T, G> ProgressiveOutcome<F, T>.mapFailure(transformFailure: (F) -> G) = when (this) {
+inline fun <InputFailure, Value, OutputFailure> ProgressiveOutcome<InputFailure, Value>.mapFailure(transformFailure: (InputFailure) -> OutputFailure) = when (this) {
     is ProgressiveOutcome.Incomplete -> this
     is ProgressiveOutcome.Failure -> ProgressiveOutcome.Failure(transformFailure(this.failure), this.progress)
     is ProgressiveOutcome.Success -> this

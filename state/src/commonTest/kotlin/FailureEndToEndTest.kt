@@ -9,7 +9,7 @@ import kotlinx.coroutines.test.runTest
 import opensavvy.state.arrow.out
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.outcome.failed
-import opensavvy.state.outcome.success
+import opensavvy.state.outcome.successful
 import kotlin.jvm.JvmInline
 import kotlin.random.Random
 import kotlin.test.*
@@ -245,7 +245,7 @@ class FailureEndToEndTest {
 		val id = service.create(user1Context).getOrThrow()
 
 		assertEquals(
-			Counter(user1, 0, emptySet()).success(),
+			Counter(user1, 0, emptySet()).successful(),
 			service.get(user1Context, id),
 		)
 	}
@@ -284,7 +284,7 @@ class FailureEndToEndTest {
 		assertIs<Outcome.Success<*>>(result)
 
 		assertEquals(
-			Counter(user1, 1, emptySet()).success(),
+			Counter(user1, 1, emptySet()).successful(),
 			service.get(user1Context, id),
 		)
 	}
@@ -299,7 +299,7 @@ class FailureEndToEndTest {
 		assertIs<Outcome.Success<*>>(result)
 
 		assertEquals(
-			Counter(user1, 0, setOf(user2)).success(),
+			Counter(user1, 0, setOf(user2)).successful(),
 			service.get(user1Context, id),
 		)
 	}
@@ -324,7 +324,7 @@ class FailureEndToEndTest {
 		service.share(user1Context, id, user2).getOrThrow()
 
 		assertEquals(
-			Counter(user1, 0, setOf(user2)).success(),
+			Counter(user1, 0, setOf(user2)).successful(),
 			service.get(user2Context, id),
 		)
 	}

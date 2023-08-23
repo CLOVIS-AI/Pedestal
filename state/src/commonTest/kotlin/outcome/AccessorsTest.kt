@@ -13,7 +13,7 @@ class AccessorsTest {
     fun valueOnSuccess() {
         assertEquals(
             5,
-            5.success().valueOrNull,
+            5.successful().valueOrNull,
         )
     }
 
@@ -31,7 +31,7 @@ class AccessorsTest {
     fun failureOnSuccess() {
         assertEquals(
             null,
-            5.success().failureOrNull,
+            5.successful().failureOrNull,
         )
     }
 
@@ -50,7 +50,7 @@ class AccessorsTest {
     fun valueOnSuccessNothing() {
         assertEquals(
             5,
-            (5.success() as Outcome<Nothing, Int>).value,
+            (5.successful() as Outcome<Nothing, Int>).value,
         )
     }
 

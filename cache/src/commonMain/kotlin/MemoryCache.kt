@@ -10,10 +10,10 @@ import opensavvy.state.coroutines.ProgressiveFlow
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.copy
 
-internal class MemoryCache<I, F, T>(
-	private val upstream: Cache<I, F, T>,
+internal class MemoryCache<I, F, V>(
+	private val upstream: Cache<I, F, V>,
 	private val job: Job = SupervisorJob(),
-) : Cache<I, F, T> {
+) : Cache<I, F, V> {
 
 	private val log = loggerFor(this)
 
@@ -28,7 +28,7 @@ internal class MemoryCache<I, F, T>(
 	 * - 'expire' removed the cached value
 	 */
 
-	private val cache = HashMap<I, MutableStateFlow<ProgressiveOutcome<F, T>?>>()
+	private val cache = HashMap<I, MutableStateFlow<ProgressiveOutcome<F, V>?>>()
 	private val cacheLock = Mutex()
 
 	private val jobs = HashMap<I, Job>()
@@ -37,7 +37,7 @@ internal class MemoryCache<I, F, T>(
 	/** **UNSAFE**: only call when owning the [cacheLock] */
 	private fun getUnsafe(id: I) = cache.getOrPut(id) { MutableStateFlow(null) }
 
-	override fun get(id: I): ProgressiveFlow<F, T> = flow {
+	override fun get(id: I): ProgressiveFlow<F, V> = flow {
 		val cached = cacheLock.withLock("get($id)") { getUnsafe(id) }
 			.onEach { out ->
 				if (out == null) {
@@ -87,7 +87,7 @@ internal class MemoryCache<I, F, T>(
 		}
 	}
 
-	override suspend fun update(values: Collection<Pair<I, T>>) {
+	override suspend fun update(values: Collection<Pair<I, V>>) {
 		log.trace(values) { "update" }
 
 		jobsLock.withLock("updateJobs($values)") {
@@ -224,5 +224,5 @@ internal class MemoryCache<I, F, T>(
  * @param job The [Job] instance in which requests transmitted to the previous layers are started in.
  * Cancelling this job makes the cache unable to query any new values, and cancels any ongoing request.
  */
-fun <I, F, T> Cache<I, F, T>.cachedInMemory(job: Job): Cache<I, F, T> =
+fun <Identifier, Failure, Value> Cache<Identifier, Failure, Value>.cachedInMemory(job: Job): Cache<Identifier, Failure, Value> =
 	MemoryCache(this, job)

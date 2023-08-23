@@ -1,6 +1,5 @@
 package opensavvy.state.outcome
 
-import opensavvy.state.outcome.Outcome.Failure
 import opensavvy.state.outcome.Outcome.Success
 
 // region Get or null
@@ -8,14 +7,14 @@ import opensavvy.state.outcome.Outcome.Success
 /**
  * Returns [Success.value], or `null` if this outcome is not successful.
  */
-val <T : Any> Outcome<*, T>.valueOrNull: T?
+val <Value : Any> Outcome<*, Value>.valueOrNull: Value?
     get() = (this as? Success)?.value
 
 /**
- * Returns [Failure.failure], or `null` if this outcome is not a failure.
+ * Returns [Failure.failure][Outcome.Failure.failure], or `null` if this outcome is not a failure.
  */
-val <F : Any> Outcome<F, *>.failureOrNull: F?
-    get() = (this as? Failure)?.failure
+val <Failure : Any> Outcome<Failure, *>.failureOrNull: Failure?
+    get() = (this as? Outcome.Failure)?.failure
 
 // endregion
 // region Safe get via Nothing
@@ -23,15 +22,15 @@ val <F : Any> Outcome<F, *>.failureOrNull: F?
 /**
  * Returns [Success.value].
  */
-val <T> Outcome<Nothing, T>.value: T
+val <Value> Outcome<Nothing, Value>.value: Value
     // This cast is safe, because a Failure of Nothing is impossible
     get() = (this as Success).value
 
 /**
- * Returns [Failure.failure].
+ * Returns [Failure.failure][Outcome.Failure.failure].
  */
-val <F> Outcome<F, Nothing>.failure: F
+val <Failure> Outcome<Failure, Nothing>.failure: Failure
     // This cast is safe, because a Success of Nothing is impossible
-    get() = (this as Failure).failure
+    get() = (this as Outcome.Failure).failure
 
 // endregion

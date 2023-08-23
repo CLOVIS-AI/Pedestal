@@ -7,7 +7,7 @@ package opensavvy.state.outcome
  *
  * @see mapFailure Map the failure state instead of the success state.
  */
-inline fun <F, T, U> Outcome<F, T>.map(transform: (T) -> U) = when (this) {
+inline fun <Failure, InputValue, OutputValue> Outcome<Failure, InputValue>.map(transform: (InputValue) -> OutputValue) = when (this) {
 	is Outcome.Failure -> this
 	is Outcome.Success -> Outcome.Success(transform(this.value))
 }
@@ -19,7 +19,7 @@ inline fun <F, T, U> Outcome<F, T>.map(transform: (T) -> U) = when (this) {
  *
  * @see map Map the success state instead of the failure state.
  */
-inline fun <F, T, G> Outcome<F, T>.mapFailure(transformFailure: (F) -> G) = when (this) {
+inline fun <InputFailure, Value, OutputFailure> Outcome<InputFailure, Value>.mapFailure(transformFailure: (InputFailure) -> OutputFailure) = when (this) {
 	is Outcome.Failure -> Outcome.Failure(transformFailure(this.failure))
 	is Outcome.Success -> this
 }

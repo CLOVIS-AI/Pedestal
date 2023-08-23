@@ -11,7 +11,7 @@ import opensavvy.cache.contextual.cachedInMemory
 import opensavvy.cache.contextual.expireAfter
 import opensavvy.state.arrow.out
 import opensavvy.state.coroutines.now
-import opensavvy.state.outcome.success
+import opensavvy.state.outcome.successful
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.minutes
@@ -48,7 +48,7 @@ class ContextualCacheTest {
 			.cachedInMemory(backgroundScope.coroutineContext.job)
 			.expireAfter(2.minutes, backgroundScope, testClock)
 
-		val expected = (0 until 100).toList().success()
+		val expected = (0 until 100).toList().successful()
 		val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
 
 		assertEquals(expected, actual)
@@ -66,19 +66,19 @@ class ContextualCacheTest {
 		cache.update(Identifier(even = true, odd = false), Context(0, 100), (0 until 10).toList())
 
 		run {
-			val expected = (0 until 10).toList().success()
+			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
 			assertEquals(expected, actual)
 		}
 
 		run {
-			val expected = (0 until 10).toList().success()
+			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(10, 100)].now()
 			assertEquals(expected, actual)
 		}
 
 		run {
-			val expected = (0 until 10).toList().success()
+			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = false), Context(0, 100)].now()
 			assertEquals(expected, actual)
 		}
@@ -87,19 +87,19 @@ class ContextualCacheTest {
 		cache.expire(Identifier(even = true, odd = true), Context(0, 100))
 
 		run {
-			val expected = (0 until 100).toList().success()
+			val expected = (0 until 100).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
 			assertEquals(expected, actual)
 		}
 
 		run {
-			val expected = (0 until 10).toList().success()
+			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(10, 100)].now()
 			assertEquals(expected, actual)
 		}
 
 		run {
-			val expected = (0 until 10).toList().success()
+			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = false), Context(0, 100)].now()
 			assertEquals(expected, actual)
 		}
@@ -108,19 +108,19 @@ class ContextualCacheTest {
 		cache.expire(Identifier(even = true, odd = true))
 
 		run {
-			val expected = (0 until 100).toList().success()
+			val expected = (0 until 100).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
 			assertEquals(expected, actual)
 		}
 
 		run {
-			val expected = (10 until 110).toList().success()
+			val expected = (10 until 110).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(10, 100)].now()
 			assertEquals(expected, actual)
 		}
 
 		run {
-			val expected = (0 until 10).toList().success()
+			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = false), Context(0, 100)].now()
 			assertEquals(expected, actual)
 		}
@@ -129,19 +129,19 @@ class ContextualCacheTest {
 		cache.expireAll()
 
 		run {
-			val expected = (0 until 100).toList().success()
+			val expected = (0 until 100).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
 			assertEquals(expected, actual)
 		}
 
 		run {
-			val expected = (10 until 110).toList().success()
+			val expected = (10 until 110).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(10, 100)].now()
 			assertEquals(expected, actual)
 		}
 
 		run {
-			val expected = (0 until 200 step 2).toList().success()
+			val expected = (0 until 200 step 2).toList().successful()
 			val actual = cache[Identifier(even = true, odd = false), Context(0, 100)].now()
 			assertEquals(expected, actual)
 		}
@@ -167,7 +167,7 @@ class ContextualCacheTest {
 		cache.update(Identifier(even = false, odd = true), Context(0, 1), listOf(1))
 
 		run {
-			val expected = (0 until 200 step 2).toList().success()
+			val expected = (0 until 200 step 2).toList().successful()
 			val actual = cache[Identifier(even = true, odd = false), Context(0, 100)].now()
 			assertEquals(expected, actual)
 		}

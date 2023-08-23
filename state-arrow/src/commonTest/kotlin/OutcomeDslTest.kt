@@ -4,7 +4,7 @@ import arrow.core.left
 import arrow.core.raise.either
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.outcome.failed
-import opensavvy.state.outcome.success
+import opensavvy.state.outcome.successful
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -16,7 +16,7 @@ class OutcomeDslTest {
     fun success() {
         val success = out<Failed, Int> { 2 }
 
-        assertEquals(2.success(), success)
+        assertEquals(2.successful(), success)
     }
 
     @Test
@@ -34,7 +34,7 @@ class OutcomeDslTest {
             Outcome.Success(2).bind()
         }
 
-        assertEquals(2.success(), success)
+        assertEquals(2.successful(), success)
     }
 
     @Suppress("IMPLICIT_NOTHING_TYPE_ARGUMENT_IN_RETURN_POSITION") // that's the purpose of the test!
