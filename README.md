@@ -30,19 +30,19 @@ You can easily add any module using Gradle:
 
 ```kotlin
 repositories {
-  // Pedestal is available on Maven Central
-  mavenCentral()
+    // Pedestal is available on Maven Central
+    mavenCentral()
 
-  // Or, if you prefer, Pedestal is also available in our own maven repository
-	maven {
-		name = "OpenSavvy Pedestal"
-		url = uri("https://gitlab.com/api/v4/projects/37325377/packages/maven")
-	}
+    // Or, if you prefer, Pedestal is also available in our own maven repository
+    maven {
+        name = "OpenSavvy Pedestal"
+        url = uri("https://gitlab.com/api/v4/projects/37325377/packages/maven")
+    }
 }
 
 // You can now add a dependency on the various modules:
 dependencies {
-  implementation("dev.opensavvy.pedestal:backbone:<the version you want>")
+    implementation("dev.opensavvy.pedestal:backbone:<the version you want>")
 }
 ```
 
