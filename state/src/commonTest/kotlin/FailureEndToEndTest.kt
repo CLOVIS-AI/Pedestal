@@ -4,7 +4,6 @@ import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.runTest
 import opensavvy.state.arrow.out
 import opensavvy.state.outcome.Outcome
@@ -52,7 +51,7 @@ class FailureEndToEndTest {
 
 				val newId = Id(Random.nextInt())
 
-				lock.withLock("create() by ${context.user}") {
+				lock.withLockHack("create() by ${context.user}") {
 					data[newId] = Counter(context.user, 0, emptySet())
 				}
 
@@ -62,7 +61,7 @@ class FailureEndToEndTest {
 			suspend fun list(context: Context) = out<Failures.List, List<Id>> {
 				ensureNotNull(context.user) { Failures.Unauthenticated }
 
-				lock.withLock("list() by ${context.user}") {
+				lock.withLockHack("list() by ${context.user}") {
 					val user: User = context.user
 
 					data
@@ -76,7 +75,7 @@ class FailureEndToEndTest {
 			suspend fun get(context: Context, id: Id) = out {
 				ensureNotNull(context.user) { Failures.Unauthenticated }
 
-				val counter = lock.withLock("get($id) by ${context.user}") { data[id] }
+				val counter = lock.withLockHack("get($id) by ${context.user}") { data[id] }
 				ensureNotNull(counter) { Failures.NotFound(id) }
 				ensure(counter.readableBy(context.user)) { Failures.NotFound(id) } // Do not tell the user why they cannot see it
 
@@ -89,7 +88,7 @@ class FailureEndToEndTest {
 				ensure(context.user == counter.owner) { Failures.NotTheOwner(id) }
 
 				// Possible data race here, but it's an imaginary example, so it's not a big deal
-				lock.withLock("increment($id) by ${context.user}") {
+				lock.withLockHack("increment($id) by ${context.user}") {
 					data[id] = counter.copy(value = counter.value + 1)
 				}
 			}
@@ -102,7 +101,7 @@ class FailureEndToEndTest {
 				ensure(context.user == counter.owner) { Failures.NotTheOwner(id) }
 
 				// Possible data race here, but it's an imaginary example, so it's not a big deal
-				lock.withLock("share($id, $user) by ${context.user}") {
+				lock.withLockHack("share($id, $user) by ${context.user}") {
 					data[id] = counter.copy(canRead = counter.canRead + user)
 				}
 			}
@@ -354,4 +353,16 @@ class FailureEndToEndTest {
 			service.share(user2Context, id, user1),
 		)
 	}
+}
+
+private suspend inline fun <T> Mutex.withLockHack(owner: Any? = null, block: () -> T): T {
+	lock(owner)
+	val result = try {
+		block()
+	} catch (e: Throwable) {
+		unlock(owner)
+		throw e
+	}
+	unlock(owner)
+	return result
 }
