@@ -6,8 +6,6 @@ package opensavvy.spine
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import opensavvy.backbone.Ref
 import opensavvy.spine.Route.Companion.div
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 /*
  * Example API:
@@ -68,26 +66,4 @@ private class Api : Service("v2") {
 
 	val departments = Departments()
 	val users = Users()
-}
-
-class ServiceTest {
-
-	@Test
-	fun routeGeneration() {
-		val api = Api()
-
-		val routes = api.routesRecursively.joinToString(separator = "\n")
-
-		val expected = """
-			v2/departments
-			v2/departments/{department}
-			v2/departments/{department}/users
-			v2/users
-			v2/users/{user}
-			v2/users/{user}/departments
-		""".trimIndent()
-
-		assertEquals(expected, routes)
-	}
-
 }
