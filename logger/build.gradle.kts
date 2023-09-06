@@ -1,5 +1,7 @@
 @file:Suppress("UNUSED_VARIABLE")
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+
 plugins {
 	id("conventions.base")
 	id("conventions.kotlin")
@@ -47,4 +49,8 @@ library {
 	name.set("Pedestal Logger")
 	description.set("Simple multiplatform logger")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/logger/index.html")
+}
+
+tasks.named<KotlinCompilationTask<*>>("compileKotlinIosSimulatorArm64").configure {
+	compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
 }
