@@ -1,23 +1,11 @@
-# Default ignored files
-/shelf/
-/workspace.xml
-# Editor-based HTTP Client requests
-/httpRequests/
-# Datasource local storage ignored files
-/dataSources/
-/dataSources.local.xml
-# Compiled files
-/artifacts
+# Ignore everything by default
+# (ignore specific files instead of folders, because we can't unignore files in ignored folders)
+*.xml
+*.iml
 
-# Will be regerenated when the project loads if they are missing
-/compiler.xml
-/git_toolbox_prj.xml
-/gradle.xml
-/jarRepositories.xml
-/modules
-/vcs.xml
-/modules.xml
-/kotlinc.xml
-
-# Different for everyone
-/misc.xml
+!.name
+!inspectionProfiles/*
+!runConfigurations/*
+!git_toolbox_prj.xml
+!codeStyles/*
+!copyright/*

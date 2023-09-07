@@ -1,9 +1,10 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import java.net.URL
-
 plugins {
-    id("opensavvy.gradle.library")
+    id("conventions.base")
+    id("conventions.kotlin")
+    id("conventions.library")
+    id("conventions.documentation")
 }
 
 kotlin {
@@ -21,7 +22,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(projects.state)
-                api(KotlinX.coroutines.core)
+                api(libs.kotlinx.coroutines.core)
 
                 api(projects.progress)
                 api(projects.progressCoroutines)
@@ -34,28 +35,18 @@ kotlin {
             dependencies {
                 implementation(projects.tester)
 
-                api(KotlinX.coroutines.test)
+                api(libs.kotlinx.coroutines.test)
             }
         }
     }
 }
 
-metadata {
-    name.set("Pedestal State (Kotlin Coroutines compatibility)")
-    description.set("Progress-aware failure states")
-    homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/state-coroutines/index.html")
-
+coverage {
     minimalCoverage.set(80)
 }
 
-tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
-    dokkaSourceSets.configureEach {
-        includes.from("${project.projectDir}/README.md")
-
-        sourceLink {
-            localDirectory.set(file("src"))
-            remoteUrl.set(URL("https://gitlab.com/opensavvy/pedestal/-/blob/main/state-coroutines/src"))
-            remoteLineSuffix.set("#L")
-        }
-    }
+library {
+    name.set("Pedestal State (Kotlin Coroutines compatibility)")
+    description.set("Progress-aware failure states")
+    homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/state-coroutines/index.html")
 }

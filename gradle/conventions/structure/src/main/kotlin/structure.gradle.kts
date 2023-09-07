@@ -14,8 +14,6 @@ interface StructureExtension {
 	val name: Property<String>
 	val description: Property<String>
 	val homeUrl: Property<String>
-
-	val minimalCoverage: Property<Int>
 }
 
 val config = extensions.create<StructureExtension>("metadata")

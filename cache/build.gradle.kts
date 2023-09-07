@@ -1,9 +1,10 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import java.net.URL
-
 plugins {
-	id("opensavvy.gradle.library")
+	id("conventions.base")
+	id("conventions.kotlin")
+	id("conventions.library")
+	id("conventions.documentation")
 }
 
 kotlin {
@@ -21,7 +22,7 @@ kotlin {
 			dependencies {
 				api(projects.state)
 				api(projects.stateCoroutines)
-				api(KotlinX.datetime)
+				api(libs.kotlinx.datetime)
 
 				implementation(projects.logger)
 			}
@@ -30,29 +31,19 @@ kotlin {
 		val commonTest by getting {
 			dependencies {
 				implementation(projects.tester)
-				implementation(KotlinX.coroutines.test)
+				implementation(libs.kotlinx.coroutines.test)
 				implementation(projects.stateArrow)
 			}
 		}
 	}
 }
 
-metadata {
-	name.set("Pedestal Cache")
-	description.set("Multiplatform observable asynchronous cache algorithms")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/cache/index.html")
-
+coverage {
 	minimalCoverage.set(90)
 }
 
-tasks.withType<org.jetbrains.dokka.gradle.DokkaTaskPartial>().configureEach {
-	dokkaSourceSets.configureEach {
-		includes.from("${project.projectDir}/README.md")
-
-		sourceLink {
-			localDirectory.set(file("src"))
-			remoteUrl.set(URL("https://gitlab.com/opensavvy/pedestal/-/blob/main/cache/src"))
-			remoteLineSuffix.set("#L")
-		}
-	}
+library {
+	name.set("Pedestal Cache")
+	description.set("Multiplatform observable asynchronous cache algorithms")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/cache/index.html")
 }

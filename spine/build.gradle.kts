@@ -1,8 +1,10 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-	id("opensavvy.gradle.library")
-	kotlin("plugin.serialization")
+	id("conventions.base")
+	id("conventions.kotlin")
+	id("conventions.library")
+	alias(libs.plugins.kotlinx.serialization)
 }
 
 kotlin {
@@ -18,7 +20,7 @@ kotlin {
 				api(projects.state)
 				api(projects.stateArrow)
 				api(projects.stateCoroutines)
-				api(KotlinX.serialization.core)
+				api(libs.kotlinx.serialization.core)
 
 				implementation(projects.logger)
 			}
@@ -29,14 +31,14 @@ kotlin {
 				implementation(projects.tester)
 				implementation(projects.backbone)
 
-				implementation(KotlinX.coroutines.test)
-				implementation(KotlinX.serialization.json)
+				implementation(libs.kotlinx.coroutines.test)
+				implementation(libs.kotlinx.serialization.json)
 			}
 		}
 	}
 }
 
-metadata {
+library {
 	name.set("Spine (DEPRECATED)")
 	description.set("Multiplatform API declaration")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/spine/index.html")

@@ -1,7 +1,7 @@
-@file:Suppress("UNUSED_VARIABLE")
-
 plugins {
-	id("opensavvy.gradle.library")
+	id("conventions.base")
+	id("conventions.kotlin")
+	id("conventions.library")
 }
 
 kotlin {
@@ -21,7 +21,7 @@ kotlin {
 				api(kotlin("test-common"))
 				api(kotlin("test-annotations-common"))
 
-				implementation("ch.qos.logback:logback-classic:_")
+				implementation(libs.logbackClassic)
 			}
 		}
 
@@ -44,7 +44,7 @@ kotlin {
 	}
 }
 
-metadata {
+library {
 	name.set("Pedestal Tester (DEPRECATED)")
 	description.set("Multiplatform test helpers")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/tester/index.html")

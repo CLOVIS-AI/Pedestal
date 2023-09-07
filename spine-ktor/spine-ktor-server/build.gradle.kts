@@ -1,8 +1,10 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-	id("opensavvy.gradle.library")
-	kotlin("plugin.serialization")
+	id("conventions.base")
+	id("conventions.kotlin")
+	id("conventions.library")
+	alias(libs.plugins.kotlinx.serialization)
 }
 
 kotlin {
@@ -11,7 +13,7 @@ kotlin {
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
-				api(Ktor.server.core)
+				api(libs.ktor.server.core)
 
 				implementation(projects.spineKtor)
 				implementation(projects.logger)
@@ -24,21 +26,21 @@ kotlin {
 
 				implementation(projects.spineKtor.spineKtorClient)
 
-				implementation(KotlinX.coroutines.test)
-				implementation(KotlinX.serialization.core)
-				implementation(KotlinX.serialization.json)
+				implementation(libs.kotlinx.coroutines.test)
+				implementation(libs.kotlinx.serialization.core)
+				implementation(libs.kotlinx.serialization.json)
 
-				implementation(Ktor.client.logging)
-				implementation(Ktor.server.testHost)
-				implementation(Ktor.server.contentNegotiation)
-				implementation(Ktor.client.contentNegotiation)
-				implementation(Ktor.plugins.serialization.kotlinx.json)
+				implementation(libs.ktor.server.testHost)
+				implementation(libs.ktor.server.contentNegotiation)
+				implementation(libs.ktor.client.contentNegotiation)
+				implementation(libs.ktor.client.logging)
+				implementation(libs.ktor.kotlinxJson)
 			}
 		}
 	}
 }
 
-metadata {
+library {
 	name.set("Spine for Ktor server (DEPRECATED)")
 	description.set("Multiplatform API declaration")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/spine-ktor/spine-ktor-server/index.html")
