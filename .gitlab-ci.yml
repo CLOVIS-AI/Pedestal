@@ -24,6 +24,34 @@ workflow:
   tags:
     - saas-macos-medium-m1
 
+# region Environment and dependencies
+
+chromium:build:
+  extends: [ .os.docker.build ]
+  needs: [ ]
+  stage: docker
+
+  variables:
+    dockerfile: .gitlab/chromium.dockerfile
+    context: .gitlab
+    image: chromium
+
+  interruptible: true
+
+chromium:publish:
+  extends: [ .os.docker.rename ]
+  needs: [ chromium:build ]
+  stage: deploy
+
+  variables:
+    image: chromium
+
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+
+  interruptible: true
+
+# endregion
 # region Check
 
 check-jvm:
@@ -33,7 +61,7 @@ check-jvm:
 
   script:
     - >
-      ./gradlew koverMergedHtmlReport koverVerify
+      ./gradlew koverMergedHtmlReport koverVerify --continue
       -PappVersion=$project_version
     - mv build/reports/kover/merged/html coverage
 
@@ -54,9 +82,22 @@ check-ios:
 
   script:
     - >
-      ./gradlew iosSimulatorArm64Test
+      ./gradlew iosSimulatorArm64Test --continue
       -PappVersion=$project_version
 
+  interruptible: true
+
+check-js:
+  extends: [ .os.gradle ]
+  image: $CI_REGISTRY_IMAGE/chromium:build-$CI_PIPELINE_IID
+  stage: test
+  needs: [ chromium:build, os.version ]
+
+  script:
+    - >
+      ./gradlew jsBrowserTest --continue
+      -PappVersion=$project_version
+        
   interruptible: true
 
 # endregion
