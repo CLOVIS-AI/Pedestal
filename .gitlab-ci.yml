@@ -60,7 +60,7 @@ check-jvm:
 
   script:
     - >
-      ./gradlew koverMergedHtmlReport koverVerify
+      ./gradlew koverMergedHtmlReport koverVerify --continue
       -PappVersion=$project_version
     - mv build/reports/kover/merged/html coverage
 
@@ -81,7 +81,7 @@ check-ios:
 
   script:
     - >
-      ./gradlew iosSimulatorArm64Test
+      ./gradlew iosSimulatorArm64Test --continue
       -PappVersion=$project_version
 
   interruptible: true
@@ -94,7 +94,7 @@ check-js:
 
   script:
     - >
-      ./gradlew jsBrowserTest
+      ./gradlew jsBrowserTest --continue
       -PappVersion=$project_version
         
   interruptible: true
