@@ -46,17 +46,12 @@ publishing {
 	// endregion
 	// region Maven Central
 	repositories {
-		val centralUsername = System.getenv("OSSRH_USERNAME")
-		val centralPassword = System.getenv("OSSRH_PASSWORD")
-
-		if (centralUsername != null && centralPassword != null) {
-			maven {
-				name = "Sonatype"
-				url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-				credentials {
-					username = centralUsername
-					password = centralPassword
-				}
+		maven {
+			name = "Sonatype"
+			url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+			credentials {
+				username = System.getenv("OSSRH_USERNAME")
+				password = System.getenv("OSSRH_PASSWORD")
 			}
 		}
 	}
