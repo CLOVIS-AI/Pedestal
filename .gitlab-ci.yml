@@ -101,6 +101,97 @@ check-js:
   interruptible: true
 
 # endregion
+# region Publishing
+
+publish-maven:gitlab:
+  extends: [ .os.gradle ]
+  needs: [ os.version, check-jvm, check-ios, check-js ]
+  stage: deploy
+
+  script:
+    - >
+      ./gradlew publishAllPublicationsToGitLabRepository
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: never
+    - if: $PUBLISH_MAVEN == "manual" || $PUBLISH_MAVEN_GITLAB == "manual"
+      when: manual
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+publish-maven:central:
+  extends: [ .os.gradle ]
+  needs: [ os.version, check-jvm, check-ios, check-js ]
+  stage: deploy
+
+  script:
+    - export SIGNING_KEY_RING=$(mktemp)
+    - <"$SIGNING_KEY_RING_B64" base64 -d >"$SIGNING_KEY_RING"
+    - >
+      ./gradlew publishAllPublicationsToCentralRepository
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: never
+    - if: $OSSRH_USERNAME == null || $OSSRH_PASSWORD == null
+      when: never
+    - if: $PUBLISH_MAVEN == "manual" || $PUBLISH_MAVEN_CENTRAL == "manual"
+      when: manual
+    - if: $CI_COMMIT_TAG
+
+publish-maven:ios:gitlab:
+  extends: [ .ios ]
+  needs: [ os.version, check-jvm, check-ios, check-js ]
+  stage: deploy
+
+  script:
+    - >
+      ./gradlew
+      publishIosArm64PublicationToGitLabRepository
+      publishIosSimulatorArm64PublicationToGitLabRepository
+      publishIosX64PublicationToGitLabRepository
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: never
+    - if: $PUBLISH_MAVEN == "manual" || $PUBLISH_MAVEN_GITLAB == "manual"
+      when: manual
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+publish-maven:ios:central:
+  extends: [ .os.gradle ]
+  needs: [ os.version, check-jvm, check-ios, check-js ]
+  stage: deploy
+
+  script:
+    - export SIGNING_KEY_RING=$(mktemp)
+    - <"$SIGNING_KEY_RING_B64" base64 -d >"$SIGNING_KEY_RING"
+    - >
+      ./gradlew 
+      publishIosArm64PublicationToSonatypeRepository
+      publishIosSimulatorArm64PublicationToSonatypeRepository
+      publishIosX64PublicationToSonatypeRepository
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+      when: never
+    - if: $OSSRH_USERNAME == null || $OSSRH_PASSWORD == null
+      when: never
+    - if: $PUBLISH_MAVEN == "manual" || $PUBLISH_MAVEN_CENTRAL == "manual"
+      when: manual
+    - if: $CI_COMMIT_TAG
+
+# endregion
 # region Documentation
 
 dokka:

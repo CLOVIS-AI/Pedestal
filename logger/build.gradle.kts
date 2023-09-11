@@ -51,6 +51,6 @@ library {
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/logger/index.html")
 }
 
-tasks.named<KotlinCompilationTask<*>>("compileKotlinIosSimulatorArm64").configure {
+tasks.withType(KotlinCompilationTask::class) {
 	compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
 }
