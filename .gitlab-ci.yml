@@ -131,7 +131,7 @@ publish-maven:central:
     - export SIGNING_KEY_RING=$(mktemp)
     - <"$SIGNING_KEY_RING_B64" base64 -d >"$SIGNING_KEY_RING"
     - >
-      ./gradlew publishAllPublicationsToCentralRepository
+      ./gradlew publishAllPublicationsToSonatypeRepository
       -PappVersion=$project_version
 
   interruptible: false
