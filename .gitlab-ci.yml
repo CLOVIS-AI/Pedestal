@@ -167,7 +167,7 @@ publish-maven:ios:gitlab:
     - if: $CI_COMMIT_TAG
 
 publish-maven:ios:central:
-  extends: [ .os.gradle ]
+  extends: [ .ios ]
   needs: [ os.version, check-jvm, check-ios, check-js ]
   stage: deploy
 
