@@ -91,6 +91,11 @@ run {
 	ext["signing.password"] = System.getenv("SIGNING_PASSWORD") ?: return@run
 	ext["signing.secretKeyRingFile"] = System.getenv("SIGNING_KEY_RING") ?: return@run
 
+	val signingTasks = tasks.withType(Sign::class)
+	tasks.withType(AbstractPublishToMaven::class).configureEach {
+		dependsOn(signingTasks)
+	}
+
 	signing {
 		sign(publishing.publications)
 	}
