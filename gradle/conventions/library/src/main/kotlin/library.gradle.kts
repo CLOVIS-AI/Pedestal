@@ -46,17 +46,12 @@ publishing {
 	// endregion
 	// region Maven Central
 	repositories {
-		val centralUsername = System.getenv("OSSRH_USERNAME")
-		val centralPassword = System.getenv("OSSRH_PASSWORD")
-
-		if (centralUsername != null && centralPassword != null) {
-			maven {
-				name = "Sonatype"
-				url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-				credentials {
-					username = centralUsername
-					password = centralPassword
-				}
+		maven {
+			name = "Sonatype"
+			url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+			credentials {
+				username = System.getenv("OSSRH_USERNAME")
+				password = System.getenv("OSSRH_PASSWORD")
 			}
 		}
 	}
@@ -95,6 +90,11 @@ run {
 	ext["signing.keyId"] = System.getenv("SIGNING_KEY_ID") ?: return@run
 	ext["signing.password"] = System.getenv("SIGNING_PASSWORD") ?: return@run
 	ext["signing.secretKeyRingFile"] = System.getenv("SIGNING_KEY_RING") ?: return@run
+
+	val signingTasks = tasks.withType(Sign::class)
+	tasks.withType(AbstractPublishToMaven::class).configureEach {
+		dependsOn(signingTasks)
+	}
 
 	signing {
 		sign(publishing.publications)
