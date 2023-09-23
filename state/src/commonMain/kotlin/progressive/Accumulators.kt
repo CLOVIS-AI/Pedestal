@@ -48,3 +48,26 @@ fun <Failure, Value> Iterable<ProgressiveOutcome<Failure, Value>>.combineComplet
 		}
 	}
 }
+
+/**
+ * Replaces incomplete outcomes by the previous completed outcome, with the updated progress information.
+ *
+ * For example, if the incoming sequence contains:
+ * ```
+ * [Incomplete(loading(0.23%)), Success(5, Done), Incomplete(loading(0.5%))]
+ * ```
+ * then this method returns:
+ * ```
+ * [Incomplete(loading(0.23%)), Success(5, Done), Success(5, loading(0.5%))]
+ * ```
+ * You can see how the last incomplete value has been transformed into a loading success.
+ * The same transformation is applied to failures.
+ *
+ * This operator is useful when the iterable represents changes to a single value over time: when we receive an
+ * incomplete event, we merge it with the previous complete event to still display a value.
+ * For example, in a UI, this would allow displaying old values while refresh requests are ongoing.
+ */
+fun <Failure, Value> Sequence<ProgressiveOutcome<Failure, Value>>.combineCompleted(): Sequence<ProgressiveOutcome<Failure, Value>> = this
+	.asIterable()
+	.combineCompleted()
+	.asSequence()
