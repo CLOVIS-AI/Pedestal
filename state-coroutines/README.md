@@ -1,4 +1,4 @@
-# Module state-coroutines
+# Module State (Coroutines compatibility)
 
 Compatibility layer for `state` and KotlinX.Coroutines.
 

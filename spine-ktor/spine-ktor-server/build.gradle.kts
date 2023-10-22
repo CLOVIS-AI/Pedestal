@@ -4,7 +4,7 @@ plugins {
 	id("conventions.base")
 	id("conventions.kotlin")
 	id("conventions.library")
-	alias(libs.plugins.kotlinx.serialization)
+	alias(playgroundLibs.plugins.kotlinx.serialization)
 }
 
 kotlin {

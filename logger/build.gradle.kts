@@ -6,7 +6,6 @@ plugins {
 	id("conventions.base")
 	id("conventions.kotlin")
 	id("conventions.library")
-	id("conventions.documentation")
 }
 
 kotlin {
@@ -46,7 +45,7 @@ coverage {
 }
 
 library {
-	name.set("Pedestal Logger")
+	name.set("Logger")
 	description.set("Simple multiplatform logger")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/logger/index.html")
 }

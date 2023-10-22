@@ -1,6 +1,6 @@
-# Module state-arrow
+# Module State (Arrow compatibility)
 
-Compatibility layer for `state` and [Arrow Core](https://arrow-kt.io/docs/core/).
+Compatibility layer for `state` and [Arrow Core](https://arrow-kt.io/learn/typed-errors/working-with-typed-errors/).
 
 <a href="https://search.maven.org/search?q=g:%22dev.opensavvy.pedestal%22%20AND%20a:%22state-arrow%22"><img src="https://img.shields.io/maven-central/v/dev.opensavvy.pedestal/state-arrow.svg?label=Maven%20Central"></a>
 

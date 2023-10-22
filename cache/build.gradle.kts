@@ -4,7 +4,6 @@ plugins {
 	id("conventions.base")
 	id("conventions.kotlin")
 	id("conventions.library")
-	id("conventions.documentation")
 }
 
 kotlin {
@@ -43,7 +42,7 @@ coverage {
 }
 
 library {
-	name.set("Pedestal Cache")
+	name.set("Cache")
 	description.set("Multiplatform observable asynchronous cache algorithms")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/cache/index.html")
 }

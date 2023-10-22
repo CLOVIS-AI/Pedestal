@@ -1,4 +1,4 @@
-# Module cache
+# Module Cache
 
 Pedestal Cache is a collection of in-process cache algorithms.
 

@@ -5,6 +5,6 @@ plugins {
 group = "conventions"
 
 dependencies {
-	implementation(libs.gradle.kotlin)
+	implementation(playgroundLibs.gradle.kotlin)
 	implementation(libs.gradle.kover)
 }

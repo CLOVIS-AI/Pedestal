@@ -3,3 +3,7 @@ plugins {
 }
 
 group = "conventions"
+
+dependencies {
+	implementation(playgroundLibs.gradle.dokkatoo)
+}

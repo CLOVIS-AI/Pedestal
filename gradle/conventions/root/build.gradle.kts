@@ -5,5 +5,5 @@ plugins {
 group = "conventions"
 
 dependencies {
-	implementation(libs.gradle.dokka)
+	implementation(playgroundLibs.gradle.nexusPublish)
 }

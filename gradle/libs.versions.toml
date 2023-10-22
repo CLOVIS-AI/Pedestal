@@ -1,7 +1,8 @@
+# List of dependencies of the project
+# Dependencies shared between all projects based on the Playground are declared in playground.versions.toml
+
 [versions]
-kotlin = "1.9.0"
 kover = "0.6.1"
-dokka = "1.9.0"
 slf4j = "2.0.7"
 ktor = "2.3.2"
 arrow = "1.2.0"
@@ -11,13 +12,9 @@ kotlinx-coroutines = "1.7.2"
 kotlinx-serialization = "1.5.1"
 
 [plugins]
-kotlin = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 
 [libraries]
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
@@ -38,6 +35,6 @@ slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logbackClassic" }
 
 # To use existing plugins in convention plugins, we must also declare them as libraries
-gradle-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 gradle-kover = { module = "org.jetbrains.kotlinx:kover", version.ref = "kover" }
-gradle-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+
+[bundles]

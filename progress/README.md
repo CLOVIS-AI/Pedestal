@@ -1,6 +1,6 @@
-# Module progress
+# Module Progress
 
-Micro-library to represent the state of an unfinished task.
+Lingua franca to represent the state of an unfinished task.
 
 <a href="https://search.maven.org/search?q=g:%22dev.opensavvy.pedestal%22%20AND%20a:%22progress%22"><img src="https://img.shields.io/maven-central/v/dev.opensavvy.pedestal/progress.svg?label=Maven%20Central"></a>
 

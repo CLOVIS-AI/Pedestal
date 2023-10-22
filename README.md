@@ -55,10 +55,7 @@ If you are interested in another platform, we encourage contributions that add t
 - [Artifact list for the GitLab Repository](https://gitlab.com/opensavvy/pedestal/-/packages)
 - [Breaking changes migration guide](docs/MIGRATION_GUIDE.md)
 
-## Contribution
-
-To report a problem or request a new feature, [please create an issue](https://gitlab.com/opensavvy/pedestal/-/issues/new).
-To learn how to contribute to the project, [please read our wiki](https://gitlab.com/opensavvy/wiki/-/blob/main/README.md).
+## Development
 
 Pedestal is managed by Gradle, which requires a valid Java installation.
 On Windows, substitute `./gradlew` by `gradlew.bat` in the following commands.
@@ -72,4 +69,8 @@ Gradle is invoked by running `./gradlew <tasks here>` in the project root.
 
 We recommend using IntelliJ IDEA (Community or Ultimate), for which we provide the configuration (run configurations, coding style…).
 
-This project is based on the [OpenSavvy Playground](docs/playground/README.md).
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+- To learn more about our coding conventions and workflow, see the [OpenSavvy Wiki](https://gitlab.com/opensavvy/wiki/-/blob/main/README.md#wiki).
+- This project is based on the [OpenSavvy Playground](docs/playground/README.md), a collection of preconfigured project templates.

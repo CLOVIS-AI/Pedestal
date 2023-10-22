@@ -1,4 +1,4 @@
-# Module backbone
+# Module Backbone
 
 Lightweight pattern to integrate reactive caching in all layers of a multiplatform application.
 

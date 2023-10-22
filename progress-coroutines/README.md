@@ -1,4 +1,4 @@
-# Module progress-coroutines
+# Module Progress (Coroutines compatibility)
 
 Compatibility layer for `progress` and KotlinX.coroutines.
 

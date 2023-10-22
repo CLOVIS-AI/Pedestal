@@ -1,4 +1,4 @@
-# Module state
+# Module State
 
 Small library for value-based outcome representation.
 

@@ -4,7 +4,6 @@ plugins {
     id("conventions.base")
     id("conventions.kotlin")
     id("conventions.library")
-    id("conventions.documentation")
 }
 
 kotlin {
@@ -40,7 +39,7 @@ coverage {
 }
 
 library {
-    name.set("Pedestal Progress")
-    description.set("Universal progress representation")
+    name.set("Progress")
+    description.set("Lingua franca for progress representation")
     homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/progress/index.html")
 }

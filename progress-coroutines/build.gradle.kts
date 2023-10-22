@@ -4,7 +4,6 @@ plugins {
     id("conventions.base")
     id("conventions.kotlin")
     id("conventions.library")
-    id("conventions.documentation")
 }
 
 kotlin {
@@ -43,7 +42,7 @@ coverage {
 }
 
 library {
-    name.set("Pedestal Progress (Kotlin Coroutines compatibility)")
+    name.set("Progress (Coroutines compatibility)")
     description.set("Coroutine-aware universal progress representation")
     homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/progress-coroutines/index.html")
 }

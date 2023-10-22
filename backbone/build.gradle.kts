@@ -4,7 +4,6 @@ plugins {
 	id("conventions.base")
 	id("conventions.kotlin")
 	id("conventions.library")
-	id("conventions.documentation")
 }
 
 kotlin {
@@ -45,7 +44,7 @@ coverage {
 }
 
 library {
-	name.set("Pedestal Backbone")
+	name.set("Backbone")
 	description.set("Layered software architecture with aggressive caching")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/backbone/index.html")
 }

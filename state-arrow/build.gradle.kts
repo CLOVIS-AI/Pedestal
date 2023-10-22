@@ -4,7 +4,6 @@ plugins {
     id("conventions.base")
     id("conventions.kotlin")
     id("conventions.library")
-    id("conventions.documentation")
 }
 
 kotlin {
@@ -43,7 +42,7 @@ coverage {
 }
 
 library {
-    name.set("Pedestal State (Arrow compatibility)")
+    name.set("State (Arrow compatibility)")
     description.set("Progress-aware failure states")
     homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/state-arrow/index.html")
 }

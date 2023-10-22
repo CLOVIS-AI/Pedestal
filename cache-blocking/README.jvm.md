@@ -1,4 +1,4 @@
-# Module cache-blocking
+# Module Cache (Blocking)
 
 Blocking wrappers for Pedestal Cache, for contexts in which coroutines are not available in.
 

@@ -18,6 +18,18 @@ pluginManagement {
 	includeBuild("gradle/conventions")
 }
 
+dependencyResolutionManagement {
+	versionCatalogs {
+		create("playgroundLibs") {
+			from(files("gradle/playground.versions.toml"))
+		}
+	}
+}
+
+plugins {
+	id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
+}
+
 include(
 	"progress",
 	"progress-coroutines",
