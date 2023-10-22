@@ -2,9 +2,6 @@
 
 Simple multiplatform [Logger][opensavvy.logger.Logger] interface that delegates to the logging facilities of the underlying platform.
 
-- JVM: Slf4J
-- JS: `console` API
-
 <a href="https://search.maven.org/search?q=g:%22dev.opensavvy.pedestal%22%20AND%20a:%22logger%22"><img src="https://img.shields.io/maven-central/v/dev.opensavvy.pedestal/logger.svg?label=Maven%20Central"></a>
 
 <a href="https://gitlab.com/opensavvy/wiki/-/blob/main/stability.md#stability-levels"><img src="https://badgen.net/static/Stability/archived/purple"></a>
