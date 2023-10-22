@@ -7,7 +7,7 @@
  * in the user manual at https://docs.gradle.org/8.1.1/userguide/multi_project_builds.html
  */
 
-rootProject.name = "Playground"
+rootProject.name = "Pedestal"
 
 pluginManagement {
 	repositories {
@@ -31,8 +31,25 @@ plugins {
 }
 
 include(
-	"app",
-	"core",
+	"progress",
+	"progress-coroutines",
+
+	"state",
+	"state-arrow",
+	"state-coroutines",
+
+	"cache",
+	"cache-blocking",
+
+	"backbone",
+
+	"spine",
+	"spine-ktor",
+	"spine-ktor:spine-ktor-server",
+	"spine-ktor:spine-ktor-client",
+
+	"logger",
+	"tester",
 )
 
 buildCache {

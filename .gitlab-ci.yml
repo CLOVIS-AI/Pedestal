@@ -17,16 +17,85 @@ workflow:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
 
+.ios:
+  image: macos-13-xcode-14
+  before_script:
+    - xcodebuild -downloadPlatform iOS
+  tags:
+    - saas-macos-medium-m1
+
+# region Environment and dependencies
+
+chromium:build:
+  extends: [ .os.docker.build ]
+  needs: [ ]
+  stage: docker
+
+  variables:
+    dockerfile: .gitlab/chromium.dockerfile
+    context: .gitlab
+    image: chromium
+
+  interruptible: true
+
+chromium:publish:
+  extends: [ .os.docker.rename ]
+  needs: [ chromium:build ]
+  stage: deploy
+
+  variables:
+    image: chromium
+
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+
+  interruptible: true
+
+# endregion
 # region Check
 
-check:
+check-jvm:
   extends: [ .os.gradle ]
   needs: [ os.version ]
   stage: test
 
   script:
     - >
-      ./gradlew check
+      ./gradlew koverMergedHtmlReport koverVerify --continue
+      -PappVersion=$project_version
+    - mv build/reports/kover/merged/html coverage
+
+  artifacts:
+    paths:
+      - coverage
+  environment:
+    name: review/$CI_COMMIT_REF_SLUG/documentation
+    url: https://$CI_PROJECT_NAMESPACE.$CI_PAGES_DOMAIN/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/coverage/index.html
+    deployment_tier: development
+    auto_stop_in: 1 week
+  interruptible: true
+
+check-ios:
+  extends: [ .os.gradle, .ios ]
+  needs: [ os.version ]
+  stage: test
+
+  script:
+    - >
+      ./gradlew iosSimulatorArm64Test --continue
+      -PappVersion=$project_version
+
+  interruptible: true
+
+check-js:
+  extends: [ .os.gradle ]
+  image: $CI_REGISTRY_IMAGE/chromium:build-$CI_PIPELINE_IID
+  stage: test
+  needs: [ chromium:build, os.version ]
+
+  script:
+    - >
+      ./gradlew jsBrowserTest --continue
       -PappVersion=$project_version
 
   interruptible: true
@@ -36,12 +105,33 @@ check:
 
 publish-maven:gitlab:
   extends: [ .os.gradle ]
-  needs: [ os.version, check ]
+  needs: [ os.version, check-jvm, check-ios, check-js ]
   stage: deploy
 
   script:
     - >
       ./gradlew publishAllPublicationsToGitLabRepository
+      --no-configuration-cache
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_GITLAB == "no"
+      when: never
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+
+publish-maven:gitlab:ios:
+  extends: [ .ios ]
+  needs: [ os.version, check-jvm, check-ios, check-js ]
+  stage: deploy
+
+  script:
+    - >
+      ./gradlew
+      publishIosArm64PublicationToGitLabRepository
+      publishIosSimulatorArm64PublicationToGitLabRepository
+      publishIosX64PublicationToGitLabRepository
       --no-configuration-cache
       -PappVersion=$project_version
 
@@ -93,9 +183,31 @@ publish-maven:central:
       when: never
     - if: $CI_COMMIT_TAG
 
+publish-maven:central:ios:
+  extends: [ .ios ]
+  needs: [ os.version, publish-maven:central:initialize ]
+  stage: deploy
+
+  script:
+    - export SIGNING_KEY_RING=$(mktemp)
+    - <"$SIGNING_KEY_RING_B64" base64 -d >"$SIGNING_KEY_RING"
+    - >
+      ./gradlew findSonatypeStagingRepository publishToSonatype
+      -x initializeSonatypeStagingRepository
+      --no-configuration-cache
+      -PappVersion=$project_version
+
+  interruptible: false
+  rules:
+    - if: $OSSRH_USERNAME == null || $OSSRH_PASSWORD == null
+      when: never
+    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_CENTRAL == "no"
+      when: never
+    - if: $CI_COMMIT_TAG
+
 publish-maven:central:release:
   extends: [ .os.gradle ]
-  needs: [ os.version, publish-maven:central ]
+  needs: [ os.version, publish-maven:central, publish-maven:central:ios ]
   stage: deploy
 
   script:

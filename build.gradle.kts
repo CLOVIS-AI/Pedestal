@@ -16,11 +16,24 @@ plugins {
 	alias(playgroundLibs.plugins.kotlin) apply false
 
 	alias(playgroundLibs.plugins.dokkatoo)
+	alias(libs.plugins.kover)
+}
+
+repositories {
+	mavenCentral()
 }
 
 dependencies {
 	// List the 'library' projects
-	dokkatoo(projects.core)
+	dokkatoo(projects.backbone)
+	dokkatoo(projects.cacheBlocking)
+	dokkatoo(projects.cache)
+	dokkatoo(projects.logger)
+	dokkatoo(projects.progress)
+	dokkatoo(projects.progressCoroutines)
+	dokkatoo(projects.state)
+	dokkatoo(projects.stateArrow)
+	dokkatoo(projects.stateCoroutines)
 
 	// This is required at the moment, see https://github.com/adamko-dev/dokkatoo/issues/14
 	dokkatooPluginHtml(
@@ -29,3 +42,5 @@ dependencies {
 		}
 	)
 }
+
+koverMerged.enable()
