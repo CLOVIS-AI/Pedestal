@@ -45,5 +45,5 @@ coverage {
 library {
 	name.set("State")
 	description.set("Progress-aware failure states")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/state/index.html")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/state/index.html")
 }

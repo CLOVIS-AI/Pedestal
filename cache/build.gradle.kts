@@ -44,5 +44,5 @@ coverage {
 library {
 	name.set("Cache")
 	description.set("Multiplatform observable asynchronous cache algorithms")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/cache/index.html")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/cache/index.html")
 }

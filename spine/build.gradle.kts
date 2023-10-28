@@ -41,5 +41,5 @@ kotlin {
 library {
 	name.set("Spine (DEPRECATED)")
 	description.set("Multiplatform API declaration")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/spine/index.html")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/spine/index.html")
 }

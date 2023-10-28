@@ -47,5 +47,5 @@ coverage {
 library {
     name.set("State (Coroutines compatibility)")
     description.set("Progress-aware failure states")
-    homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/state-coroutines/index.html")
+    homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/state-coroutines/index.html")
 }

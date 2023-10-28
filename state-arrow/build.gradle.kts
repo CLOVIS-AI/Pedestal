@@ -44,5 +44,5 @@ coverage {
 library {
     name.set("State (Arrow compatibility)")
     description.set("Progress-aware failure states")
-    homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/state-arrow/index.html")
+    homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/state-arrow/index.html")
 }

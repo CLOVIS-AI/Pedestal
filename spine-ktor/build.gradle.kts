@@ -40,5 +40,5 @@ kotlin {
 library {
 	name.set("Spine for Ktor (DEPRECATED)")
 	description.set("Multiplatform API declaration")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/spine-ktor/index.html")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/spine-ktor/index.html")
 }
