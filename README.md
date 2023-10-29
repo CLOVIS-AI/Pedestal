@@ -3,16 +3,16 @@
 OpenSavvy Pedestal is a collection of open source utilities for unified software architecture, aiming to solve common problems in a simple and elegant way with Kotlin Multiplatform.
 In particular, Pedestal focuses on fullstack development.
 
-The rendered documentation for the latest released version is [available here](https://opensavvy.gitlab.io/pedestal/documentation/).
+The rendered documentation for the latest released version is [available here](https://opensavvy.gitlab.io/pedestal/api-docs/).
 The release notes and changelogs are [available here](https://gitlab.com/opensavvy/pedestal/-/releases) or as Git tags.
 
 This project contains the following modules:
 
-- [Pedestal Logger](https://opensavvy.gitlab.io/pedestal/documentation/logger/index.html) is a simple logger implementation for multiplatform projects.
-- [Pedestal Progress](https://opensavvy.gitlab.io/pedestal/documentation/progress/index.html) models the progress of an asynchronous task and its subtasks (companion: [KotlinX.Coroutines](https://opensavvy.gitlab.io/pedestal/documentation/progress-coroutines/index.html)).
-- [Pedestal State](https://opensavvy.gitlab.io/pedestal/documentation/state/index.html) models the success or failure of an operation, without losing progress information (companions: [KotlinX.Coroutines](https://opensavvy.gitlab.io/pedestal/documentation/state-coroutines/index.html), [Arrow](https://opensavvy.gitlab.io/pedestal/documentation/state-arrow/index.html)).
-- [Pedestal Cache](https://opensavvy.gitlab.io/pedestal/documentation/cache/index.html) is a collection of reactive cache implementations to aggressively reduce bandwidth usage with easy integration with reactive UI frameworks, like React or Compose.
-- [Pedestal Backbone](https://opensavvy.gitlab.io/pedestal/documentation/backbone/index.html) is an opinionated architectural pattern, using aggressive caching in all layers of a multiplatform application to entirely abstract away mutability behind coroutines.
+- [Pedestal Logger](https://opensavvy.gitlab.io/pedestal/api-docs/logger/index.html) is a simple logger implementation for multiplatform projects.
+- [Pedestal Progress](https://opensavvy.gitlab.io/pedestal/api-docs/progress/index.html) models the progress of an asynchronous task and its subtasks (companion: [KotlinX.Coroutines](https://opensavvy.gitlab.io/pedestal/api-docs/progress-coroutines/index.html)).
+- [Pedestal State](https://opensavvy.gitlab.io/pedestal/api-docs/state/index.html) models the success or failure of an operation, without losing progress information (companions: [KotlinX.Coroutines](https://opensavvy.gitlab.io/pedestal/api-docs/state-coroutines/index.html), [Arrow](https://opensavvy.gitlab.io/pedestal/api-docs/state-arrow/index.html)).
+- [Pedestal Cache](https://opensavvy.gitlab.io/pedestal/api-docs/cache/index.html) is a collection of reactive cache implementations to aggressively reduce bandwidth usage with easy integration with reactive UI frameworks, like React or Compose.
+- [Pedestal Backbone](https://opensavvy.gitlab.io/pedestal/api-docs/backbone/index.html) is an opinionated architectural pattern, using aggressive caching in all layers of a multiplatform application to entirely abstract away mutability behind coroutines.
 
 Pedestal focuses heavily on Kotlin and attempts to depend on as few external dependencies as possible.
 Where possible, compatibility modules are provided to interoperate with other ecosystems.

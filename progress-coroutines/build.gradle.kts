@@ -44,5 +44,5 @@ coverage {
 library {
     name.set("Progress (Coroutines compatibility)")
     description.set("Coroutine-aware universal progress representation")
-    homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/progress-coroutines/index.html")
+    homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/progress-coroutines/index.html")
 }

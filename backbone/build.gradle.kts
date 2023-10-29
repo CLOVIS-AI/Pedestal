@@ -46,5 +46,5 @@ coverage {
 library {
 	name.set("Backbone")
 	description.set("Layered software architecture with aggressive caching")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/backbone/index.html")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/backbone/index.html")
 }

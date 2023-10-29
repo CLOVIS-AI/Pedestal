@@ -47,7 +47,7 @@ coverage {
 library {
 	name.set("Logger")
 	description.set("Simple multiplatform logger")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/documentation/logger/index.html")
+	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/logger/index.html")
 }
 
 tasks.withType(KotlinCompilationTask::class) {
