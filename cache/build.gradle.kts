@@ -1,9 +1,8 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-	id("conventions.base")
-	id("conventions.kotlin")
-	id("conventions.library")
+	alias(opensavvyConventions.plugins.base)
+	alias(opensavvyConventions.plugins.kotlin.library)
 }
 
 kotlin {
@@ -37,12 +36,13 @@ kotlin {
 	}
 }
 
-coverage {
-	minimalCoverage.set(90)
-}
-
 library {
 	name.set("Cache")
 	description.set("Multiplatform observable asynchronous cache algorithms")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/cache/index.html")
+
+	license.set {
+		name.set("Apache 2.0")
+		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+	}
 }

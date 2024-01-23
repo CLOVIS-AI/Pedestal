@@ -1,7 +1,6 @@
 plugins {
-	id("conventions.base")
-	id("conventions.kotlin")
-	id("conventions.library")
+	alias(opensavvyConventions.plugins.base)
+	alias(opensavvyConventions.plugins.kotlin.library)
 }
 
 kotlin {
@@ -36,11 +35,6 @@ kotlin {
 				api(kotlin("test-js"))
 			}
 		}
-
-		val iosMain by creating
-		val iosArm64Main by getting { iosMain.dependsOn(this) }
-		val iosSimulatorArm64Main by getting { iosMain.dependsOn(this) }
-		val iosX64Main by getting { iosMain.dependsOn(this) }
 	}
 }
 
@@ -48,4 +42,9 @@ library {
 	name.set("Pedestal Tester (DEPRECATED)")
 	description.set("Multiplatform test helpers")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/tester/index.html")
+
+	license.set {
+		name.set("Apache 2.0")
+		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+	}
 }

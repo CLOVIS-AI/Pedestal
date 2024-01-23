@@ -3,9 +3,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
-	id("conventions.base")
-	id("conventions.kotlin")
-	id("conventions.library")
+	alias(opensavvyConventions.plugins.base)
+	alias(opensavvyConventions.plugins.kotlin.library)
 }
 
 kotlin {
@@ -32,22 +31,18 @@ kotlin {
 				implementation(libs.slf4j)
 			}
 		}
-
-		val iosMain by creating { dependsOn(commonMain) }
-		val iosArm64Main by getting { dependsOn(iosMain) }
-		val iosSimulatorArm64Main by getting { dependsOn(iosMain) }
-		val iosX64Main by getting { dependsOn(iosMain) }
 	}
-}
-
-coverage {
-	minimalCoverage.set(90)
 }
 
 library {
 	name.set("Logger")
 	description.set("Simple multiplatform logger")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/logger/index.html")
+
+	license.set {
+		name.set("Apache 2.0")
+		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+	}
 }
 
 tasks.withType(KotlinCompilationTask::class) {

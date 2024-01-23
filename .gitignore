@@ -4,5 +4,5 @@
 # Ignore Gradle build output directory
 build
 
-# Yarn
-/kotlin-js-store
+# Ignore the JS lockfiles
+kotlin-js-store/

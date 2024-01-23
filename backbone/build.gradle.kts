@@ -1,9 +1,8 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-	id("conventions.base")
-	id("conventions.kotlin")
-	id("conventions.library")
+	alias(opensavvyConventions.plugins.base)
+	alias(opensavvyConventions.plugins.kotlin.library)
 }
 
 kotlin {
@@ -39,12 +38,13 @@ kotlin {
 	}
 }
 
-coverage {
-	minimalCoverage.set(80)
-}
-
 library {
 	name.set("Backbone")
 	description.set("Layered software architecture with aggressive caching")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/backbone/index.html")
+
+	license.set {
+		name.set("Apache 2.0")
+		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+	}
 }

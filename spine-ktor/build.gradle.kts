@@ -1,10 +1,9 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-	id("conventions.base")
-	id("conventions.kotlin")
-	id("conventions.library")
-	alias(playgroundLibs.plugins.kotlinx.serialization)
+	alias(opensavvyConventions.plugins.base)
+	alias(opensavvyConventions.plugins.kotlin.library)
+	alias(opensavvyConventions.plugins.aligned.kotlinx.serialization)
 }
 
 kotlin {
@@ -41,4 +40,9 @@ library {
 	name.set("Spine for Ktor (DEPRECATED)")
 	description.set("Multiplatform API declaration")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/spine-ktor/index.html")
+
+	license.set {
+		name.set("Apache 2.0")
+		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+	}
 }
