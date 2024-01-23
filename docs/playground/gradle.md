@@ -34,6 +34,8 @@ Multiple people put convention plugins in multiple places, for example in a `bui
 
 To learn more about convention plugins, see [their documentation](https://docs.gradle.org/current/userguide/custom_plugins.html#sec:precompiled_plugins).
 
+We have extracted some of the convention plugins to their own repository, see [the OpenSavvy Gradle Conventions](https://gitlab.com/opensavvy/automation/gradle-conventions).
+
 ## Version catalog
 
 We centralize the version numbers of the dependencies we use in the [libs.versions.toml](../../gradle/libs.versions.toml) file.

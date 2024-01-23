@@ -1,9 +1,8 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-	id("conventions.base")
-	id("conventions.kotlin")
-	id("conventions.library")
+	alias(opensavvyConventions.plugins.base)
+	alias(opensavvyConventions.plugins.kotlin.library)
 }
 
 kotlin {
@@ -32,4 +31,9 @@ library {
 	name.set("Cache (Blocking)")
 	description.set("Blocking wrappers for Pedestal Cache")
 	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/cache-blocking/index.html")
+
+	license.set {
+		name.set("Apache 2.0")
+		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+	}
 }

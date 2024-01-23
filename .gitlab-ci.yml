@@ -10,6 +10,10 @@ include:
   - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/gradle.gitlab-ci.yml
   - remote: https://gitlab.com/opensavvy/ci-templates/-/raw/main/docker.gitlab-ci.yml
 
+variables:
+  # https://gitlab.com/opensavvy/automation/containers
+  ci_containers: 0.3.0
+
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
@@ -17,85 +21,96 @@ workflow:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
 
-.ios:
+# region Kotlin Multiplatform
+
+.kotlin-jvm:
+  extends: [ .os.gradle ]
+  image: registry.gitlab.com/opensavvy/automation/containers/java:$ci_containers
+  needs: [ os.version ]
+
+.kotlin-js-browser:
+  extends: [ .os.gradle ]
+  image: registry.gitlab.com/opensavvy/automation/containers/chromium:$ci_containers
+  needs: [ os.version ]
+
+.kotlin-js-node:
+  extends: [ .os.gradle ]
+  image: registry.gitlab.com/opensavvy/automation/containers/chromium:$ci_containers
+  needs: [ os.version ]
+
+.kotlin-native-linuxX64:
+  image: registry.gitlab.com/opensavvy/automation/containers/java:$ci_containers
+  needs: [ os.version ]
+
+.kotlin-native-iosArm64:
+  extends: [ .os.gradle ]
   image: macos-13-xcode-14
+  needs: [ os.version ]
+
   before_script:
     - xcodebuild -downloadPlatform iOS
   tags:
     - saas-macos-medium-m1
 
-# region Environment and dependencies
-
-chromium:build:
-  extends: [ .os.docker.build ]
-  needs: [ ]
-  stage: docker
-
-  variables:
-    dockerfile: .gitlab/chromium.dockerfile
-    context: .gitlab
-    image: chromium
-
-  interruptible: true
-
-chromium:publish:
-  extends: [ .os.docker.rename ]
-  needs: [ chromium:build ]
-  stage: deploy
-
-  variables:
-    image: chromium
-
-  rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-
-  interruptible: true
-
 # endregion
 # region Check
 
-check-jvm:
-  extends: [ .os.gradle ]
-  needs: [ os.version ]
+check[jvm]:
+  extends: [ .kotlin-jvm ]
   stage: test
 
   script:
     - >
-      ./gradlew koverMergedHtmlReport koverVerify --continue
-      -PappVersion=$project_version
-    - mv build/reports/kover/merged/html coverage
-
-  artifacts:
-    paths:
-      - coverage
-  environment:
-    name: review/$CI_COMMIT_REF_SLUG/documentation
-    url: https://$CI_PROJECT_NAMESPACE.$CI_PAGES_DOMAIN/-/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/coverage/index.html
-    deployment_tier: development
-    auto_stop_in: 1 week
-  interruptible: true
-
-check-ios:
-  extends: [ .os.gradle, .ios ]
-  needs: [ os.version ]
-  stage: test
-
-  script:
-    - >
-      ./gradlew iosSimulatorArm64Test --continue
+      ./gradlew check
+      -x jsBrowserTest
+      -x jsNodeTest
+      -x linuxX64Test
+      -x iosSimulatorArm64Test
       -PappVersion=$project_version
 
   interruptible: true
 
-check-js:
-  extends: [ .os.gradle ]
-  image: $CI_REGISTRY_IMAGE/chromium:build-$CI_PIPELINE_IID
+check[jsBrowser]:
+  extends: [ .kotlin-js-browser ]
   stage: test
-  needs: [ chromium:build, os.version ]
 
   script:
     - >
-      ./gradlew jsBrowserTest --continue
+      ./gradlew jsBrowserTest
+      -PappVersion=$project_version
+
+  interruptible: true
+
+check[nodeJs]:
+  extends: [ .kotlin-js-node ]
+  stage: test
+
+  script:
+    - >
+      ./gradlew jsNodeTest
+      -PappVersion=$project_version
+
+  interruptible: true
+
+check[linuxX64]:
+  extends: [ .kotlin-native-linuxX64 ]
+  stage: test
+
+  script:
+    - >
+      ./gradlew linuxX64Test
+      -PappVersion=$project_version
+
+  interruptible: true
+
+check[iosArm64]:
+  extends: [ .kotlin-native-iosArm64 ]
+  stage: test
+
+  script:
+    - >
+      ./gradlew iosSimulatorArm64Test
+      --no-configuration-cache
       -PappVersion=$project_version
 
   interruptible: true
@@ -104,8 +119,9 @@ check-js:
 # region Publishing
 
 publish-maven:gitlab:
-  extends: [ .os.gradle ]
-  needs: [ os.version, check-jvm, check-ios, check-js ]
+  extends: [ .kotlin-jvm ]
+  needs:
+    - os.version
   stage: deploy
 
   script:
@@ -121,9 +137,10 @@ publish-maven:gitlab:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
 
-publish-maven:gitlab:ios:
-  extends: [ .ios ]
-  needs: [ os.version, check-jvm, check-ios, check-js ]
+publish-maven:gitlab[ios]:
+  extends: [ .kotlin-native-iosArm64 ]
+  needs:
+    - os.version
   stage: deploy
 
   script:
@@ -137,14 +154,15 @@ publish-maven:gitlab:ios:
 
   interruptible: false
   rules:
-    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_GITLAB == "no"
+    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_GITLAB == "no" || $PUBLISH_MAVEN_IOS == "no"
       when: never
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_TAG
 
 publish-maven:central:initialize:
-  extends: [ .os.gradle ]
-  needs: [ os.version ]
+  extends: [ .kotlin-jvm ]
+  needs:
+    - os.version
   stage: deploy
 
   script:
@@ -162,8 +180,10 @@ publish-maven:central:initialize:
     - if: $CI_COMMIT_TAG
 
 publish-maven:central:
-  extends: [ .os.gradle ]
-  needs: [ os.version, publish-maven:central:initialize ]
+  extends: [ .kotlin-jvm ]
+  needs:
+    - os.version
+    - publish-maven:central:initialize
   stage: deploy
 
   script:
@@ -183,9 +203,11 @@ publish-maven:central:
       when: never
     - if: $CI_COMMIT_TAG
 
-publish-maven:central:ios:
-  extends: [ .ios ]
-  needs: [ os.version, publish-maven:central:initialize ]
+publish-maven:central[ios]:
+  extends: [ .kotlin-native-iosArm64 ]
+  needs:
+    - os.version
+    - publish-maven:central:initialize
   stage: deploy
 
   script:
@@ -201,13 +223,17 @@ publish-maven:central:ios:
   rules:
     - if: $OSSRH_USERNAME == null || $OSSRH_PASSWORD == null
       when: never
-    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_CENTRAL == "no"
+    - if: $PUBLISH_MAVEN == "no" || $PUBLISH_MAVEN_CENTRAL == "no" || $PUBLISH_MAVEN_IOS == "no"
       when: never
     - if: $CI_COMMIT_TAG
 
 publish-maven:central:release:
-  extends: [ .os.gradle ]
-  needs: [ os.version, publish-maven:central, publish-maven:central:ios ]
+  extends: [ .kotlin-jvm ]
+  needs:
+    - job: os.version
+    - job: publish-maven:central
+    - job: publish-maven:central[ios]
+      optional: true
   stage: deploy
 
   script:
@@ -280,7 +306,7 @@ mirror-playground:
       allow_failure: true
 
 # endregion
-# GitLab Pages
+# region GitLab Pages
 
 pages:
   image: alpine:latest
