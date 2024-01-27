@@ -1,4 +1,4 @@
-# Pedestal Spine
+# Module Spine (DEPRECATED)
 
 > Pedestal Spine is deprecated, and will be removed in the future.
 
