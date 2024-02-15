@@ -12,7 +12,7 @@ include:
 
 variables:
   # https://gitlab.com/opensavvy/automation/containers
-  ci_containers: 0.3.0
+  ci_containers: 0.4.0
 
 workflow:
   rules:
@@ -35,10 +35,11 @@ workflow:
 
 .kotlin-js-node:
   extends: [ .os.gradle ]
-  image: registry.gitlab.com/opensavvy/automation/containers/chromium:$ci_containers
+  image: registry.gitlab.com/opensavvy/automation/containers/nodejs:$ci_containers
   needs: [ os.version ]
 
 .kotlin-native-linuxX64:
+  extends: [ .os.gradle ]
   image: registry.gitlab.com/opensavvy/automation/containers/java:$ci_containers
   needs: [ os.version ]
 
@@ -254,7 +255,7 @@ publish-maven:central:release:
 # region API documentation
 
 dokka:
-  extends: [ .os.gradle ]
+  extends: [ .kotlin-jvm ]
   stage: build
   needs: [ os.version ]
 

@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+
 /*
  * This is the root project.
  *
@@ -34,6 +37,15 @@ dependencies {
 val projectPath: String? = System.getenv("CI_PROJECT_PATH")
 if (projectPath != null && projectPath != "opensavvy/playgrounds/gradle" && group == "dev.opensavvy.playground") {
 	error("The project is declared to be in the group '$group', which is recognized as the Gradle Playground, but it's hosted in '$projectPath', which is not the Playground. Maybe you forgot to rename the group when importing the Playground in your own project?")
+}
+
+// endregion
+// region Always ignore the yarn.lock file
+// See https://kotlinlang.org/docs/js-project-setup.html#reporting-that-yarn-lock-has-been-updated
+
+plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin::class.java) {
+	the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.NONE
+	the<YarnRootExtension>().yarnLockAutoReplace = true
 }
 
 // endregion
