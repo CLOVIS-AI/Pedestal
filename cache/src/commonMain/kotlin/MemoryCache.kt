@@ -12,7 +12,7 @@ import opensavvy.state.progressive.copy
 
 internal class MemoryCache<I, F, V>(
 	private val upstream: Cache<I, F, V>,
-	private val job: Job = SupervisorJob(),
+	private val job: Job,
 ) : Cache<I, F, V> {
 
 	private val log = loggerFor(this)
