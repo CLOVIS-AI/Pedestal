@@ -13,7 +13,6 @@ import kotlin.jvm.JvmInline
 import kotlin.random.Random
 import kotlin.test.*
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class FailureEndToEndTest {
 
 	private data class User(

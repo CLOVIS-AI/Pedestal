@@ -1,42 +1,29 @@
-@file:OptIn(ExperimentalCoroutinesApi::class, ExperimentalCoroutinesApi::class)
-
 package opensavvy.state
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import opensavvy.prepared.runner.kotest.PreparedSpec
 
 /**
  * This is a series of examples of how to combine state instances together.
  */
-class ComprehensionsTest {
+@Suppress("unused")
+class ComprehensionsTest : PreparedSpec({
+	test("Map values") {
+		val input = flow {
+			emit("5")
+			delay(100)
 
-	private fun strings() = flow {
-		emit("5")
-		delay(100)
-		emit("10")
-		delay(100)
-		emit("wtf")
-	}
+			emit("10")
+			delay(100)
 
-	@Test
-	fun mapValue() = runTest {
-		val results = strings()
-			.map { it.toIntOrNull() }
+			emit("test")
+		}.map { it.toIntOrNull() }
 			.toList()
 
-		val expected = listOf(
-			5,
-			10,
-			null,
-		)
-
-		assertEquals(expected, results)
+		input shouldBe listOf(5, 10, null)
 	}
-
-}
+})
