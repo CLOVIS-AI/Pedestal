@@ -1,63 +1,67 @@
 package opensavvy.progress
 
-import kotlin.test.Test
+import com.benwoodworth.parameterize.parameterOf
+import com.benwoodworth.parameterize.parameterize
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import kotlin.test.assertContains
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
 
-class SimpleLoadingImplementationTest {
+@Suppress("unused")
+class SimpleLoadingImplementationTest : PreparedSpec({
+    suite("Constructor range validation") {
+        parameterize {
+            val legal by parameterOf(0.0, 0.1, 0.00001, 0.33, 1.0)
 
-    @Test
-    fun normalized0() {
-        assertEquals(0.0, loading(0.0).normalized)
+            test("The loading constructor should accept the value $legal") {
+                loading(legal).normalized shouldBe legal
+            }
+        }
+
+        parameterize {
+            val illegal by parameterOf(-1.0, 1.01, 1.000001, -0.000001, Double.MAX_VALUE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
+
+            test("The loading constructor should not accept the value $illegal") {
+                shouldThrow<IllegalArgumentException> { loading(illegal) }
+            }
+        }
     }
 
-    @Test
-    fun normalizedThird() {
-        assertEquals(0.33, loading(0.33).normalized)
+    suite("Conversion to integer percent") {
+        parameterize {
+            val value by parameterOf(
+                0.0 to 0,
+                0.33 to 33,
+                1.0 to 100,
+                0.01 to 1,
+                0.001 to 0,
+                0.4597 to 45,
+            )
+            val (input, expected) = value
+
+            test("Converting $input should give $expected") {
+                loading(input).percent shouldBe expected
+            }
+        }
     }
 
-    @Test
-    fun normalized1() {
-        assertEquals(1.0, loading(1.0).normalized)
+    suite("String conversion") {
+        parameterize {
+            val value by parameterOf(
+                0.0 to "Loading(0%)",
+                0.2 to "Loading(20%)",
+                0.99 to "Loading(99%)",
+                1.0 to "Loading(100%)",
+            )
+            val (input, expected) = value
+
+            test("loading($input) should be represented by the string $expected") {
+                loading(input).toString() shouldBe expected
+            }
+        }
     }
 
-    @Test
-    fun normalizedIllegalValues() {
-        assertFails { loading(-1.0) }
-        assertFails { loading(1.01) }
-        assertFails { loading(1.0000001) }
-        assertFails { loading(-0.000001) }
-        assertFails { loading(Double.MAX_VALUE) }
-        assertFails { loading(Double.NEGATIVE_INFINITY) }
-        assertFails { loading(Double.POSITIVE_INFINITY) }
-    }
-
-    @Test
-    fun percent0() {
-        assertEquals(0, loading(0.0).percent)
-    }
-
-    @Test
-    fun percentThird() {
-        assertEquals(33, loading(0.33).percent)
-    }
-
-    @Test
-    fun percent100() {
-        assertEquals(100, loading(1.0).percent)
-    }
-
-    @Test
-    fun string() {
-        assertEquals("Loading(0%)", loading(0.0).toString())
-        assertEquals("Loading(20%)", loading(0.2).toString())
-        assertEquals("Loading(99%)", loading(0.99).toString())
-        assertEquals("Loading(100%)", loading(1.0).toString())
-    }
-
-    @Test
-    fun hash() {
+    test("The hashCode implementation is correct") {
         val set = hashSetOf(
             done(),
             loading(0.0),
@@ -72,4 +76,4 @@ class SimpleLoadingImplementationTest {
         assertContains(set, loading(0.9))
         assertContains(set, loading(1.0))
     }
-}
+})

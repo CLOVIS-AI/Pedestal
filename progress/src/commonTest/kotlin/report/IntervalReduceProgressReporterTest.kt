@@ -1,86 +1,77 @@
 package opensavvy.progress.report
 
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.shouldBe
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.Progress
 import opensavvy.progress.done
 import opensavvy.progress.loading
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
 
-class IntervalReduceProgressReporterTest {
-
-    @Test
-    fun cannotCreateInvalidRange() {
-        assertFails {
-            ProgressReporter { }
-                .reduceToInterval(0.7, 0.2)
+@Suppress("unused")
+class IntervalReduceProgressReporterTest : PreparedSpec({
+    test("Cannot create an invalid range") {
+        shouldThrow<IllegalArgumentException> {
+            emptyProgressReporter().reduceToInterval(0.7, 0.2)
         }
     }
 
-    @Test
-    fun reduceInterval() {
+    test("Reduce with the range syntax") {
         var value: Progress? = null
 
         val reporter = ProgressReporter { value = it }
             .reduceToInterval(0.2..0.4)
 
         reporter.report(loading(0.1))
-        assertEquals(loading(0.22), value)
+        value shouldBe loading(0.22)
     }
 
-    @Test
-    fun reduceMinMax() {
+    test("Reduce with the min-max syntax") {
         var value: Progress? = null
 
         val reporter = ProgressReporter { value = it }
             .reduceToInterval(0.2, 0.4)
 
         reporter.report(loading(0.1))
-        assertEquals(loading(0.22), value)
+        value shouldBe loading(0.22)
     }
 
-    @Test
-    fun reduceDone() {
+    test("Reducing the 'done' event should return the range maximum") {
         var value: Progress? = null
 
         val reporter = ProgressReporter { value = it }
             .reduceToInterval(0.2..0.4)
 
         reporter.report(done())
-        assertEquals(loading(0.4), value)
+        value shouldBe loading(0.4)
     }
 
-    @Test
-    fun reduceUnquantified() {
+    test("Reducing an unquantified loading event should return the range middle") {
         var value: Progress? = null
 
         val reporter = ProgressReporter { value = it }
             .reduceToInterval(0.2..0.4)
 
         reporter.report(loading())
-        assertEquals(loading(0.3), value)
+        value shouldBe loading(0.3)
     }
 
-    @Test
-    fun reduceZero() {
+    test("Reducing 0 should give the range minimum") {
         var value: Progress? = null
 
         val reporter = ProgressReporter { value = it }
             .reduceToInterval(0.2..0.4)
 
         reporter.report(loading(0.0))
-        assertEquals(loading(0.2), value)
+        value shouldBe loading(0.2)
     }
 
-    @Test
-    fun reduceOne() {
+    test("Reducing 1 should give the range maximum") {
         var value: Progress? = null
 
         val reporter = ProgressReporter { value = it }
             .reduceToInterval(0.2..0.4)
 
         reporter.report(loading(1.0))
-        assertEquals(loading(0.4), value)
+        value shouldBe loading(0.4)
     }
-
-}
+})

@@ -1,13 +1,11 @@
 package opensavvy.progress
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import io.kotest.matchers.shouldBe
+import opensavvy.prepared.runner.kotest.PreparedSpec
 
-class UnquantifiedLoadingTest {
-
-    @Test
-    fun string() {
-        assertEquals("Loading", loading().toString())
+@Suppress("unused")
+class UnquantifiedLoadingTest : PreparedSpec({
+    test("String representation") {
+        loading().toString() shouldBe "Loading"
     }
-
-}
+})
