@@ -1,12 +1,11 @@
 package opensavvy.progress
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import io.kotest.matchers.shouldBe
+import opensavvy.prepared.runner.kotest.PreparedSpec
 
-class DoneTest {
-
-    @Test
-    fun string() {
-        assertEquals("Done", done().toString())
+@Suppress("unused")
+class DoneTest : PreparedSpec({
+    test("String representation") {
+        done().toString() shouldBe "Done"
     }
-}
+})
