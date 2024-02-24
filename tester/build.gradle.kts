@@ -1,6 +1,6 @@
 plugins {
 	alias(opensavvyConventions.plugins.base)
-	alias(opensavvyConventions.plugins.kotlin.library)
+	alias(opensavvyConventions.plugins.kotlin.internal)
 }
 
 kotlin {
@@ -35,16 +35,5 @@ kotlin {
 				api(kotlin("test-js"))
 			}
 		}
-	}
-}
-
-library {
-	name.set("Pedestal Tester (DEPRECATED)")
-	description.set("Multiplatform test helpers")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/tester/index.html")
-
-	license.set {
-		name.set("Apache 2.0")
-		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
 	}
 }
