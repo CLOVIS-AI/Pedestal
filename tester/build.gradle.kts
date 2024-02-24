@@ -17,6 +17,13 @@ kotlin {
 	sourceSets {
 		val commonMain by getting {
 			dependencies {
+				api(libs.prepared)
+				api(libs.prepared.arrow)
+				api(libs.prepared.datetime)
+				api(libs.prepared.parameterize)
+
+				api(libs.kotlinx.coroutines.test)
+
 				api(kotlin("test-common"))
 				api(kotlin("test-annotations-common"))
 

@@ -8,6 +8,7 @@ logbackClassic = "1.4.8"         # https://github.com/qos-ch/logback/tags
 kotlinx-datetime = "0.4.0"       # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlinx-coroutines = "1.7.2"     # https://github.com/Kotlin/kotlinx.coroutines/releases
 kotlinx-serialization = "1.5.1"  # https://github.com/Kotlin/kotlinx.serialization/releases
+prepared = "1.0.0-rc.2"          # https://gitlab.com/opensavvy/prepared/-/releases
 
 [plugins]
 
@@ -30,5 +31,10 @@ ktor-kotlinxJson = { module = "io.ktor:ktor-serialization-kotlinx-json", version
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 slf4j = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logbackClassic" }
+
+prepared = { module = "dev.opensavvy.prepared:runner-kotest", version.ref = "prepared" }
+prepared-arrow = { module = "dev.opensavvy.prepared:compat-arrow", version.ref = "prepared" }
+prepared-datetime = { module = "dev.opensavvy.prepared:compat-kotlinx-datetime", version.ref = "prepared" }
+prepared-parameterize = { module = "dev.opensavvy.prepared:compat-parameterize", version.ref = "prepared" }
 
 [bundles]
