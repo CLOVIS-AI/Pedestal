@@ -9,20 +9,45 @@
 
 rootProject.name = "Pedestal"
 
+dependencyResolutionManagement {
+	repositories {
+		mavenCentral()
+	}
+}
+
 pluginManagement {
 	repositories {
+		// region OpenSavvy Conventions
+
+		maven {
+			name = "opensavvy-gradle-conventions"
+			url = uri("https://gitlab.com/api/v4/projects/51233470/packages/maven")
+
+			metadataSources {
+				gradleMetadata()
+				mavenPom()
+			}
+
+			content {
+				includeGroupAndSubgroups("dev.opensavvy")
+			}
+		}
+
+		// endregion
+		// region Standard repositories
+
 		gradlePluginPortal()
 		google()
+		mavenCentral()
 
-		// OpenSavvy conventions
-		maven("https://gitlab.com/api/v4/projects/51233470/packages/maven")
+		// endregion
 	}
 
 	includeBuild("gradle/conventions")
 }
 
 plugins {
-	id("dev.opensavvy.conventions.settings") version "1.1.0"
+	id("dev.opensavvy.conventions.settings") version "1.1.2"
 }
 
 include(
