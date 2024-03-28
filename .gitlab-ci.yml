@@ -63,12 +63,23 @@ check[jvm]:
   script:
     - >
       ./gradlew check
+      :koverLog
+      :koverHtmlReport
       -x jsBrowserTest
       -x jsNodeTest
       -x linuxX64Test
       -x iosSimulatorArm64Test
       -PappVersion=$project_version
 
+  after_script:
+    - mkdir -p jvm-cover-report
+    - mv build/reports/kover/html/* jvm-cover-report
+
+  coverage: '/application line coverage: (\d+\.?\d*%)/'
+  artifacts:
+    paths:
+      - jvm-cover-report
+    expose_as: JVM code coverage
   interruptible: true
 
 check[jsBrowser]:

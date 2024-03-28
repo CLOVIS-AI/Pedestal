@@ -47,7 +47,7 @@ pluginManagement {
 }
 
 plugins {
-	id("dev.opensavvy.conventions.settings") version "1.1.2"
+	id("dev.opensavvy.conventions.settings") version "1.2.0"
 }
 
 include(
