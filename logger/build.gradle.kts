@@ -37,7 +37,7 @@ kotlin {
 library {
 	name.set("Logger")
 	description.set("Simple multiplatform logger")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/logger/index.html")
+	homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/logger/index.html")
 
 	license.set {
 		name.set("Apache 2.0")

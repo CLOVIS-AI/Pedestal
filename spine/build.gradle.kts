@@ -40,7 +40,7 @@ kotlin {
 library {
 	name.set("Spine (DEPRECATED)")
 	description.set("Multiplatform API declaration")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/spine/index.html")
+	homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/spine/index.html")
 
 	license.set {
 		name.set("Apache 2.0")

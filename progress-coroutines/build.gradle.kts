@@ -39,7 +39,7 @@ kotlin {
 library {
     name.set("Progress (Coroutines compatibility)")
     description.set("Coroutine-aware universal progress representation")
-    homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/progress-coroutines/index.html")
+    homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/progress-coroutines/index.html")
 
     license.set {
         name.set("Apache 2.0")
