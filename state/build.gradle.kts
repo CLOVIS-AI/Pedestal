@@ -40,7 +40,7 @@ kotlin {
 library {
 	name.set("State")
 	description.set("Progress-aware failure states")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/state/index.html")
+	homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/state/index.html")
 
 	license.set {
 		name.set("Apache 2.0")

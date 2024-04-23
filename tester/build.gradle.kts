@@ -41,7 +41,7 @@ kotlin {
 library {
 	name.set("Pedestal Tester (DEPRECATED)")
 	description.set("Multiplatform test helpers")
-	homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/tester/index.html")
+	homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/tester/index.html")
 
 	license.set {
 		name.set("Apache 2.0")

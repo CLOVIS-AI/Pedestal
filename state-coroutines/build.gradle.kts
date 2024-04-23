@@ -42,7 +42,7 @@ kotlin {
 library {
     name.set("State (Coroutines compatibility)")
     description.set("Progress-aware failure states")
-    homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/state-coroutines/index.html")
+    homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/state-coroutines/index.html")
 
     license.set {
         name.set("Apache 2.0")

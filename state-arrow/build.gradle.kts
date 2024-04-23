@@ -39,7 +39,7 @@ kotlin {
 library {
     name.set("State (Arrow compatibility)")
     description.set("Progress-aware failure states")
-    homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/state-arrow/index.html")
+    homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/state-arrow/index.html")
 
     license.set {
         name.set("Apache 2.0")
