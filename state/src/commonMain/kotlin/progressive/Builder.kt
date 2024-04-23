@@ -2,7 +2,9 @@ package opensavvy.state.progressive
 
 import opensavvy.progress.Progress
 import opensavvy.progress.done
+import opensavvy.state.ExperimentalProgressiveRaiseApi
 import opensavvy.state.outcome.Outcome
+import opensavvy.state.progressive.ProgressiveOutcome.Unsuccessful
 
 /**
  * Adds [progress] information to this outcome to make it a [ProgressiveOutcome].
@@ -44,3 +46,16 @@ fun <Value> Value.successfulWithProgress(progress: Progress = done()) = Progress
  * Convenience function to instantiate a [ProgressiveOutcome.Failure].
  */
 fun <Failure> Failure.failedWithProgress(progress: Progress = done()) = ProgressiveOutcome.Failure(this, progress)
+
+/**
+ * Type-safe way to convert between an [Unsuccessful] and a [ProgressiveOutcome].
+ *
+ * In theory, this would be an implicit upcast. However, [ProgressiveOutcome] is a `class`,
+ * and [Unsuccessful] is an `interface`, so the subtype relationship cannot be declared to the compiler.
+ */
+@ExperimentalProgressiveRaiseApi
+fun <Failure> Unsuccessful<Failure>.upcast(): ProgressiveOutcome<Failure, Nothing> =
+	when (this) {
+		is ProgressiveOutcome.Failure -> this
+		is ProgressiveOutcome.Incomplete -> this
+	}
