@@ -20,20 +20,21 @@ should represent the outcome of a domain operation using
 a [sealed class hierarchy](https://kotlinlang.org/docs/sealed-classes.html).
 
 Multiple libraries have been created to facilitate using these sealed class hierarchies, most
-notably [Arrow](https://arrow-kt.io/docs/patterns/error_handling/). These libraries provide enhanced semantics and
+notably [Arrow Typed Errors](https://arrow-kt.io/learn/typed-errors/working-with-typed-errors/). These libraries provide enhanced semantics and
 syntax sugar for this style of error management, but they lack a representation for intermediate values (for example,
 the current progress of an information).
 
-Originally, `state` was built on top of Arrow. Today, `state` is independent of Arrow, but it doesn't duplicate all the nice
-tooling provided by Arrow. We recommend using both projects together thanks to our `state-arrow` compatibility layer.
-`state` itself is kept as small as possible to help interoperability with projects that do not use Arrow.
+Pedestal State is built on top of Arrow, and adds:
+- Clearly named [success][opensavvy.state.outcome.Outcome.Success] and [failure][opensavvy.state.outcome.Outcome.Failure] cases, instead of [Right][arrow.core.Either.Right] and [Left][arrow.core.Either.Left],
+- Support for [in-progress results][opensavvy.state.progressive.ProgressiveOutcome],
+- Helpers to handle failed operations in reactive contexts (e.g. Compose): [onSuccess][opensavvy.state.progressive.onSuccess], [onFailure][opensavvy.state.progressive.onFailure], [onIncomplete][opensavvy.state.progressive.onIncomplete], [onLoading][opensavvy.state.progressive.onLoading],
+- Helpers for safe access: [value][opensavvy.state.progressive.value], [failure][opensavvy.state.progressive.failure].
 
 There are multiple recommended ways to represent outcomes:
 
-- success, failures and progress in a wrapper object (see [ProgressiveOutcome][opensavvy.state.progressive.ProgressiveOutcome]),
-- success and failures in a wrapper object (see [Outcome][opensavvy.state.outcome.Outcome]) and progress by asynchronous context calls (see `progress-coroutines`'s `CoroutineProgressReporter`),
-- success as a regular return type, failures as a context receiver (see Arrow 2.0's [`Raise`](https://apidocs.arrow-kt.io/arrow-core/arrow.core.raise/-raise/index.html) interface) and progress as a
-  context receiver (using `progress`' [ProgressReporter][opensavvy.progress.report.ProgressReporter]).
+# Package opensavvy.state.arrow
+
+Helpers to convert outcomes to other Arrow data types, support for the Raise DSL.
 
 # Package opensavvy.state.outcome
 
