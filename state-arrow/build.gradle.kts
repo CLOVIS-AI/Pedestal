@@ -37,7 +37,7 @@ kotlin {
 }
 
 library {
-    name.set("State (Arrow compatibility)")
+    name.set("State (Arrow compatibility, deprecated)")
     description.set("Progress-aware failure states")
     homeUrl.set("https://opensavvy.gitlab.io/pedestal/api-docs/state-arrow/index.html")
 

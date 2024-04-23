@@ -21,6 +21,8 @@ kotlin {
 			dependencies {
 				api(projects.progress)
 
+				api(libs.arrow.core)
+
 				implementation(projects.logger)
 			}
 		}

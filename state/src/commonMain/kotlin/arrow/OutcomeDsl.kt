@@ -10,13 +10,13 @@ import kotlin.jvm.JvmInline
 @JvmInline
 @RaiseDSL
 value class OutcomeDsl<Failure>(private val raise: Raise<Failure>) :
-    Raise<Failure> by raise {
+	Raise<Failure> by raise {
 
-    @RaiseDSL
-    fun <T> Outcome<Failure, T>.bind(): T = when (this) {
-        is Outcome.Success -> value
-        is Outcome.Failure -> raise.raise(failure)
-    }
+	@RaiseDSL
+	fun <T> Outcome<Failure, T>.bind(): T = when (this) {
+		is Outcome.Success -> value
+		is Outcome.Failure -> raise.raise(failure)
+	}
 }
 
 /**
@@ -25,7 +25,7 @@ value class OutcomeDsl<Failure>(private val raise: Raise<Failure>) :
 @OptIn(ExperimentalTypeInference::class)
 @RaiseDSL
 inline fun <Failure, Value> out(@BuilderInference block: OutcomeDsl<Failure>.() -> Value): Outcome<Failure, Value> =
-    recover(
-        block = { Outcome.Success(block(OutcomeDsl(this))) },
-        recover = { e: Failure -> Outcome.Failure(e) },
-    )
+	recover(
+		block = { Outcome.Success(block(OutcomeDsl(this))) },
+		recover = { e: Failure -> Outcome.Failure(e) },
+	)
