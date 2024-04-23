@@ -17,8 +17,8 @@ import opensavvy.state.progressive.withProgress
  * The [out] DSL is also useful to work with [Outcome] in the Arrow world.
  */
 fun <Failure, Value> Outcome<Failure, Value>.toEither() = when (this) {
-    is Outcome.Success -> value.right()
-    is Outcome.Failure -> failure.left()
+	is Outcome.Success -> value.right()
+	is Outcome.Failure -> failure.left()
 }
 
 /**
@@ -27,9 +27,9 @@ fun <Failure, Value> Outcome<Failure, Value>.toEither() = when (this) {
  * If the outcome is [incomplete][ProgressiveOutcome.Incomplete], `null` is returned.
  */
 fun <Failure, Value> ProgressiveOutcome<Failure, Value>.toEither() = when (this) {
-    is ProgressiveOutcome.Success -> value.right()
-    is ProgressiveOutcome.Failure -> failure.left()
-    is ProgressiveOutcome.Incomplete -> null
+	is ProgressiveOutcome.Success -> value.right()
+	is ProgressiveOutcome.Failure -> failure.left()
+	is ProgressiveOutcome.Incomplete -> null
 }
 
 /**
@@ -38,8 +38,8 @@ fun <Failure, Value> ProgressiveOutcome<Failure, Value>.toEither() = when (this)
  * The [out] DSL is also useful to work with [Outcome] in the Arrow world.
  */
 fun <Failure, Value> Either<Failure, Value>.toOutcome() = when (this) {
-    is Either.Right -> value.successful()
-    is Either.Left -> value.failed()
+	is Either.Right -> value.successful()
+	is Either.Left -> value.failed()
 }
 
 /**
@@ -48,4 +48,4 @@ fun <Failure, Value> Either<Failure, Value>.toOutcome() = when (this) {
  * The [out] DSL is also useful to work with [Outcome] in the Arrow world.
  */
 fun <Failure, Value> Either<Failure, Value>.toOutcome(progress: Progress = loading()) = toOutcome()
-    .withProgress(progress)
+	.withProgress(progress)
