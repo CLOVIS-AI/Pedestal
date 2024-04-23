@@ -3,6 +3,7 @@ package opensavvy.state.progressive
 import opensavvy.progress.Progress
 import opensavvy.progress.done
 import opensavvy.progress.loading
+import opensavvy.state.ExperimentalProgressiveRaiseApi
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome.*
 
@@ -36,11 +37,23 @@ sealed class ProgressiveOutcome<out Failure, out Value> {
 	abstract val progress: Progress
 
 	/**
+	 * Operations that are not successful; common supertype of [Incomplete] and [Failure].
+	 *
+	 * Note that a [Success] value with progress information is not included in this hierarchy, as it is successful.
+	 *
+	 * Due to backwards-compatibility considerations, this cannot be a subtype of [ProgressiveOutcome].
+	 * If you have an instance of this interface and need a [ProgressiveOutcome], use [upcast].
+	 */
+	@ExperimentalProgressiveRaiseApi
+	sealed interface Unsuccessful<out Failure>
+
+	/**
 	 * The operation is ongoing, but we do not know if it will be successful or a failure.
 	 */
+	@OptIn(ExperimentalProgressiveRaiseApi::class)
 	data class Incomplete(
 		override val progress: Progress.Loading = loading(),
-	) : ProgressiveOutcome<Nothing, Nothing>()
+	) : ProgressiveOutcome<Nothing, Nothing>(), Unsuccessful<Nothing>
 
 	/**
 	 * The latest known result of the operation was a success, available as [value].
@@ -59,9 +72,10 @@ sealed class ProgressiveOutcome<out Failure, out Value> {
 	 * If [progress] is loading, this means the operation has been retried in an attempt to access a more up-to-date
 	 * version.
 	 */
+	@OptIn(ExperimentalProgressiveRaiseApi::class)
 	data class Failure<Failure>(
 		val failure: Failure,
 		override val progress: Progress = done(),
-	) : ProgressiveOutcome<Failure, Nothing>()
+	) : ProgressiveOutcome<Failure, Nothing>(), Unsuccessful<Failure>
 
 }

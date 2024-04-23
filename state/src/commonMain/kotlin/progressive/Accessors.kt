@@ -1,5 +1,7 @@
 package opensavvy.state.progressive
 
+import opensavvy.progress.Progress
+import opensavvy.state.ExperimentalProgressiveRaiseApi
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome.*
 
@@ -33,6 +35,18 @@ val <Value> ProgressiveOutcome<Nothing, Value>.value: Value
 val <Failure> ProgressiveOutcome<Failure, Nothing>.failure: Failure
 	// This cast is safe, because a Success of Nothing is impossible
 	get() = (this as ProgressiveOutcome.Failure).failure
+
+/**
+ * The progression of this unsuccessful value.
+ *
+ * See [ProgressiveOutcome].
+ */
+@ExperimentalProgressiveRaiseApi
+val <Failure> Unsuccessful<Failure>.progress: Progress
+	get() = when (this) {
+		is ProgressiveOutcome.Failure -> progress
+		is Incomplete -> progress
+	}
 
 // endregion
 // region Conversion
