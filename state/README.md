@@ -30,7 +30,79 @@ Pedestal State is built on top of Arrow, and adds:
 - Helpers to handle failed operations in reactive contexts (e.g. Compose): [onSuccess][opensavvy.state.progressive.onSuccess], [onFailure][opensavvy.state.progressive.onFailure], [onIncomplete][opensavvy.state.progressive.onIncomplete], [onLoading][opensavvy.state.progressive.onLoading],
 - Helpers for safe access: [value][opensavvy.state.progressive.value], [failure][opensavvy.state.progressive.failure].
 
-There are multiple recommended ways to represent outcomes:
+## Example
+
+Let's compare a simple account creation screen; we want to verify that the data is correct and display the results to a user.
+First, let's see how it could be implemented with the traditional Kotlin approach of using a sealed hierarchy:
+
+```kotlin
+// ①. Declare all possible outcomes
+sealed class AccountCreationResult {
+	data class Success(val user: User) : AccountCreationResult()
+	data object PasswordTooShort : AccountCreationResult()
+	data object PasswordsDoNotMatch : AccountCreationResult()
+	// …
+}
+
+// ②. Implement the method
+suspend fun createAccount(username: String, password: String, passwordCopy: String): AccountCreationResult {
+	// …data checking…
+	if (password.length < 4)
+		return AccountCreationResult.PasswordTooShort
+	// note that the conditions are reversed from what we want!
+	
+	if (password != passwordCopy)
+		return AccountCreationResult.PasswordsDoNotMatch
+	
+	// …
+	
+	return AccountCreationResult.Success(repository.createAccount(username, password))
+}
+
+// ③. Call site
+when (val result = createAccount(username, password, passwordCopy)) {
+	is Success -> {
+		println("Created the user $it")
+	}
+	else -> {
+		println("Could not create user: $it")
+	}
+}
+```
+
+Now, let's rewrite this using State:
+```kotlin
+// ①. Declare the failure reasons (no need to declare the successful case)
+sealed class AccountCreationFailure {
+	data object PasswordTooShort : AccountCreationFailure()
+	data object PasswordsDoNotMatch : AccountCreationFailure()
+}
+
+// ②. Implement the method
+suspend fun createAccount(username: String, password: String, passwordCopy: String) = out<AccountCreationFailure, User> {
+	// …data checking…
+	ensure(password.length >= 4) { AccountCreationFailure.PasswordTooShort }
+	ensure(password != passwordCopy) { AccountCreationFailure.PasswordsDoNotMatch }
+	// note that the conditions are in a better order
+	
+	// …
+	
+	repository.createAccount(username, password) // no boilerplate
+}
+
+// ③. Call site
+val result = createAccount(username, password, passwordCopy)
+
+result.onSuccess {
+	println("Created the user $it")
+}
+
+result.onFailure {
+	println("Could not create user: $it")
+}
+```
+
+As we can see, validation is much easier to read, and the call site offers more flexibility.
 
 # Package opensavvy.state.arrow
 
