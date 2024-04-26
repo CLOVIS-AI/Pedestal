@@ -30,6 +30,14 @@ dependencies {
 	dokkatoo(projects.state)
 	dokkatoo(projects.stateArrow)
 	dokkatoo(projects.stateCoroutines)
+
+	kover(projects.backbone)
+	kover(projects.cache)
+	kover(projects.cacheBlocking)
+	kover(projects.progress)
+	kover(projects.progressCoroutines)
+	kover(projects.state)
+	kover(projects.stateCoroutines)
 }
 
 // region Check the users of the project didn't forget to rename the group
