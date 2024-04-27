@@ -26,7 +26,7 @@ kotlin {
 
 		val jvmMain by getting {
 			dependencies {
-				api(kotlin("test-junit"))
+				api(kotlin("test-junit5"))
 			}
 		}
 
