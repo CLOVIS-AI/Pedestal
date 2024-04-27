@@ -5,13 +5,14 @@ site_description: >
 
 theme:
   name: material
+  custom_dir: overrides
   features:
     - announce.dismiss
     - content.action.edit
     - content.action.view
     - content.code.annotate
     - content.code.copy
-    # - content.code.select
+    - content.code.select
     # - content.footnote.tooltips
     # - content.tabs.link
     - content.tooltips
@@ -36,5 +37,38 @@ theme:
   icon:
     edit: material/pencil
     view: material/eye
+  logo: assets/logo.svg
+  favicon: assets/logo.svg
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: "System theme (click to switch to light)"
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: "Light theme (click to switch to dark)"
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: "Dark theme (click to switch to system)"
 
-edit_uri: edit/main/docs/website
+edit_uri: edit/main/docs/website/docs
+
+nav:
+  - Home: index.md
+
+  - Getting started: []
+
+  - Module1: []
+
+  - Module2: []
+
+  - Reference:
+      - reference.md
