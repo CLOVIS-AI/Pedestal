@@ -6,3 +6,6 @@ build
 
 # Ignore the JS lockfiles
 kotlin-js-store/
+
+# Ignore the Kotlin metadata directory
+.kotlin

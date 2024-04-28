@@ -71,6 +71,7 @@ check[jvm]:
       -x jsNodeTest
       -x linuxX64Test
       -x iosSimulatorArm64Test
+      koverVerify --rerun
       -PappVersion=$project_version
 
   after_script:

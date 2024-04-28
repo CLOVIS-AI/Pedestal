@@ -117,8 +117,8 @@ abstract class Parameters {
 			UShort::class -> value.toString()
 			UInt::class -> value.toString()
 			ULong::class -> value.toString()
-			Float::class -> value.toString()
-			Double::class -> value.toString()
+			Float::class -> value.toString().removeSuffix(".0")
+			Double::class -> value.toString().removeSuffix(".0")
 			else -> throw UnsupportedOperationException("The type ${T::class.simpleName ?: T::class.toString()} is not currently supported in parameters.")
 		}
 

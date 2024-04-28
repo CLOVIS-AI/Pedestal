@@ -1,0 +1,66 @@
+{% extends "main.html" %}
+{% block tabs %}
+{{ super() }}
+<style>
+	#hero-page {
+		height: 100vh;
+		margin-left: 1rem;
+		margin-right: 1rem;
+	}
+
+	#hero-title {
+		font-size: 3.7rem;
+		margin-top: 30vh;
+		margin-bottom: 1rem;
+		font-weight: bolder;
+	}
+
+	@media screen and (min-width: 60em) {
+		.md-sidebar--secondary {
+			display: none
+		}
+	}
+
+	@media screen and (min-width: 76.25em) {
+		.md-sidebar--primary {
+			display: none
+		}
+	}
+</style>
+
+<section id="hero-page" class="mdx-container">
+	<div class="md-typeset">
+		<div class="mdx-hero">
+			<div class="mdx-hero__content">
+				<h1 id="hero-title">{{ config.site_name }}</h1>
+
+				<p>{{ config.site_description }}</p>
+
+				<div> <!-- Badges -->
+
+					<a href="https://discord.gg/48Wv6BkJx6"><img src="https://img.shields.io/badge/Discuss-Discord-7289da"></a>
+				</div>
+
+				<a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | e }}"
+				   class="md-button md-button--primary">
+					Quick start
+				</a>
+
+				<a href="{{ config.repo_pages }}/api-docs" title="API reference" class="md-button">
+					Visit reference
+				</a>
+
+				<a href="{{ config.repo_url }}" title="Material for MkDocs Insiders" class="md-button">
+					Visit repository
+				</a>
+			</div>
+		</div>
+	</div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div style="min-height: 50vh">
+	{{ super() }}
+</div>
+{% endblock %}
