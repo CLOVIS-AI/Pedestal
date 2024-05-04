@@ -5,7 +5,7 @@ slf4j = "2.0.13"                      # https://github.com/qos-ch/slf4j/tags
 ktor = "2.3.2"                        # https://github.com/ktorio/ktor/releases
 arrow = "1.2.4"                       # https://github.com/arrow-kt/arrow/releases
 logbackClassic = "1.5.6"              # https://github.com/qos-ch/logback/tags
-kotlinx-datetime = "0.4.0"            # https://github.com/Kotlin/kotlinx-datetime/releases
+kotlinx-datetime = "0.5.0"            # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlinx-coroutines = "1.7.2"          # https://github.com/Kotlin/kotlinx.coroutines/releases
 kotlinx-serialization = "1.5.1"       # https://github.com/Kotlin/kotlinx.serialization/releases
 
