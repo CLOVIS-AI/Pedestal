@@ -21,6 +21,7 @@ kotlin {
 			dependencies {
 				implementation(projects.tester)
 				implementation(libs.kotlinx.coroutines.test)
+				implementation(libs.lincheck)
 				implementation(projects.stateArrow)
 			}
 		}
