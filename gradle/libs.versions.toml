@@ -1,7 +1,7 @@
 # List of dependencies of the project
 
 [versions]
-slf4j = "2.0.7"                       # https://github.com/qos-ch/slf4j/tags
+slf4j = "2.0.13"                      # https://github.com/qos-ch/slf4j/tags
 ktor = "2.3.2"                        # https://github.com/ktorio/ktor/releases
 arrow = "1.2.0"                       # https://github.com/arrow-kt/arrow/releases
 logbackClassic = "1.4.8"              # https://github.com/qos-ch/logback/tags
