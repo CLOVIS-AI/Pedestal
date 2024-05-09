@@ -3,6 +3,8 @@
 *.xml
 *.iml
 
+shelf/
+
 !.name
 !inspectionProfiles/*
 !runConfigurations/*

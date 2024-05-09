@@ -3,7 +3,7 @@
 {{ super() }}
 <style>
 	#hero-page {
-		height: 100vh;
+		min-height: 75vh;
 		margin-left: 1rem;
 		margin-right: 1rem;
 	}
@@ -41,16 +41,16 @@
 					<a href="https://discord.gg/48Wv6BkJx6"><img src="https://img.shields.io/badge/Discuss-Discord-7289da"></a>
 				</div>
 
-				<a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | e }}"
+				<a href="#welcome" title="{{ page.next_page.title | e }}"
 				   class="md-button md-button--primary">
-					Quick start
+					What is it?
 				</a>
 
 				<a href="{{ config.repo_pages }}/api-docs" title="API reference" class="md-button">
 					Visit reference
 				</a>
 
-				<a href="{{ config.repo_url }}" title="Material for MkDocs Insiders" class="md-button">
+				<a href="{{ config.repo_url }}" title="Open repository on GitLab" class="md-button">
 					Visit repository
 				</a>
 			</div>
