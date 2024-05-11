@@ -1,13 +1,12 @@
 package opensavvy.progress.report
 
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
-import kotlin.test.Test
 
-class NoOpProgressReporterTest {
-
-	@Test
-	fun coverage() {
+@Suppress("unused")
+class NoOpProgressReporterTest : PreparedSpec({
+	test("No-op") {
 		// it does nothing anyway…
 		emptyProgressReporter().report(loading(0.5))
 	}
-}
+})
