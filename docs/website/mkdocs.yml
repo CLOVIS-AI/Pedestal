@@ -59,6 +59,9 @@ theme:
         icon: material/brightness-4
         name: "Dark theme (click to switch to system)"
 
+plugins:
+  - social
+
 markdown_extensions:
   - admonition
   - attr_list

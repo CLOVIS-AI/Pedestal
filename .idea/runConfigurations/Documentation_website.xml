@@ -17,7 +17,10 @@
             <DockerVolumeBindingImpl>
               <option name="containerPath" value="/docs" />
               <option name="hostPath" value="$PROJECT_DIR$/docs/website" />
-              <option name="readOnly" value="true" />
+            </DockerVolumeBindingImpl>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/docs/.cache" />
+              <option name="hostPath" value="/tmp/mkdocs-cache" />
             </DockerVolumeBindingImpl>
           </list>
         </option>
