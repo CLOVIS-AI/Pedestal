@@ -1,6 +1,8 @@
 package opensavvy.state.progressive
 
+import opensavvy.progress.ExperimentalProgressApi
 import opensavvy.progress.Progress
+import opensavvy.progress.Progressive
 import opensavvy.progress.done
 import opensavvy.state.ExperimentalProgressiveRaiseApi
 import opensavvy.state.outcome.Outcome
@@ -59,3 +61,27 @@ fun <Failure> Unsuccessful<Failure>.upcast(): ProgressiveOutcome<Failure, Nothin
 		is ProgressiveOutcome.Failure -> this
 		is ProgressiveOutcome.Incomplete -> this
 	}
+
+// region Conversion with Progress' Progressive
+
+/**
+ * Converts an [Outcome] nested in a [Progressive] into a [ProgressiveOutcome].
+ *
+ * @see explode Reverse operation.
+ */
+@ExperimentalProgressApi
+fun <Failure, Value> Progressive<Outcome<Failure, Value>>.flatten(): ProgressiveOutcome<Failure, Value> =
+	value.withProgress(progress)
+
+/**
+ * Converts a [ProgressiveOutcome] into a [Progressive] [Outcome].
+ *
+ * In the case where in the input [ProgressiveOutcome] is [Incomplete][ProgressiveOutcome.Incomplete], `null` is returned.
+ *
+ * @see flatten Reverse operation.
+ */
+@ExperimentalProgressApi
+fun <Failure, Value> ProgressiveOutcome<Failure, Value>.explode(): Progressive<Outcome<Failure, Value>?> =
+	Progressive(asOutcome(), progress)
+
+// endregion
