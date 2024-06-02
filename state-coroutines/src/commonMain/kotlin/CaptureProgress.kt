@@ -34,6 +34,7 @@ private fun <Failure, Value> ProducerScope<ProgressiveOutcome<Failure, Value>>.p
  * of channels, which are more expensive.
  * If possible, prefer using the [failed] builder.
  */
+// TODO in #145: Rewrite on top of Progress' captureProgress
 @Suppress("RemoveExplicitTypeArguments") // IDEA bug, they are necessary here
 fun <Failure, Value> Flow<Outcome<Failure, Value>>.captureProgress(): Flow<ProgressiveOutcome<Failure, Value>> = channelFlow {
     this@captureProgress
@@ -50,6 +51,7 @@ fun <Failure, Value> Flow<Outcome<Failure, Value>>.captureProgress(): Flow<Progr
  * of channels, which are more expensive.
  * If possible, prefer using the [failed] builder.
  */
+// TODO in #145: Rewrite on top of Progress' captureProgress
 fun <Failure, Value> captureProgress(block: suspend () -> Outcome<Failure, Value>): Flow<ProgressiveOutcome<Failure, Value>> = channelFlow {
     withContext(progressExtractor()) {
         send(block().withProgress())
