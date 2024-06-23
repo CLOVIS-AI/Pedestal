@@ -1,8 +1,11 @@
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+
 plugins {
 	alias(opensavvyConventions.plugins.base)
 	alias(opensavvyConventions.plugins.kotlin.library)
 }
 
+@OptIn(ExperimentalWasmDsl::class)
 kotlin {
 	jvm()
 	js {
@@ -13,6 +16,10 @@ kotlin {
 	iosArm64()
 	iosSimulatorArm64()
 	iosX64()
+	wasmJs {
+		browser()
+		nodejs()
+	}
 
 	sourceSets.commonTest.dependencies {
 		implementation(opensavvyConventions.aligned.kotlin.test)
