@@ -69,6 +69,8 @@ check[jvm]:
       :koverHtmlReport
       -x jsBrowserTest
       -x jsNodeTest
+      -x wasmJsBrowserTest
+      -x wasmJsNodeTest
       -x linuxX64Test
       -x iosSimulatorArm64Test
       koverVerify --rerun
@@ -91,7 +93,7 @@ check[jsBrowser]:
 
   script:
     - >
-      ./gradlew jsBrowserTest
+      ./gradlew jsBrowserTest wasmJsBrowserTest
       -PappVersion=$project_version
 
   interruptible: true
@@ -102,7 +104,7 @@ check[nodeJs]:
 
   script:
     - >
-      ./gradlew jsNodeTest
+      ./gradlew jsNodeTest wasmJsNodeTest
       -PappVersion=$project_version
 
   interruptible: true
