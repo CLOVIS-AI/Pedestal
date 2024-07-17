@@ -26,9 +26,7 @@ sealed interface Progress {
      *
      * For ease of use, see the factory [done].
      */
-    object Done : Progress {
-        override fun toString() = "Done"
-    }
+    data object Done : Progress
 
     /**
      * Work is currently happening.
@@ -43,7 +41,7 @@ sealed interface Progress {
          *
          * For ease of use, see the factory [loading].
          */
-        object Unquantified : Loading {
+        data object Unquantified : Loading {
             override fun toString() = "Loading"
         }
 
