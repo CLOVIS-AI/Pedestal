@@ -4,6 +4,7 @@ import com.benwoodworth.parameterize.parameterOf
 import com.benwoodworth.parameterize.parameterize
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import opensavvy.prepared.runner.kotest.PreparedSpec
 import kotlin.test.assertContains
 
@@ -75,5 +76,17 @@ class SimpleLoadingImplementationTest : PreparedSpec({
         assertContains(set, loading(0.7))
         assertContains(set, loading(0.9))
         assertContains(set, loading(1.0))
+    }
+
+    suite("Equality") {
+        test("Equal") {
+            loading(0.0) shouldBe loading(0.0)
+        }
+
+        test("Not equal") {
+            loading(0.0) shouldNotBe loading(0.7)
+            loading(0.0) shouldNotBe Unit
+            loading(0.0) shouldNotBe null
+        }
     }
 })
