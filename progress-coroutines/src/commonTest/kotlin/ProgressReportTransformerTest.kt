@@ -34,5 +34,11 @@ class ProgressReportTransformerTest {
             report(loading(0.9))
             assertEquals(loading(0.9), value)
         }
+
+        // Calling the function without reporter should no-op, NOT fail
+        mapProgressTo(0.2..0.5) {
+            report(loading(0.0))
+            assertEquals(loading(0.9), value) // The value shouldn't be impacted, since we should no-op
+        }
     }
 }
