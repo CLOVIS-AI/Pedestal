@@ -57,4 +57,30 @@ class BuilderTest {
             ProgressiveOutcome.Incomplete(loading(0.33)).explode(),
         )
     }
+
+    private fun ProgressiveOutcome<*, *>.copyProgress() = copy(progress = loading(0.23))
+
+    @Test
+    fun copy_success() {
+        assertEquals(
+            ProgressiveOutcome.Success(Unit, loading(0.23)),
+            ProgressiveOutcome.Success(Unit).copyProgress()
+        )
+    }
+
+    @Test
+    fun copy_failure() {
+        assertEquals(
+            ProgressiveOutcome.Failure(Unit, loading(0.23)),
+            ProgressiveOutcome.Failure(Unit).copyProgress()
+        )
+    }
+
+    @Test
+    fun copy_incomplete() {
+        assertEquals(
+            ProgressiveOutcome.Incomplete(loading(0.23)),
+            ProgressiveOutcome.Incomplete().copyProgress()
+        )
+    }
 }

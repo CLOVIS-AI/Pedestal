@@ -1,6 +1,7 @@
 package opensavvy.state.progressive
 
 import opensavvy.progress.loading
+import opensavvy.state.ExperimentalProgressiveRaiseApi
 import opensavvy.state.outcome.Outcome
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -10,6 +11,29 @@ class AccessorsTest {
 
     private object Failed
 
+    // region Unsuccessful
+
+    @OptIn(ExperimentalProgressiveRaiseApi::class)
+    @Test
+    fun unsuccessfulProgressFailure() {
+        val failure = ProgressiveOutcome.Failure(Unit, loading(0.13)) as ProgressiveOutcome.Unsuccessful<Unit>
+        assertEquals(
+            loading(0.13),
+            failure.progress
+        )
+    }
+
+    @OptIn(ExperimentalProgressiveRaiseApi::class)
+    @Test
+    fun unsuccessfulProgressIncomplete() {
+        val failure = ProgressiveOutcome.Incomplete(loading(0.13)) as ProgressiveOutcome.Unsuccessful<Unit>
+        assertEquals(
+            loading(0.13),
+            failure.progress
+        )
+    }
+
+    // endregion
     // region Get or null
 
     @Test

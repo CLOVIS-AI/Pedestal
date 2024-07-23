@@ -20,6 +20,9 @@ kotlin {
 		browser()
 		nodejs()
 	}
+	wasmWasi {
+		nodejs()
+	}
 
 	sourceSets.commonTest.dependencies {
 		implementation(opensavvyConventions.aligned.kotlin.test)
