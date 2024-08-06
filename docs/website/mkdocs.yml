@@ -61,6 +61,8 @@ theme:
 
 plugins:
   - social
+  - search
+  - privacy
 
 markdown_extensions:
   - admonition
