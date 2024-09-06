@@ -66,6 +66,8 @@ include(
 
 	"backbone",
 
+	"weak",
+
 	"spine",
 	"spine-ktor",
 	"spine-ktor:spine-ktor-server",
