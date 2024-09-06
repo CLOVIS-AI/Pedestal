@@ -14,6 +14,10 @@ kotlin {
 	iosX64()
 	linuxX64()
 
+	sourceSets.jsMain.dependencies {
+		implementation(libs.kotlinJs)
+	}
+
 	sourceSets.commonTest.dependencies {
 		implementation(libs.bundles.prepared)
 	}
