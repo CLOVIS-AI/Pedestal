@@ -30,6 +30,7 @@ dependencies {
 	dokkatoo(projects.state)
 	dokkatoo(projects.stateArrow)
 	dokkatoo(projects.stateCoroutines)
+	dokkatoo(projects.weak)
 
 	kover(projects.backbone)
 	kover(projects.cache)
