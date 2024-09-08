@@ -75,3 +75,17 @@ These labels should only be applied to issues, not merge requests.
 
 <!-- **Labels specific to this project** -->
 <!-- Use the same format to document all labels used by this project. -->
+
+<details open>
+<summary>Library modules</summary>
+
+We do not always use these labels. When in doubt, write a comment asking for precision.
+These labels should only be applied to issues, not merge requests.
+
+- ~progress: Issues for the `:progress` library and its compat modules.
+- ~state: Issues for the `:state` library and its compat modules.
+- ~cache: Issues for the `:cache` library and its compat modules.
+- ~backbone: Issues for the `:backbone` library.
+- ~weak: Issues for the `:weak` library and its compat modules.
+
+</details>
