@@ -22,7 +22,7 @@ import kotlin.reflect.KProperty
  * The default implementation is available via the top-level [WeakMap] function.
  * Other implementations are available in the `algorithms` subpackage.
  */
-interface WeakMap<in K, V : Any> {
+interface WeakMap<in K, V> {
 
 	/**
 	 * Gets the value associated with [key] in this map.
@@ -84,7 +84,7 @@ interface WeakMap<in K, V : Any> {
  * use the [Any.equals] function.
  */
 @ExperimentalWeakApi
-expect fun <K, V : Any> WeakMap(): WeakMap<K, V>
+expect fun <K, V> WeakMap(): WeakMap<K, V>
 
 /**
  * Instantiates a new [WeakMap] by copying [values].
@@ -101,7 +101,7 @@ expect fun <K, V : Any> WeakMap(): WeakMap<K, V>
  * use the [Any.equals] function.
  */
 @ExperimentalWeakApi
-expect fun <K, V : Any> WeakMap(values: Map<K, V>): WeakMap<K, V>
+expect fun <K, V> WeakMap(values: Map<K, V>): WeakMap<K, V>
 
 // endregion
 // region getOrXXX helpers
@@ -110,7 +110,7 @@ expect fun <K, V : Any> WeakMap(values: Map<K, V>): WeakMap<K, V>
  * Attempts to find the value associated with [key], returning [defaultValue] if none is found.
  */
 @ExperimentalWeakApi
-inline fun <K, V : Any> WeakMap<K, V>.getOrDefault(key: K, defaultValue: V): V =
+inline fun <K, V> WeakMap<K, V>.getOrDefault(key: K, defaultValue: V): V =
 	get(key) ?: defaultValue
 
 /**
@@ -119,7 +119,7 @@ inline fun <K, V : Any> WeakMap<K, V>.getOrDefault(key: K, defaultValue: V): V =
  * @see Map.getOrElse Equivalent method for regular maps.
  */
 @ExperimentalWeakApi
-inline fun <K, V : Any> WeakMap<K, V>.getOrElse(key: K, defaultValue: () -> V): V =
+inline fun <K, V> WeakMap<K, V>.getOrElse(key: K, defaultValue: () -> V): V =
 	get(key) ?: defaultValue()
 
 /**
@@ -134,7 +134,7 @@ inline fun <K, V : Any> WeakMap<K, V>.getOrElse(key: K, defaultValue: () -> V): 
  * @see MutableMap.getOrPut Equivalent method for regular maps.
  */
 @ExperimentalWeakApi
-inline fun <K, V : Any> WeakMap<K, V>.getOrPut(key: K, defaultValue: () -> V): V =
+inline fun <K, V> WeakMap<K, V>.getOrPut(key: K, defaultValue: () -> V): V =
 	get(key) ?: run {
 		val new = defaultValue()
 		set(key, new)
@@ -162,7 +162,7 @@ inline fun <K, V : Any> WeakMap<K, V>.getOrPut(key: K, defaultValue: () -> V): V
  * @see Map.getValue Equivalent method for regular maps.
  */
 @ExperimentalWeakApi
-inline operator fun <V : Any> WeakMap<String, V>.getValue(thisRef: Any?, property: KProperty<*>): V? =
+inline operator fun <V> WeakMap<String, V>.getValue(thisRef: Any?, property: KProperty<*>): V? =
 	get(property.name)
 
 /**
@@ -183,7 +183,7 @@ inline operator fun <V : Any> WeakMap<String, V>.getValue(thisRef: Any?, propert
  * @see MutableMap.setValue Equivalent method for regular maps.
  */
 @ExperimentalWeakApi
-inline operator fun <V : Any> WeakMap<String, V>.setValue(thisRef: Any?, property: KProperty<*>, value: V) {
+inline operator fun <V> WeakMap<String, V>.setValue(thisRef: Any?, property: KProperty<*>, value: V) {
 	set(property.name, value)
 }
 
@@ -196,7 +196,7 @@ inline operator fun <V : Any> WeakMap<String, V>.setValue(thisRef: Any?, propert
  * @see MutableMap.putAll Equivalent method for regular maps.
  */
 @ExperimentalWeakApi
-fun <K, V : Any> WeakMap<K, in V>.setAll(from: Map<out K, V>) {
+fun <K, V> WeakMap<K, in V>.setAll(from: Map<out K, V>) {
 	for ((k, v) in from) {
 		set(k, v)
 	}
@@ -206,7 +206,7 @@ fun <K, V : Any> WeakMap<K, in V>.setAll(from: Map<out K, V>) {
  * Removes the specified keys from this map.
  */
 @ExperimentalWeakApi
-fun <K, V : Any> WeakMap<K, V>.removeAll(from: Iterable<K>) {
+fun <K, V> WeakMap<K, V>.removeAll(from: Iterable<K>) {
 	for (k in from) {
 		remove(k)
 	}
@@ -216,7 +216,7 @@ fun <K, V : Any> WeakMap<K, V>.removeAll(from: Iterable<K>) {
  * Removes the specified associations from this map.
  */
 @ExperimentalWeakApi
-fun <K, V : Any> WeakMap<K, V>.removeAll(from: Map<out K, V>) {
+fun <K, V> WeakMap<K, V>.removeAll(from: Map<out K, V>) {
 	for ((k, v) in from) {
 		remove(k, v)
 	}
@@ -231,7 +231,7 @@ fun <K, V : Any> WeakMap<K, V>.removeAll(from: Map<out K, V>) {
  * If [key] is associated to another value than [value], nothing happens.
  */
 @ExperimentalWeakApi
-fun <K, V : Any> WeakMap<K, V>.remove(key: K, value: V) {
+fun <K, V> WeakMap<K, V>.remove(key: K, value: V) {
 	if (get(key) == value) {
 		remove(key)
 	}

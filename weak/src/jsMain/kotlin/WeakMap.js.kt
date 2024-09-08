@@ -2,7 +2,7 @@ package opensavvy.pedestal.weak
 
 import js.array.tupleOf
 
-private class JsWeakMap<K, V : Any>(
+private class JsWeakMap<K, V>(
 	private val wrapped: js.collections.WeakMap<K & Any, V>
 ) : WeakMap<K, V> {
 	override fun get(key: K): V? {
@@ -47,7 +47,7 @@ private class JsWeakMap<K, V : Any>(
  * This implementation is backed by a JS [WeakMap][js.collections.WeakMap].
  */
 @ExperimentalWeakApi
-actual fun <K, V : Any> WeakMap(): WeakMap<K, V> =
+actual fun <K, V> WeakMap(): WeakMap<K, V> =
 	JsWeakMap(js.collections.WeakMap<K & Any, V>())
 
 /**
@@ -56,7 +56,7 @@ actual fun <K, V : Any> WeakMap(): WeakMap<K, V> =
  * This implementation is backed by a JS [WeakMap][js.collections.WeakMap].
  */
 @ExperimentalWeakApi
-actual fun <K, V : Any> WeakMap(values: Map<K, V>): WeakMap<K, V> {
+actual fun <K, V> WeakMap(values: Map<K, V>): WeakMap<K, V> {
 	val map = js.collections.WeakMap<K & Any, V>(
 		values
 			.mapNotNull { (k, v) ->

@@ -2,7 +2,7 @@ package opensavvy.pedestal.weak
 
 import java.util.*
 
-private class JavaWeakMap<K, V : Any>(
+private class JavaWeakMap<K, V>(
 	private val wrapped: WeakHashMap<K, V>
 ) : WeakMap<K, V> {
 
@@ -31,7 +31,7 @@ private class JavaWeakMap<K, V : Any>(
  * This implementation is backed by a Java [WeakHashMap].
  */
 @ExperimentalWeakApi
-actual fun <K, V : Any> WeakMap(): WeakMap<K, V> =
+actual fun <K, V> WeakMap(): WeakMap<K, V> =
 	JavaWeakMap(WeakHashMap())
 
 /**
@@ -40,5 +40,5 @@ actual fun <K, V : Any> WeakMap(): WeakMap<K, V> =
  * This implementation is backed by a Java [WeakHashMap].
  */
 @ExperimentalWeakApi
-actual fun <K, V : Any> WeakMap(values: Map<K, V>): WeakMap<K, V> =
+actual fun <K, V> WeakMap(values: Map<K, V>): WeakMap<K, V> =
 	JavaWeakMap(WeakHashMap(values))
