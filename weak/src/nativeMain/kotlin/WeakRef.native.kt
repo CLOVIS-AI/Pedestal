@@ -1,5 +1,6 @@
 package opensavvy.pedestal.weak
 
+import opensavvy.pedestal.weak.algorithms.EmptyWeakRef
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
 
@@ -22,8 +23,9 @@ private class NativeWeakRef<T : Any>(
  */
 @ExperimentalWeakApi
 @ExperimentalNativeApi
-actual fun <T : Any> WeakRef(value: T): WeakRef<T> =
-	NativeWeakRef(value)
+actual fun <T> WeakRef(value: T): WeakRef<T> =
+	if (value == null) EmptyWeakRef(value)
+	else NativeWeakRef(value)
 
 /**
  * Implementation of [WeakRef] backed by a native [WeakReference].
@@ -33,5 +35,5 @@ actual fun <T : Any> WeakRef(value: T): WeakRef<T> =
 @ExperimentalWeakApi
 @ExperimentalNativeApi
 @Suppress("FunctionName")
-actual fun <T : Any> SoftRef(value: T): WeakRef<T> =
-	NativeWeakRef(value)
+actual fun <T> SoftRef(value: T): WeakRef<T> =
+	WeakRef(value)

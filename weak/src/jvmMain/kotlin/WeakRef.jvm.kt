@@ -4,7 +4,7 @@ import java.lang.ref.Reference
 import java.lang.ref.SoftReference
 import java.lang.ref.WeakReference
 
-private class JavaReferenceHolder<T : Any>(
+private class JavaReferenceHolder<T>(
 	private val reference: Reference<T>,
 ) : WeakRef<T> {
 
@@ -25,7 +25,7 @@ fun <T : Any> WeakRef.Companion.fromJava(reference: Reference<T>): WeakRef<T> =
  * Implementation of [WeakRef] backed by a JVM [WeakReference].
  */
 @ExperimentalWeakApi
-actual fun <T : Any> WeakRef(value: T): WeakRef<T> =
+actual fun <T> WeakRef(value: T): WeakRef<T> =
 	JavaReferenceHolder(WeakReference(value))
 
 /**
@@ -33,5 +33,5 @@ actual fun <T : Any> WeakRef(value: T): WeakRef<T> =
  */
 @ExperimentalWeakApi
 @Suppress("FunctionName")
-actual fun <T : Any> SoftRef(value: T): WeakRef<T> =
+actual fun <T> SoftRef(value: T): WeakRef<T> =
 	JavaReferenceHolder(SoftReference(value))

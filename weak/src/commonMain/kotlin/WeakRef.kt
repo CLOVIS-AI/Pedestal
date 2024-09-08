@@ -7,6 +7,11 @@ package opensavvy.pedestal.weak
  * **at any time**. Garbage collectors are complex machinery. One should take care _not_ to write code that depends
  * on the behavior of a specific garbage collector, as that behavior can change between future versions.
  *
+ * Storing `null` is technically allowed for convenience reasons, but doesn't make much sense.
+ * It is not possible to distinguish between a weak reference that stores `null` and one that used store a value
+ * but has been cleared.
+ * Therefore, implementations are free to not store `null` values at all.
+ *
  * ### Obtain instances
  *
  * The default implementations are available via the top-level [WeakRef] and [SoftRef] functions.
@@ -16,7 +21,7 @@ package opensavvy.pedestal.weak
  *
  * This interface is not stable for inheritance. We may add new methods at any time.
  */
-interface WeakRef<out T : Any> {
+interface WeakRef<out T> {
 
 	/**
 	 * Attempts to read the value held by this reference.
@@ -57,7 +62,7 @@ interface WeakRef<out T : Any> {
  * @see SoftRef For implementing caches
  */
 @ExperimentalWeakApi
-expect fun <T : Any> WeakRef(value: T): WeakRef<T>
+expect fun <T> WeakRef(value: T): WeakRef<T>
 
 /**
  * Instantiates a soft reference: a reference to a [value] that doesn't stop
@@ -80,4 +85,4 @@ expect fun <T : Any> WeakRef(value: T): WeakRef<T>
  */
 @ExperimentalWeakApi
 @Suppress("FunctionName")
-expect fun <T : Any> SoftRef(value: T): WeakRef<T>
+expect fun <T> SoftRef(value: T): WeakRef<T>

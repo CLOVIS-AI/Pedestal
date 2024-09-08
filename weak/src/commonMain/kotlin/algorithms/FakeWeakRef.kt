@@ -12,7 +12,7 @@ import opensavvy.pedestal.weak.WeakRef
  * Use this implementation to help trigger edge cases in algorithms that use weak references.
  */
 @ExperimentalWeakApi
-class FakeWeakRef<T : Any>(
+class FakeWeakRef<T>(
 	value: T
 ) : WeakRef<T> {
 	private var value: T? = value

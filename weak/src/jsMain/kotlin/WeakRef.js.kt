@@ -1,5 +1,7 @@
 package opensavvy.pedestal.weak
 
+import opensavvy.pedestal.weak.algorithms.EmptyWeakRef
+
 private class JsWeakRef<T : Any>(
 	value: T
 ) : WeakRef<T> {
@@ -20,8 +22,9 @@ private class JsWeakRef<T : Any>(
  * JS doesn't make a difference between weak and soft references.
  */
 @ExperimentalWeakApi
-actual fun <T : Any> WeakRef(value: T): WeakRef<T> =
-	JsWeakRef(value)
+actual fun <T> WeakRef(value: T): WeakRef<T> =
+	if (value == null) EmptyWeakRef(value)
+	else JsWeakRef(value)
 
 /**
  * Implementation of [WeakRef] backed by a JS [WeakRef][js.memory.WeakRef].
@@ -30,5 +33,5 @@ actual fun <T : Any> WeakRef(value: T): WeakRef<T> =
  */
 @ExperimentalWeakApi
 @Suppress("FunctionName")
-actual fun <T : Any> SoftRef(value: T): WeakRef<T> =
-	JsWeakRef(value)
+actual fun <T> SoftRef(value: T): WeakRef<T> =
+	WeakRef(value)
