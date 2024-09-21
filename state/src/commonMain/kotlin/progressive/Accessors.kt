@@ -66,8 +66,8 @@ fun <Failure, Value> ProgressiveOutcome<Failure, Value>.asOutcome() = when (this
 	is Incomplete -> null
 }
 
-//endregion
-//region Destructuration
+// endregion
+// region Destructuration
 
 /**
  * Syntax sugar for [asOutcome].
@@ -79,4 +79,4 @@ operator fun <Failure, Value> ProgressiveOutcome<Failure, Value>.component1() = 
  */
 operator fun ProgressiveOutcome<*, *>.component2() = progress
 
-//endregion
+// endregion

@@ -7,134 +7,134 @@ import kotlin.test.assertTrue
 
 class ConditionalTest : PreparedSpec({
 
-    @Suppress("LocalVariableName")
-    val Failed = "FAILED"
+	@Suppress("LocalVariableName")
+	val Failed = "FAILED"
 
-    suite("onSuccess") {
-        test("Success") {
-            var test = false
+	suite("onSuccess") {
+		test("Success") {
+			var test = false
 
-            ProgressiveOutcome.Success(5).onSuccess {
-                test = true
-            }
+			ProgressiveOutcome.Success(5).onSuccess {
+				test = true
+			}
 
-            assertTrue(test)
-        }
+			assertTrue(test)
+		}
 
-        test("Failure") {
-            var test = false
+		test("Failure") {
+			var test = false
 
-            ProgressiveOutcome.Failure(Failed).onSuccess {
-                test = true
-            }
+			ProgressiveOutcome.Failure(Failed).onSuccess {
+				test = true
+			}
 
-            assertFalse(test)
-        }
+			assertFalse(test)
+		}
 
-        test("Incomplete") {
-            var test = false
+		test("Incomplete") {
+			var test = false
 
-            ProgressiveOutcome.Incomplete().onSuccess {
-                test = true
-            }
+			ProgressiveOutcome.Incomplete().onSuccess {
+				test = true
+			}
 
-            assertFalse(test)
-        }
-    }
+			assertFalse(test)
+		}
+	}
 
-    suite("onFailure") {
-        test("Success") {
-            var test = false
+	suite("onFailure") {
+		test("Success") {
+			var test = false
 
-            ProgressiveOutcome.Success(5).onFailure {
-                test = true
-            }
+			ProgressiveOutcome.Success(5).onFailure {
+				test = true
+			}
 
-            assertFalse(test)
-        }
+			assertFalse(test)
+		}
 
-        test("Failure") {
-            var test = false
+		test("Failure") {
+			var test = false
 
-            ProgressiveOutcome.Failure(Failed).onFailure {
-                test = true
-            }
+			ProgressiveOutcome.Failure(Failed).onFailure {
+				test = true
+			}
 
-            assertTrue(test)
-        }
+			assertTrue(test)
+		}
 
-        test("Incomplete") {
-            var test = false
+		test("Incomplete") {
+			var test = false
 
-            ProgressiveOutcome.Incomplete().onFailure {
-                test = true
-            }
+			ProgressiveOutcome.Incomplete().onFailure {
+				test = true
+			}
 
-            assertFalse(test)
-        }
-    }
+			assertFalse(test)
+		}
+	}
 
-    suite("onIncomplete") {
-        test("Success") {
-            var test = false
+	suite("onIncomplete") {
+		test("Success") {
+			var test = false
 
-            ProgressiveOutcome.Success(5).onIncomplete {
-                test = true
-            }
+			ProgressiveOutcome.Success(5).onIncomplete {
+				test = true
+			}
 
-            assertFalse(test)
-        }
+			assertFalse(test)
+		}
 
-        test("Failure") {
-            var test = false
+		test("Failure") {
+			var test = false
 
-            ProgressiveOutcome.Failure(Failed).onIncomplete {
-                test = true
-            }
+			ProgressiveOutcome.Failure(Failed).onIncomplete {
+				test = true
+			}
 
-            assertFalse(test)
-        }
+			assertFalse(test)
+		}
 
-        test("Incomplete") {
-            var test = false
+		test("Incomplete") {
+			var test = false
 
-            ProgressiveOutcome.Incomplete().onIncomplete {
-                test = true
-            }
+			ProgressiveOutcome.Incomplete().onIncomplete {
+				test = true
+			}
 
-            assertTrue(test)
-        }
-    }
+			assertTrue(test)
+		}
+	}
 
-    suite("onLoading") {
-        test("Done") {
-            var test = false
+	suite("onLoading") {
+		test("Done") {
+			var test = false
 
-            ProgressiveOutcome.Success(5).onLoading {
-                test = true
-            }
+			ProgressiveOutcome.Success(5).onLoading {
+				test = true
+			}
 
-            assertFalse(test)
-        }
+			assertFalse(test)
+		}
 
-        test("Loading") {
-            var test = false
+		test("Loading") {
+			var test = false
 
-            ProgressiveOutcome.Failure(Failed, loading(0.2)).onLoading {
-                test = true
-            }
+			ProgressiveOutcome.Failure(Failed, loading(0.2)).onLoading {
+				test = true
+			}
 
-            assertTrue(test)
-        }
+			assertTrue(test)
+		}
 
-        test("Incomplete") {
-            var test = false
+		test("Incomplete") {
+			var test = false
 
-            ProgressiveOutcome.Incomplete().onLoading {
-                test = true
-            }
+			ProgressiveOutcome.Incomplete().onLoading {
+				test = true
+			}
 
-            assertTrue(test)
-        }
-    }
+			assertTrue(test)
+		}
+	}
 })

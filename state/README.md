@@ -25,6 +25,7 @@ syntax sugar for this style of error management, but they lack a representation 
 the current progress of an information).
 
 Pedestal State is built on top of Arrow, and adds:
+
 - Clearly named [success][opensavvy.state.outcome.Outcome.Success] and [failure][opensavvy.state.outcome.Outcome.Failure] cases, instead of [Right][arrow.core.Either.Right] and [Left][arrow.core.Either.Left],
 - Support for [in-progress results][opensavvy.state.progressive.ProgressiveOutcome],
 - Helpers to handle failed operations in reactive contexts (e.g. Compose): [onSuccess][opensavvy.state.progressive.onSuccess], [onFailure][opensavvy.state.progressive.onFailure], [onIncomplete][opensavvy.state.progressive.onIncomplete], [onLoading][opensavvy.state.progressive.onLoading],
@@ -71,6 +72,7 @@ when (val result = createAccount(username, password, passwordCopy)) {
 ```
 
 Now, let's rewrite this using State:
+
 ```kotlin
 // ①. Declare the failure reasons (no need to declare the successful case)
 sealed class AccountCreationFailure {

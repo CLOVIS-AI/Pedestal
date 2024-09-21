@@ -12,76 +12,76 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalProgressApi::class)
 class BuilderTest : PreparedSpec({
 
-    @Suppress("LocalVariableName")
-    val Failed = "FAILED"
+	@Suppress("LocalVariableName")
+	val Failed = "FAILED"
 
-    suite("With progress") {
-        test("Success") {
-            assertEquals(
-                ProgressiveOutcome.Success(5, loading(0.57)),
-                Outcome.Success(5).withProgress(loading(0.57)),
-            )
-        }
+	suite("With progress") {
+		test("Success") {
+			assertEquals(
+				ProgressiveOutcome.Success(5, loading(0.57)),
+				Outcome.Success(5).withProgress(loading(0.57)),
+			)
+		}
 
-        test("Failure") {
-            assertEquals(
-                ProgressiveOutcome.Failure(Failed, loading(0.57)),
-                Outcome.Failure(Failed).withProgress(loading(0.57)),
-            )
-        }
-    }
+		test("Failure") {
+			assertEquals(
+				ProgressiveOutcome.Failure(Failed, loading(0.57)),
+				Outcome.Failure(Failed).withProgress(loading(0.57)),
+			)
+		}
+	}
 
-    suite("Convert to Progressive") {
-        test("Success") {
-            val initial = Progressive(5.successful(), loading(0.2))
+	suite("Convert to Progressive") {
+		test("Success") {
+			val initial = Progressive(5.successful(), loading(0.2))
 
-            assertEquals(
-                initial,
-                initial.flatten().explode(),
-            )
-        }
+			assertEquals(
+				initial,
+				initial.flatten().explode(),
+			)
+		}
 
-        test("Failure") {
-            val initial = Progressive(3.failed(), loading(0.1))
+		test("Failure") {
+			val initial = Progressive(3.failed(), loading(0.1))
 
-            assertEquals(
-                initial,
-                initial.flatten().explode(),
-            )
-        }
+			assertEquals(
+				initial,
+				initial.flatten().explode(),
+			)
+		}
 
-        test("Incomplete") {
-            assertEquals(
-                Progressive(null, loading(0.33)),
-                ProgressiveOutcome.Incomplete(loading(0.33)).explode(),
-            )
-        }
-    }
+		test("Incomplete") {
+			assertEquals(
+				Progressive(null, loading(0.33)),
+				ProgressiveOutcome.Incomplete(loading(0.33)).explode(),
+			)
+		}
+	}
 
-    suite("Copy function") {
+	suite("Copy function") {
 
-        fun ProgressiveOutcome<*, *>.copyProgress() =
-            copy(progress = loading(0.23))
+		fun ProgressiveOutcome<*, *>.copyProgress() =
+			copy(progress = loading(0.23))
 
-        test("Success") {
-            assertEquals(
-                ProgressiveOutcome.Success(Unit, loading(0.23)),
-                ProgressiveOutcome.Success(Unit).copyProgress()
-            )
-        }
+		test("Success") {
+			assertEquals(
+				ProgressiveOutcome.Success(Unit, loading(0.23)),
+				ProgressiveOutcome.Success(Unit).copyProgress()
+			)
+		}
 
-        test("Failure") {
-            assertEquals(
-                ProgressiveOutcome.Failure(Unit, loading(0.23)),
-                ProgressiveOutcome.Failure(Unit).copyProgress()
-            )
-        }
+		test("Failure") {
+			assertEquals(
+				ProgressiveOutcome.Failure(Unit, loading(0.23)),
+				ProgressiveOutcome.Failure(Unit).copyProgress()
+			)
+		}
 
-        test("Incomplete") {
-            assertEquals(
-                ProgressiveOutcome.Incomplete(loading(0.23)),
-                ProgressiveOutcome.Incomplete().copyProgress()
-            )
-        }
-    }
+		test("Incomplete") {
+			assertEquals(
+				ProgressiveOutcome.Incomplete(loading(0.23)),
+				ProgressiveOutcome.Incomplete().copyProgress()
+			)
+		}
+	}
 })

@@ -25,17 +25,17 @@ import opensavvy.state.progressive.ProgressiveOutcome
  */
 sealed class Outcome<out Failure, out Value> {
 
-    /**
-     * The latest known result of the operation was a success, available as [value].
-     */
-    data class Success<Value>(
-        val value: Value,
-    ) : Outcome<Nothing, Value>()
+	/**
+	 * The latest known result of the operation was a success, available as [value].
+	 */
+	data class Success<Value>(
+		val value: Value,
+	) : Outcome<Nothing, Value>()
 
-    /**
-     * The latest known result of the operation was a failure, available as [failure].
-     */
-    data class Failure<Failure>(
-        val failure: Failure,
-    ) : Outcome<Failure, Nothing>()
+	/**
+	 * The latest known result of the operation was a failure, available as [failure].
+	 */
+	data class Failure<Failure>(
+		val failure: Failure,
+	) : Outcome<Failure, Nothing>()
 }

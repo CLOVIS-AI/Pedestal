@@ -4,50 +4,50 @@ import opensavvy.prepared.runner.kotest.PreparedSpec
 
 class ConditionalTest : PreparedSpec({
 
-    @Suppress("LocalVariableName")
-    val Failed = "FAILED"
+	@Suppress("LocalVariableName")
+	val Failed = "FAILED"
 
-    suite("onSuccess") {
-        test("Success") {
-            var test = false
+	suite("onSuccess") {
+		test("Success") {
+			var test = false
 
-            Outcome.Success(5).onSuccess {
-                test = true
-            }
+			Outcome.Success(5).onSuccess {
+				test = true
+			}
 
-            check(test)
-        }
+			check(test)
+		}
 
-        test("Failure") {
-            var test = false
+		test("Failure") {
+			var test = false
 
-            Outcome.Failure(Failed).onSuccess {
-                test = true
-            }
+			Outcome.Failure(Failed).onSuccess {
+				test = true
+			}
 
-            check(!test)
-        }
-    }
+			check(!test)
+		}
+	}
 
-    suite("onFailure") {
-        test("Success") {
-            var test = false
+	suite("onFailure") {
+		test("Success") {
+			var test = false
 
-            Outcome.Success(5).onFailure {
-                test = true
-            }
+			Outcome.Success(5).onFailure {
+				test = true
+			}
 
-            check(!test)
-        }
+			check(!test)
+		}
 
-        test("Failure") {
-            var test = false
+		test("Failure") {
+			var test = false
 
-            Outcome.Failure(Failed).onFailure {
-                test = true
-            }
+			Outcome.Failure(Failed).onFailure {
+				test = true
+			}
 
-            check(test)
-        }
-    }
+			check(test)
+		}
+	}
 })
