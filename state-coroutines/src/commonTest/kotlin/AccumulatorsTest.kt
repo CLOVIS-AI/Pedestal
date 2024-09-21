@@ -2,17 +2,15 @@ package opensavvy.state.coroutines
 
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.combineCompleted
-import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class AccumulatorsTest {
+class AccumulatorsTest : PreparedSpec({
 
-	@Test
-	fun flow() = runTest {
+	test("Flow") {
 		val initial = listOf(
 			ProgressiveOutcome.Incomplete(loading()),
 			ProgressiveOutcome.Incomplete(loading(0.0)),
@@ -39,5 +37,4 @@ class AccumulatorsTest {
 
 		assertEquals(expected, actual)
 	}
-
-}
+})

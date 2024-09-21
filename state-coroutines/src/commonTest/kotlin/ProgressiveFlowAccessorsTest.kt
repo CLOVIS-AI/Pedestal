@@ -1,21 +1,17 @@
 package opensavvy.state.coroutines
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runTest
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome
-import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class ProgressiveFlowAccessorsTest {
+class ProgressiveFlowAccessorsTest : PreparedSpec({
 
-    private data class NotFound(val value: Int)
+    data class NotFound(val value: Int)
 
-    @Test
-    fun failure() = runTest {
+    test("Failure") {
         val input = flowOf(
             ProgressiveOutcome.Incomplete(loading(0.3)),
             ProgressiveOutcome.Failure(NotFound(2), loading(0.4)),
@@ -28,8 +24,7 @@ class ProgressiveFlowAccessorsTest {
         )
     }
 
-    @Test
-    fun success() = runTest {
+    test("Success") {
         val input = flowOf(
             ProgressiveOutcome.Incomplete(loading(0.3)),
             ProgressiveOutcome.Failure(NotFound(2), loading(0.4)),
@@ -41,4 +36,4 @@ class ProgressiveFlowAccessorsTest {
             input.now(),
         )
     }
-}
+})

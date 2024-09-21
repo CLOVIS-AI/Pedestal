@@ -1,23 +1,19 @@
 package opensavvy.state.coroutines
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.runTest
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.coroutines.report
 import opensavvy.progress.loading
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome
-import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class CaptureProgressTest {
+private object Error
 
-    private object Error
+class CaptureProgressTest : PreparedSpec({
 
-    @Test
-    fun captureFromFlow() = runTest {
+    test("captureFromFlow") {
         val actual = flow {
             report(loading(0.2))
             report(loading(0.5))
@@ -38,8 +34,7 @@ class CaptureProgressTest {
         assertEquals(expect, actual)
     }
 
-    @Test
-    fun captureFromBlock() = runTest {
+    test("captureFromBlock") {
         val actual = captureProgress {
             report(loading(0.2))
             report(loading(0.7))
@@ -54,4 +49,4 @@ class CaptureProgressTest {
 
         assertEquals(expect, actual)
     }
-}
+})
