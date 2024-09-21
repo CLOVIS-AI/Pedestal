@@ -1,54 +1,53 @@
 package opensavvy.state.outcome
 
-import kotlin.test.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import opensavvy.prepared.runner.kotest.PreparedSpec
 
-class ConditionalTest {
+class ConditionalTest : PreparedSpec({
 
-    private object Failed
+    @Suppress("LocalVariableName")
+    val Failed = "FAILED"
 
-    @Test
-    fun success_onSuccess() {
-        var test = false
+    suite("onSuccess") {
+        test("Success") {
+            var test = false
 
-        Outcome.Success(5).onSuccess {
-            test = true
+            Outcome.Success(5).onSuccess {
+                test = true
+            }
+
+            check(test)
         }
 
-        assertTrue(test)
+        test("Failure") {
+            var test = false
+
+            Outcome.Failure(Failed).onSuccess {
+                test = true
+            }
+
+            check(!test)
+        }
     }
 
-    @Test
-    fun failure_onSuccess() {
-        var test = false
+    suite("onFailure") {
+        test("Success") {
+            var test = false
 
-        Outcome.Failure(Failed).onSuccess {
-            test = true
+            Outcome.Success(5).onFailure {
+                test = true
+            }
+
+            check(!test)
         }
 
-        assertFalse(test)
-    }
+        test("Failure") {
+            var test = false
 
-    @Test
-    fun success_onFailure() {
-        var test = false
+            Outcome.Failure(Failed).onFailure {
+                test = true
+            }
 
-        Outcome.Success(5).onFailure {
-            test = true
+            check(test)
         }
-
-        assertFalse(test)
     }
-
-    @Test
-    fun failure_onFailure() {
-        var test = false
-
-        Outcome.Failure(Failed).onFailure {
-            test = true
-        }
-
-        assertTrue(test)
-    }
-}
+})
