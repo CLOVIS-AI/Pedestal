@@ -16,26 +16,21 @@ kotlin {
     iosX64()
     linuxX64()
 
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                api(projects.state)
-                api(libs.kotlinx.coroutines.core)
+    sourceSets.commonMain.dependencies {
+        api(projects.state)
+        api(libs.kotlinx.coroutines.core)
 
-                api(projects.progress)
-                api(projects.progressCoroutines)
+        api(projects.progressCoroutines)
 
-                implementation(projects.logger)
-            }
-        }
+        implementation(projects.logger)
+    }
 
-        val commonTest by getting {
-            dependencies {
-                implementation(projects.tester)
+    sourceSets.commonTest.dependencies {
+        implementation(libs.bundles.prepared)
+        implementation(projects.stateArrow)
 
-                api(libs.kotlinx.coroutines.test)
-            }
-        }
+        api(libs.kotlinx.coroutines.test)
+        implementation(projects.tester)
     }
 }
 
