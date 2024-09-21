@@ -2,95 +2,93 @@ package opensavvy.state.arrow
 
 import arrow.core.left
 import arrow.core.right
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
 import opensavvy.state.outcome.failed
 import opensavvy.state.outcome.successful
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.failedWithProgress
 import opensavvy.state.progressive.successfulWithProgress
-import kotlin.test.Test
+import opensavvy.state.progressive.withProgress
 import kotlin.test.assertEquals
 
-class ConverterTest {
+class ConverterTest : PreparedSpec({
 
-    private data class NotFound(val value: Int)
+	data class NotFound(val value: Int)
 
-    // region To either
+	suite("To either") {
+		suite("Outcome") {
 
-    @Test
-    fun outcomeSuccess() {
-        assertEquals(
-            5.right(),
-            5.successful().toEither()
-        )
-    }
+			test("Success") {
+				assertEquals(
+					5.right(),
+					5.successful().toEither()
+				)
+			}
 
-    @Test
-    fun outcomeFailure() {
-        assertEquals(
-            NotFound(5).left(),
-            NotFound(5).failed().toEither()
-        )
-    }
+			test("Failure") {
+				assertEquals(
+					NotFound(5).left(),
+					NotFound(5).failed().toEither()
+				)
+			}
+		}
 
-    @Test
-    fun progressiveSuccess() {
-        assertEquals(
-            5.right(),
-            5.successfulWithProgress().toEither(),
-        )
-    }
+		suite("ProgressiveOutcome") {
+			test("Success") {
+				assertEquals(
+					5.right(),
+					5.successful().withProgress(loading(0.2)).toEither()
+				)
+			}
 
-    @Test
-    fun progressiveFailure() {
-        assertEquals(
-            NotFound(5).left(),
-            NotFound(5).failedWithProgress().toEither(),
-        )
-    }
+			test("Failure") {
+				assertEquals(
+					NotFound(5).left(),
+					NotFound(5).failedWithProgress().toEither(),
+				)
+			}
 
-    @Test
-    fun progressiveIncomplete() {
-        assertEquals(
-            null,
-            ProgressiveOutcome.Incomplete().toEither(),
-        )
-    }
+			test("Incomplete") {
+				assertEquals(
+					null,
+					ProgressiveOutcome.Incomplete().toEither(),
+				)
+			}
+		}
+	}
 
-    // endregion
-    // region From either
+	suite("From either") {
+		suite("Outcome") {
+			test("Success") {
+				assertEquals(
+					5.successful(),
+					5.right().toOutcome()
+				)
+			}
 
-    @Test
-    fun toOutcomeSuccess() {
-        assertEquals(
-            5.successful(),
-            5.right().toOutcome()
-        )
-    }
+			test("Failure") {
+				assertEquals(
+					NotFound(5).failed(),
+					NotFound(5).left().toOutcome()
+				)
+			}
+		}
 
-    @Test
-    fun toOutcomeFailure() {
-        assertEquals(
-            NotFound(5).failed(),
-            NotFound(5).left().toOutcome()
-        )
-    }
+		suite("ProgressiveOutcome") {
+			suite("Success") {
+				assertEquals(
+					5.successfulWithProgress(progress = loading(0.5)),
+					5.right().toOutcome(progress = loading(0.5)),
+				)
+			}
 
-    @Test
-    fun toProgressiveSuccess() {
-        assertEquals(
-            5.successfulWithProgress(progress = loading(0.5)),
-            5.right().toOutcome(progress = loading(0.5)),
-        )
-    }
-
-    @Test
-    fun toProgressiveFailure() {
-        assertEquals(
-            NotFound(5).failedWithProgress(progress = loading(0.5)),
-            NotFound(5).left().toOutcome(progress = loading(0.5)),
-        )
-    }
-
-    // endregion
-}
+			suite("Failure") {
+				assertEquals(
+					NotFound(5).failedWithProgress(progress = loading(0.5)),
+					NotFound(5).left().toOutcome(progress = loading(0.5)),
+				)
+			}
+		}
+	}
+})
