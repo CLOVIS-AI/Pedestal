@@ -13,18 +13,18 @@ import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.withProgress
 
 private fun <Failure, Value> ProducerScope<ProgressiveOutcome<Failure, Value>>.progressExtractor() = CoroutineProgressReporter {
-    if (it is Progress.Loading) {
-        val result = trySend(ProgressiveOutcome.Incomplete(it))
+	if (it is Progress.Loading) {
+		val result = trySend(ProgressiveOutcome.Incomplete(it))
 
-        if (result.isFailure) {
-            loggerFor(this).warn(
-                it,
-                result
-            ) { "Could not send the progression event to the channel, it has been ignored" }
-        }
-    }
-    // else: the action has reported that it's over, but the results haven't reached us yet, they'll probably
-    //       arrive just afterward
+		if (result.isFailure) {
+			loggerFor(this).warn(
+				it,
+				result
+			) { "Could not send the progression event to the channel, it has been ignored" }
+		}
+	}
+	// else: the action has reported that it's over, but the results haven't reached us yet, they'll probably
+	//       arrive just afterward
 }
 
 /**
@@ -37,11 +37,11 @@ private fun <Failure, Value> ProducerScope<ProgressiveOutcome<Failure, Value>>.p
 // TODO in #145: Rewrite on top of Progress' captureProgress
 @Suppress("RemoveExplicitTypeArguments") // IDEA bug, they are necessary here
 fun <Failure, Value> Flow<Outcome<Failure, Value>>.captureProgress(): Flow<ProgressiveOutcome<Failure, Value>> = channelFlow {
-    this@captureProgress
-        .flowOn(progressExtractor<Failure, Value>())
-        .map { it.withProgress() }
-        .onEach { send(it) }
-        .collect()
+	this@captureProgress
+		.flowOn(progressExtractor<Failure, Value>())
+		.map { it.withProgress() }
+		.onEach { send(it) }
+		.collect()
 }.buffer(1)
 
 /**
@@ -53,7 +53,7 @@ fun <Failure, Value> Flow<Outcome<Failure, Value>>.captureProgress(): Flow<Progr
  */
 // TODO in #145: Rewrite on top of Progress' captureProgress
 fun <Failure, Value> captureProgress(block: suspend () -> Outcome<Failure, Value>): Flow<ProgressiveOutcome<Failure, Value>> = channelFlow {
-    withContext(progressExtractor()) {
-        send(block().withProgress())
-    }
+	withContext(progressExtractor()) {
+		send(block().withProgress())
+	}
 }

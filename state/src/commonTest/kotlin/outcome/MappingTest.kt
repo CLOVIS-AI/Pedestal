@@ -1,46 +1,28 @@
 package opensavvy.state.outcome
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import opensavvy.prepared.runner.kotest.PreparedSpec
 
-class MappingTest {
+class MappingTest : PreparedSpec({
 
-    private object Failed
+	suite("map") {
+		test("Success") {
+			check(5.successful().map { it.toString() } == "5".successful())
+		}
 
-    @Test
-    fun success_map() {
-        assertEquals(
-            Outcome.Success("5"),
-            Outcome.Success(5).map { it.toString() },
-        )
-    }
+		@Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
+		test("Failure") {
+			check(5.failed().map { it.toString() } == 5.failed())
+		}
+	}
 
-    @Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
-    @Test
-    fun failure_map() {
-        assertEquals(
-            Outcome.Failure(Failed),
-            Outcome.Failure(Failed).map { it.toString() },
-        )
-    }
+	suite("mapFailure") {
+		@Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
+		test("Success") {
+			check(5.successful().mapFailure { it.toString() } == 5.successful())
+		}
 
-    @Test
-    fun success_mapFailure() {
-        assertEquals(
-            Outcome.Success(5),
-            Outcome.Success(5).mapFailure {
-                @Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
-                it.toString()
-            }
-        )
-    }
-
-    @Test
-    fun failure_mapFailure() {
-        assertEquals(
-            Outcome.Failure("5"),
-            Outcome.Failure(5).mapFailure { it.toString() }
-        )
-    }
-
-}
+		test("Failure") {
+			check(5.failed().mapFailure { it.toString() } == "5".failed())
+		}
+	}
+})

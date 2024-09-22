@@ -1,64 +1,61 @@
 package opensavvy.state.progressive
 
-import kotlin.test.Test
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import kotlin.test.assertEquals
 
-class MappingTest {
+class MappingTest : PreparedSpec({
 
-    private object Failed
+	@Suppress("LocalVariableName") val Failed = "FAILED"
 
-    @Test
-    fun success_map() {
-        assertEquals(
-            ProgressiveOutcome.Success("5"),
-            ProgressiveOutcome.Success(5).map { it.toString() },
-        )
-    }
+	suite("map") {
+		test("Success") {
+			assertEquals(
+				ProgressiveOutcome.Success("5"),
+				ProgressiveOutcome.Success(5).map { it.toString() },
+			)
+		}
 
-    @Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
-    @Test
-    fun failure_map() {
-        assertEquals(
-            ProgressiveOutcome.Failure(Failed),
-            ProgressiveOutcome.Failure(Failed).map { it.toString() },
-        )
-    }
+		@Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
+		test("Failure") {
+			assertEquals(
+				ProgressiveOutcome.Failure(Failed),
+				ProgressiveOutcome.Failure(Failed).map { it.toString() },
+			)
+		}
 
-    @Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
-    @Test
-    fun incomplete_map() {
-        assertEquals(
-            ProgressiveOutcome.Incomplete(),
-            ProgressiveOutcome.Incomplete().map { it.toString() },
-        )
-    }
+		@Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
+		test("Incomplete") {
+			assertEquals(
+				ProgressiveOutcome.Incomplete(),
+				ProgressiveOutcome.Incomplete().map { it.toString() },
+			)
+		}
+	}
 
-    @Test
-    fun success_mapFailure() {
-        assertEquals(
-            ProgressiveOutcome.Success(5),
-            ProgressiveOutcome.Success(5).mapFailure {
-                @Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
-                it.toString()
-            },
-        )
-    }
+	suite("mapFailure") {
+		test("Success") {
+			assertEquals(
+				ProgressiveOutcome.Success(5),
+				ProgressiveOutcome.Success(5).mapFailure {
+					@Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
+					it.toString()
+				},
+			)
+		}
 
-    @Test
-    fun failure_mapFailure() {
-        assertEquals(
-            ProgressiveOutcome.Failure("5"),
-            ProgressiveOutcome.Failure(5).mapFailure { it.toString() },
-        )
-    }
+		test("Failure") {
+			assertEquals(
+				ProgressiveOutcome.Failure("5"),
+				ProgressiveOutcome.Failure(5).mapFailure { it.toString() },
+			)
+		}
 
-    @Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
-    @Test
-    fun incomplete_mapFailure() {
-        assertEquals(
-            ProgressiveOutcome.Incomplete(),
-            ProgressiveOutcome.Incomplete().mapFailure { it.toString() },
-        )
-    }
-
-}
+		@Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
+		test("Incomplete") {
+			assertEquals(
+				ProgressiveOutcome.Incomplete(),
+				ProgressiveOutcome.Incomplete().mapFailure { it.toString() },
+			)
+		}
+	}
+})

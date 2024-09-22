@@ -1,71 +1,59 @@
 package opensavvy.state.arrow
 
 import arrow.core.raise.recover
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
 import opensavvy.state.ExperimentalProgressiveRaiseApi
-import opensavvy.state.outcome.Outcome
+import opensavvy.state.outcome.failed
+import opensavvy.state.outcome.successful
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.failedWithProgress
 import opensavvy.state.progressive.successfulWithProgress
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 @OptIn(ExperimentalProgressiveRaiseApi::class)
-class ProgressiveOutcomeDslTest {
+class ProgressiveOutcomeDslTest : PreparedSpec({
 
-    private data class Failed(val value: Any)
+	test("Success") {
+		check(progressive<String, Int> { 2 } == 2.successfulWithProgress())
+	}
 
-    @Test
-    fun success() {
-        val success = progressive<Failed, Int> { 2 }
+	test("Failure") {
+		check(progressive<String, Int> { raise("test") } == "test".failedWithProgress())
+	}
 
-        assertEquals(2.successfulWithProgress(), success)
-    }
+	test("Bind outcome success") {
+		check(progressive<String, Int> { 2.successful().bind() } == 2.successfulWithProgress())
+	}
 
-    @Test
-    fun failure() {
-        val failure = progressive<Failed, Int> {
-            raise(Failed("test"))
-        }
+	test("Bind progressive success") {
+		check(progressive<String, Int> { 2.successfulWithProgress().bind() } == 2.successfulWithProgress())
+	}
 
-        assertEquals(Failed("test").failedWithProgress(), failure)
-    }
+	@Suppress("IMPLICIT_NOTHING_TYPE_ARGUMENT_IN_RETURN_POSITION") // that's the purpose of the test!
+	test("Bind outcome failure") {
+		check(progressive<String, Int> { "test".failed().bind() } == "test".failedWithProgress())
+	}
 
-    @Test
-    fun bindSuccess() {
-        val success = progressive<Failed, Int> {
-            Outcome.Success(2).bind()
-        }
+	@Suppress("IMPLICIT_NOTHING_TYPE_ARGUMENT_IN_RETURN_POSITION") // that's the purpose of the test!
+	test("Bind progressive failure") {
+		check(progressive<String, Int> { "test".failedWithProgress().bind() } == "test".failedWithProgress())
+	}
 
-        assertEquals(2.successfulWithProgress(), success)
-    }
+	test("Tricky situation") {
+		val result = progressive {
+			recover<ProgressiveOutcome.Unsuccessful<String>, _>(
+				block = {
+					raise("foo", loading(0.2))
+				},
+				recover = {
+					1
+				}
+			)
+		}
 
-    @Suppress("IMPLICIT_NOTHING_TYPE_ARGUMENT_IN_RETURN_POSITION") // that's the purpose of the test!
-    @Test
-    fun bindFailure() {
-        val failure = progressive<Failed, Int> {
-            Outcome.Failure(Failed("test")).bind()
-        }
-
-        assertEquals(Failed("test").failedWithProgress(), failure)
-    }
-
-    @Test
-    fun tricky1() {
-        val result = progressive {
-            recover<ProgressiveOutcome.Unsuccessful<String>, _>(
-                block = {
-                    raise("foo", loading(0.2))
-                },
-                recover = {
-                    1
-                }
-            )
-        }
-
-        // Ideally, we'd want this to be true:
-        // assertEquals(1.successfulWithProgress(), result)
-        // …however, for now, we can't, so we settle for this weird behavior:
-        assertEquals("foo".failedWithProgress(loading(0.2)), result)
-    }
-}
+		// Ideally, we'd want this to be true:
+		// check(result == 1.successfulWithProgress())
+		// …however, for now, we can't, so we settle for this weird behavior:
+		check(result == "foo".failedWithProgress(loading(0.2)))
+	}
+})

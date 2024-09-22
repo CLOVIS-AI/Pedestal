@@ -29,3 +29,11 @@ inline fun <Failure, Value> out(@BuilderInference block: OutcomeDsl<Failure>.() 
 		block = { Outcome.Success(block(OutcomeDsl(this))) },
 		recover = { e: Failure -> Outcome.Failure(e) },
 	)
+
+/**
+ * Arrow-style DSL to execute a [Raise]-based computation to generate an [Outcome].
+ */
+@OptIn(ExperimentalTypeInference::class)
+@RaiseDSL
+inline fun <Failure, Value> Raise<Failure>.out(@BuilderInference block: OutcomeDsl<Failure>.() -> Value): Value =
+	opensavvy.state.arrow.out(block).toEither().bind()

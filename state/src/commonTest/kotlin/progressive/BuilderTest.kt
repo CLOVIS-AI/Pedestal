@@ -1,86 +1,87 @@
 package opensavvy.state.progressive
 
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.ExperimentalProgressApi
 import opensavvy.progress.Progressive
 import opensavvy.progress.loading
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.outcome.failed
 import opensavvy.state.outcome.successful
-import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalProgressApi::class)
-class BuilderTest {
+class BuilderTest : PreparedSpec({
 
-    private object Failed
+	@Suppress("LocalVariableName")
+	val Failed = "FAILED"
 
-    @Test
-    fun withProgressSuccess() {
-        assertEquals(
-            ProgressiveOutcome.Success(5, loading(0.57)),
-            Outcome.Success(5).withProgress(loading(0.57)),
-        )
-    }
+	suite("With progress") {
+		test("Success") {
+			assertEquals(
+				ProgressiveOutcome.Success(5, loading(0.57)),
+				Outcome.Success(5).withProgress(loading(0.57)),
+			)
+		}
 
-    @Test
-    fun withProgressFailure() {
-        assertEquals(
-            ProgressiveOutcome.Failure(Failed, loading(0.57)),
-            Outcome.Failure(Failed).withProgress(loading(0.57)),
-        )
-    }
+		test("Failure") {
+			assertEquals(
+				ProgressiveOutcome.Failure(Failed, loading(0.57)),
+				Outcome.Failure(Failed).withProgress(loading(0.57)),
+			)
+		}
+	}
 
-    @Test
-    fun convertSuccessToProgressive() {
-        val initial = Progressive(5.successful(), loading(0.2))
+	suite("Convert to Progressive") {
+		test("Success") {
+			val initial = Progressive(5.successful(), loading(0.2))
 
-        assertEquals(
-            initial,
-            initial.flatten().explode(),
-        )
-    }
+			assertEquals(
+				initial,
+				initial.flatten().explode(),
+			)
+		}
 
-    @Test
-    fun convertFailureToProgressive() {
-        val initial = Progressive(3.failed(), loading(0.1))
+		test("Failure") {
+			val initial = Progressive(3.failed(), loading(0.1))
 
-        assertEquals(
-            initial,
-            initial.flatten().explode(),
-        )
-    }
+			assertEquals(
+				initial,
+				initial.flatten().explode(),
+			)
+		}
 
-    @Test
-    fun convertIncompleteToProgressive() {
-        assertEquals(
-            Progressive(null, loading(0.33)),
-            ProgressiveOutcome.Incomplete(loading(0.33)).explode(),
-        )
-    }
+		test("Incomplete") {
+			assertEquals(
+				Progressive(null, loading(0.33)),
+				ProgressiveOutcome.Incomplete(loading(0.33)).explode(),
+			)
+		}
+	}
 
-    private fun ProgressiveOutcome<*, *>.copyProgress() = copy(progress = loading(0.23))
+	suite("Copy function") {
 
-    @Test
-    fun copy_success() {
-        assertEquals(
-            ProgressiveOutcome.Success(Unit, loading(0.23)),
-            ProgressiveOutcome.Success(Unit).copyProgress()
-        )
-    }
+		fun ProgressiveOutcome<*, *>.copyProgress() =
+			copy(progress = loading(0.23))
 
-    @Test
-    fun copy_failure() {
-        assertEquals(
-            ProgressiveOutcome.Failure(Unit, loading(0.23)),
-            ProgressiveOutcome.Failure(Unit).copyProgress()
-        )
-    }
+		test("Success") {
+			assertEquals(
+				ProgressiveOutcome.Success(Unit, loading(0.23)),
+				ProgressiveOutcome.Success(Unit).copyProgress()
+			)
+		}
 
-    @Test
-    fun copy_incomplete() {
-        assertEquals(
-            ProgressiveOutcome.Incomplete(loading(0.23)),
-            ProgressiveOutcome.Incomplete().copyProgress()
-        )
-    }
-}
+		test("Failure") {
+			assertEquals(
+				ProgressiveOutcome.Failure(Unit, loading(0.23)),
+				ProgressiveOutcome.Failure(Unit).copyProgress()
+			)
+		}
+
+		test("Incomplete") {
+			assertEquals(
+				ProgressiveOutcome.Incomplete(loading(0.23)),
+				ProgressiveOutcome.Incomplete().copyProgress()
+			)
+		}
+	}
+})

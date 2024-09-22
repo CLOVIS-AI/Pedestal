@@ -1,13 +1,12 @@
 package opensavvy.state.progressive
 
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
-import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class AccumulatorsTest {
+class AccumulatorsTest : PreparedSpec({
 
-	@Test
-	fun iterable() {
+	test("Iterable") {
 		val actual = listOf(
 			ProgressiveOutcome.Incomplete(loading(0.0)),
 			ProgressiveOutcome.Incomplete(loading(0.9)),
@@ -34,8 +33,7 @@ class AccumulatorsTest {
 		assertEquals(expected, actual)
 	}
 
-	@Test
-	fun sequence() {
+	test("Sequence") {
 		val actual = sequenceOf(
 			ProgressiveOutcome.Incomplete(loading(0.0)),
 			ProgressiveOutcome.Incomplete(loading(0.9)),
@@ -62,5 +60,4 @@ class AccumulatorsTest {
 
 		assertEquals(expected, actual)
 	}
-
-}
+})

@@ -9,7 +9,7 @@ import opensavvy.state.outcome.Outcome.Success
  */
 inline fun <Value> Outcome<*, Value>.onSuccess(block: (Value) -> Unit) {
 	if (this is Success<Value>)
-        block(this.value)
+		block(this.value)
 }
 
 /**
