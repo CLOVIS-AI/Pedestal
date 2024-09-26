@@ -328,7 +328,7 @@ dokka:
 qodana[jvm]:
   needs: [ ]
   image:
-    name: jetbrains/qodana-jvm
+    name: jetbrains/qodana-jvm-community
     entrypoint: [ "" ]
   script:
     - qodana
