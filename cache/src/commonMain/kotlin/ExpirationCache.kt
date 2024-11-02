@@ -48,9 +48,12 @@ internal class ExpirationCache<I, F, V>(
 	private val lock = Mutex()
 
 	init {
-		expirationScope.launch(CoroutineName("$this")) {
+		expirationScope.launch(CoroutineName("ExpirationCacheJob@${hashCode()}")) {
+			log.trace { "Will expire in $expireAfter" } // TODO remove
+
 			while (isActive) {
 				delay(expireAfter)
+				log.trace { "Performing an expiration run" } // TODO remove
 
 				lock.withLock("checkExpiredValues()") {
 					val now = clock.now()
@@ -58,10 +61,12 @@ internal class ExpirationCache<I, F, V>(
 					while (iterator.hasNext()) {
 						val (id, instant) = iterator.next()
 
-						if (instant < now - expireAfter) {
+						if (instant <= now - expireAfter) {
 							log.trace(id) { "Expired value:" }
 							iterator.remove()
 							upstream.expire(id)
+						} else {
+							log.trace(id, instant, now - expireAfter, instant < now - expireAfter) { "Will not expire this element, because it is too recent" } // TODO remove
 						}
 					}
 				}

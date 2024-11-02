@@ -1,5 +1,3 @@
-@file:Suppress("UNUSED_VARIABLE")
-
 plugins {
 	alias(opensavvyConventions.plugins.base)
 	alias(opensavvyConventions.plugins.kotlin.library)
@@ -15,24 +13,19 @@ kotlin {
 	iosX64()
 	linuxX64()
 
-	sourceSets {
-		val commonMain by getting {
-			dependencies {
-				api(projects.state)
-				api(projects.stateCoroutines)
-				api(libs.kotlinx.datetime)
+	sourceSets.commonMain.dependencies {
+		api(projects.state)
+		api(projects.stateCoroutines)
+		api(libs.kotlinx.datetime)
 
-				implementation(projects.logger)
-			}
-		}
+		implementation(projects.logger)
+	}
 
-		val commonTest by getting {
-			dependencies {
-				implementation(projects.tester)
-				implementation(libs.kotlinx.coroutines.test)
-				implementation(projects.stateArrow)
-			}
-		}
+	sourceSets.commonTest.dependencies {
+		implementation(libs.bundles.prepared)
+		implementation(projects.tester)
+		implementation(libs.kotlinx.coroutines.test)
+		implementation(projects.stateArrow)
 	}
 }
 
