@@ -3,8 +3,6 @@ package opensavvy.state
 import arrow.core.raise.ExperimentalTraceApi
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
-import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -205,9 +203,7 @@ class FailureEndToEndTest : PreparedSpec({
 			failOnRaise {
 				out {
 					val id = service().create(user1Auth).bind()
-					val results = service().list(user1Auth).bind()
-
-					results shouldContain id
+					check(id in service().list(user1Auth).bind())
 				}
 			}
 		}
@@ -216,9 +212,7 @@ class FailureEndToEndTest : PreparedSpec({
 			failOnRaise {
 				out {
 					val id = service().create(user1Auth).bind()
-
-					val results = service().list(user2Auth).bind()
-					results shouldNotContain id
+					check(id !in service().list(user2Auth).bind())
 				}
 			}
 		}
@@ -285,7 +279,7 @@ class FailureEndToEndTest : PreparedSpec({
 					val id = service().create(user1Auth).bind()
 					service().share(user1Auth, id, user2).bind()
 
-					service().list(user2Auth).bind() shouldContain id
+					check(id in service().list(user2Auth).bind())
 				}
 			}
 		}
