@@ -40,7 +40,7 @@ class ProgressiveOutcomeDslTest : PreparedSpec({
 	}
 
 	test("Tricky situation") {
-		val result = progressive {
+		val result: ProgressiveOutcome<String, Int> = progressive {
 			recover<ProgressiveOutcome.Unsuccessful<String>, _>(
 				block = {
 					raise("foo", loading(0.2))
