@@ -3,8 +3,8 @@
 Lingua franca to represent the state of an unfinished task.
 
 <a href="https://search.maven.org/search?q=g:%22dev.opensavvy.pedestal%22%20AND%20a:%22progress%22"><img src="https://img.shields.io/maven-central/v/dev.opensavvy.pedestal/progress.svg?label=Maven%20Central"></a>
-
-<a href="https://gitlab.com/opensavvy/wiki/-/blob/main/stability.md#stability-levels"><img src="https://badgen.net/static/Stability/stable/purple"></a>
+<a href="https://opensavvy.dev/open-source/stability.html"><img src="https://badgen.net/static/Stability/stable/purple"></a>
+<a href="https://javadoc.io/doc/dev.opensavvy.pedestal/progress"><img src="https://badgen.net/static/Other%20versions/javadoc.io/blue"></a>
 
 It is often recommended to communicate the progress of any task that doesn't finish instantly to the user.
 However, this is often forgotten and implemented as a last-minute addition.
