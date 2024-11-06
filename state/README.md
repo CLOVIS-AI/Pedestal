@@ -3,8 +3,8 @@
 Small library for value-based outcome representation.
 
 <a href="https://search.maven.org/search?q=g:%22dev.opensavvy.pedestal%22%20AND%20a:%22state%22"><img src="https://img.shields.io/maven-central/v/dev.opensavvy.pedestal/state.svg?label=Maven%20Central"></a>
-
-<a href="https://gitlab.com/opensavvy/wiki/-/blob/main/stability.md#stability-levels"><img src="https://badgen.net/static/Stability/stable/purple"></a>
+<a href="https://opensavvy.dev/open-source/stability.html"><img src="https://badgen.net/static/Stability/stable/purple"></a>
+<a href="https://javadoc.io/doc/dev.opensavvy.pedestal/state"><img src="https://badgen.net/static/Other%20versions/javadoc.io/blue"></a>
 
 Using `state`, it is possible to model a successful operation, a failed operation, as well as the intermediate progress
 states of an ongoing operation (using `progress`).
