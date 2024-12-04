@@ -4,10 +4,7 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import kotlinx.coroutines.yield
-import opensavvy.cache.properties.Failures
-import opensavvy.cache.properties.readingValues
-import opensavvy.cache.properties.testIntCache
-import opensavvy.cache.properties.updateAndExpire
+import opensavvy.cache.properties.*
 import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.prepared.suite.TestDsl
 import opensavvy.prepared.suite.backgroundScope
@@ -23,6 +20,7 @@ class MemoryCacheTest : PreparedSpec({
 
 	readingValues { decorate(it) }
 	updateAndExpire { decorate(it) }
+	contextPassthrough { decorate(it) }
 
 	test("Concurrent scenario") {
 		val cache = decorate(testIntCache)

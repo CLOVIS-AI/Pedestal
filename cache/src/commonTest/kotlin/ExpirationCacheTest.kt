@@ -5,10 +5,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.job
 import kotlinx.coroutines.withTimeout
-import opensavvy.cache.properties.TestIntCacheDecorator
-import opensavvy.cache.properties.readingValues
-import opensavvy.cache.properties.testIntCache
-import opensavvy.cache.properties.updateAndExpire
+import opensavvy.cache.properties.*
 import opensavvy.prepared.compat.kotlinx.datetime.clock
 import opensavvy.prepared.compat.kotlinx.datetime.now
 import opensavvy.prepared.runner.kotest.PreparedSpec
@@ -32,12 +29,14 @@ class ExpirationCacheTest : PreparedSpec({
 
 	suite("Expiration only") {
 		readingValues { decorateExpiration(it) }
+		contextPassthrough { decorateExpiration(it) }
 	}
 
 	suite("Cached in-memory and expiration") {
 		readingValues { decorateMemoryAndExpiration(it) }
 		updateAndExpire { decorateMemoryAndExpiration(it) }
 		automaticallyExpires { decorateMemoryAndExpiration(it) }
+		contextPassthrough { decorateMemoryAndExpiration(it) }
 	}
 })
 
