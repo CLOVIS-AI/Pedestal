@@ -30,7 +30,6 @@ kotlin {
 		val commonTest by getting {
 			dependencies {
 				implementation(libs.bundles.prepared)
-				implementation(projects.stateArrow)
 			}
 		}
 	}

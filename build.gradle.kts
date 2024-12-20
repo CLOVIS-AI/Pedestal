@@ -28,7 +28,6 @@ dependencies {
 	dokkatoo(projects.progress)
 	dokkatoo(projects.progressCoroutines)
 	dokkatoo(projects.state)
-	dokkatoo(projects.stateArrow)
 	dokkatoo(projects.stateCoroutines)
 	dokkatoo(projects.weak)
 

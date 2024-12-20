@@ -60,7 +60,6 @@ include(
 	"progress-coroutines",
 
 	"state",
-	"state-arrow",
 	"state-coroutines",
 
 	"cache",

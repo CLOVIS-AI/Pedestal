@@ -23,7 +23,6 @@ kotlin {
 
 	sourceSets.commonTest.dependencies {
 		implementation(libs.bundles.prepared)
-		implementation(projects.stateArrow)
 	}
 }
 
