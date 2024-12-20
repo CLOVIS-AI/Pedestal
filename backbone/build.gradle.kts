@@ -29,10 +29,8 @@ kotlin {
 
 		val commonTest by getting {
 			dependencies {
-				implementation(projects.tester)
+				implementation(libs.bundles.prepared)
 				implementation(projects.stateArrow)
-
-				api(libs.kotlinx.coroutines.test)
 			}
 		}
 	}
