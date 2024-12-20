@@ -1,5 +1,3 @@
-@file:Suppress("UNUSED_VARIABLE")
-
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
@@ -18,19 +16,12 @@ kotlin {
 	iosX64()
 	linuxX64()
 
-	sourceSets {
-		val commonMain by getting
-		val commonTest by getting {
-			dependencies {
-				implementation(libs.bundles.prepared)
-			}
-		}
+	sourceSets.jvmMain.dependencies {
+		implementation(libs.slf4j)
+	}
 
-		val jvmMain by getting {
-			dependencies {
-				implementation(libs.slf4j)
-			}
-		}
+	sourceSets.commonTest.dependencies {
+		implementation(libs.bundles.prepared)
 	}
 }
 
