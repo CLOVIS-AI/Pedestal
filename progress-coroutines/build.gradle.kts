@@ -22,8 +22,6 @@ kotlin {
     }
 
     sourceSets.commonTest.dependencies {
-        implementation(projects.tester)
-        implementation(libs.kotlinx.coroutines.test)
         implementation(libs.bundles.prepared)
     }
 }

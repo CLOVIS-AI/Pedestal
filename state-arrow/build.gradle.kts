@@ -22,7 +22,6 @@ kotlin {
     }
 
     sourceSets.commonTest.dependencies {
-        implementation(projects.tester)
     }
 }
 

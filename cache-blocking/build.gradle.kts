@@ -19,9 +19,9 @@ kotlin {
 
 		val commonTest by getting {
 			dependencies {
-				implementation(projects.tester)
-				implementation(libs.kotlinx.coroutines.test)
+				implementation(libs.bundles.prepared)
 				implementation(libs.lincheck)
+				implementation(opensavvyConventions.aligned.kotlin.test) // Needed by Lincheck
 				implementation(projects.stateArrow)
 			}
 		}

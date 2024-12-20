@@ -19,7 +19,6 @@ kotlin {
     }
 
     sourceSets.commonTest.dependencies {
-        implementation(projects.tester)
         implementation(libs.bundles.prepared)
     }
 }

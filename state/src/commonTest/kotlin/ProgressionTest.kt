@@ -2,36 +2,35 @@ package opensavvy.state
 
 import com.benwoodworth.parameterize.parameterOf
 import com.benwoodworth.parameterize.parameterize
+import io.kotest.assertions.throwables.shouldThrow
 import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
 
 class ProgressionTest : PreparedSpec({
 
 	test("String representation of loading states") {
-		assertEquals("Loading", loading().toString())
-		assertEquals("Loading(0%)", loading(0.0).toString())
-		assertEquals("Loading(33%)", loading(0.33).toString())
-		assertEquals("Loading(100%)", loading(1.0).toString())
+		check(loading().toString() == "Loading")
+		check(loading(0.0).toString() == "Loading(0%)")
+		check(loading(0.33).toString() == "Loading(33%)")
+		check(loading(1.0).toString() == "Loading(100%)")
 	}
 
 	test("0% loading") {
 		val start = loading(0.0)
-		assertEquals(0.0, start.normalized)
-		assertEquals(0, start.percent)
+		check(start.normalized == 0.0)
+		check(start.percent == 0)
 	}
 
 	test("33% loading") {
 		val third = loading(1.0 / 3)
-		assertEquals(0.3333333333333333, third.normalized)
-		assertEquals(33, third.percent)
+		check(third.normalized == 0.3333333333333333)
+		check(third.percent == 33)
 	}
 
 	test("100% loading") {
 		val end = loading(1.0)
-		assertEquals(1.0, end.normalized)
-		assertEquals(100, end.percent)
+		check(end.normalized == 1.0)
+		check(end.percent == 100)
 	}
 
 	suite("Illegal progression values") {
@@ -39,7 +38,7 @@ class ProgressionTest : PreparedSpec({
 			val parameter by parameterOf(-1.0, 1.01, 1.00000001, Double.MAX_VALUE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
 
 			test("A progress value of $parameter is not allowed") {
-				assertFails {
+				shouldThrow<IllegalArgumentException> {
 					loading(parameter)
 				}
 			}

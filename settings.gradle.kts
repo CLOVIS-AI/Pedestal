@@ -70,6 +70,5 @@ include(
 
 	"weak",
 
-	"logger",
-	"tester",
+	"logger"
 )

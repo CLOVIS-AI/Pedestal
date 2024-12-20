@@ -2,8 +2,6 @@ package opensavvy.state.progressive
 
 import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class ConditionalTest : PreparedSpec({
 
@@ -18,7 +16,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertTrue(test)
+			check(test)
 		}
 
 		test("Failure") {
@@ -28,7 +26,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertFalse(test)
+			check(!test)
 		}
 
 		test("Incomplete") {
@@ -38,7 +36,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertFalse(test)
+			check(!test)
 		}
 	}
 
@@ -50,7 +48,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertFalse(test)
+			check(!test)
 		}
 
 		test("Failure") {
@@ -60,7 +58,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertTrue(test)
+			check(test)
 		}
 
 		test("Incomplete") {
@@ -70,7 +68,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertFalse(test)
+			check(!test)
 		}
 	}
 
@@ -82,7 +80,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertFalse(test)
+			check(!test)
 		}
 
 		test("Failure") {
@@ -92,7 +90,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertFalse(test)
+			check(!test)
 		}
 
 		test("Incomplete") {
@@ -102,7 +100,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertTrue(test)
+			check(test)
 		}
 	}
 
@@ -114,7 +112,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertFalse(test)
+			check(!test)
 		}
 
 		test("Loading") {
@@ -124,7 +122,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertTrue(test)
+			check(test)
 		}
 
 		test("Incomplete") {
@@ -134,7 +132,7 @@ class ConditionalTest : PreparedSpec({
 				test = true
 			}
 
-			assertTrue(test)
+			check(test)
 		}
 	}
 })

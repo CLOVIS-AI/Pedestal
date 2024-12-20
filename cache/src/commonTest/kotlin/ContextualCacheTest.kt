@@ -1,62 +1,64 @@
 package opensavvy.cache
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.job
-import kotlinx.coroutines.test.runTest
 import opensavvy.cache.contextual.batchingCache
 import opensavvy.cache.contextual.cache
 import opensavvy.cache.contextual.cachedInMemory
 import opensavvy.cache.contextual.expireAfter
+import opensavvy.prepared.compat.kotlinx.datetime.clock
+import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.suite.backgroundScope
+import opensavvy.prepared.suite.time
 import opensavvy.state.arrow.out
 import opensavvy.state.coroutines.now
 import opensavvy.state.outcome.successful
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.ExperimentalTime
 
-class ContextualCacheTest {
+private val data = generateSequence(0) { it + 1 }
 
-	private val data = generateSequence(0) { it + 1 }
+private data class Identifier(
+	val even: Boolean,
+	val odd: Boolean,
+)
 
-	private data class Identifier(
-		val even: Boolean,
-		val odd: Boolean,
-	)
+private data class Context(
+	val startAt: Int,
+	val limit: Int,
+)
 
-	private data class Context(
-		val startAt: Int,
-		val limit: Int,
-	)
-
-	private fun createCache() = cache<Identifier, Context, Nothing, List<Int>> { id, context ->
-		out {
-			data
-				.drop(context.startAt)
-				.filter { id.even || it % 2 != 0 }
-				.filter { id.odd || it % 2 != 1 }
-				.take(context.limit)
-				.toList()
-		}
+private fun createCache() = cache<Identifier, Context, Nothing, List<Int>> { id, context ->
+	out {
+		data
+			.drop(context.startAt)
+			.filter { id.even || it % 2 != 0 }
+			.filter { id.odd || it % 2 != 1 }
+			.take(context.limit)
+			.toList()
 	}
+}
 
-	@Test
-	fun read() = runTest {
+@OptIn(ExperimentalTime::class, ExperimentalCoroutinesApi::class)
+class ContextualCacheTest : PreparedSpec({
+
+	test("Read") {
 		val cache = createCache()
 			.cachedInMemory(backgroundScope.coroutineContext.job)
-			.expireAfter(2.minutes, backgroundScope, testClock)
+			.expireAfter(2.minutes, backgroundScope, time.clock)
 
 		val expected = (0 until 100).toList().successful()
 		val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
 
-		assertEquals(expected, actual)
+		check(actual == expected)
 	}
 
-	@Test
-	fun expire() = runTest {
+	test("Expire") {
 		val cache = createCache()
 			.cachedInMemory(backgroundScope.coroutineContext.job)
-			.expireAfter(2.minutes, backgroundScope, testClock)
+			.expireAfter(2.minutes, backgroundScope, time.clock)
 
 		// Update with invalid values, so we can notice whether they are expired+queried or not
 		cache.update(Identifier(even = true, odd = true), Context(0, 100), (0 until 10).toList())
@@ -66,19 +68,19 @@ class ContextualCacheTest {
 		run {
 			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		run {
 			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(10, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		run {
 			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = false), Context(0, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		// The first value should be updated, but the second one should be unchanged
@@ -87,19 +89,19 @@ class ContextualCacheTest {
 		run {
 			val expected = (0 until 100).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		run {
 			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(10, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		run {
 			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = false), Context(0, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		// The first and second values should be updated
@@ -108,19 +110,19 @@ class ContextualCacheTest {
 		run {
 			val expected = (0 until 100).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		run {
 			val expected = (10 until 110).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(10, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		run {
 			val expected = (0 until 10).toList().successful()
 			val actual = cache[Identifier(even = true, odd = false), Context(0, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		// The last value should be updated
@@ -129,24 +131,23 @@ class ContextualCacheTest {
 		run {
 			val expected = (0 until 100).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(0, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		run {
 			val expected = (10 until 110).toList().successful()
 			val actual = cache[Identifier(even = true, odd = true), Context(10, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 
 		run {
 			val expected = (0 until 200 step 2).toList().successful()
 			val actual = cache[Identifier(even = true, odd = false), Context(0, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 	}
 
-	@Test
-	fun batching() = runTest {
+	test("Batching") {
 		val initial = createCache()
 
 		@Suppress("RemoveExplicitTypeArguments") // IDEA is wrong, they are necessary
@@ -167,7 +168,8 @@ class ContextualCacheTest {
 		run {
 			val expected = (0 until 200 step 2).toList().successful()
 			val actual = cache[Identifier(even = true, odd = false), Context(0, 100)].now()
-			assertEquals(expected, actual)
+			check(expected == actual)
 		}
 	}
-}
+
+})

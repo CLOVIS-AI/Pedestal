@@ -22,7 +22,7 @@ kotlin {
 		val commonMain by getting
 		val commonTest by getting {
 			dependencies {
-				implementation(projects.tester)
+				implementation(libs.bundles.prepared)
 			}
 		}
 

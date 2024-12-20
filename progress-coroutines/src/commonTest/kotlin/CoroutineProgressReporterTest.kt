@@ -1,19 +1,16 @@
 package opensavvy.progress.coroutines
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.Progress
 import opensavvy.progress.loading
 import opensavvy.progress.report.ProgressReporter
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class CoroutineProgressReporterTest {
+class CoroutineProgressReporterTest : PreparedSpec({
 
-    @Test
-    fun report() = runTest {
+    test("Report a value through the coroutine context") {
         var value: Progress? = null
 
         val reporter = ProgressReporter { value = it }
@@ -23,22 +20,21 @@ class CoroutineProgressReporterTest {
             report(loading(0.2))
         }
 
-        assertEquals(loading(0.2), value)
+        check(value == loading(0.2))
     }
 
-    @Test
-    fun reportWithoutReporter() = runTest {
+    test("Report without a reporter should do nothing") {
         report(loading(0.2)) // does nothing, doesn't crash
     }
 
-    @Test
-    fun withReporter() = runTest {
+    test("Report a value using a callback") {
         var value: Progress? = null
 
         reportProgress({ value = it }) {
             report(loading(0.2))
         }
 
-        assertEquals(loading(0.2), value)
+        check(value == loading(0.2))
     }
-}
+
+})
