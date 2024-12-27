@@ -136,8 +136,3 @@ internal class ExpirationCache<I, F, V>(
  */
 fun <Identifier, Failure, Value> Cache<Identifier, Failure, Value>.expireAfter(duration: Duration, scope: CoroutineScope, clock: Clock): Cache<Identifier, Failure, Value> =
 	ExpirationCache(this, duration, clock, scope)
-
-@Suppress("DeprecatedCallableAddReplaceWith")
-@Deprecated(message = "Specifying the clock explicitly will become mandatory in 2.0.")
-fun <Identifier, Failure, Value> Cache<Identifier, Failure, Value>.expireAfter(duration: Duration, scope: CoroutineScope): Cache<Identifier, Failure, Value> =
-	ExpirationCache(this, duration, Clock.System, scope)

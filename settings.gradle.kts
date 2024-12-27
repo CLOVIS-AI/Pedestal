@@ -60,7 +60,6 @@ include(
 	"progress-coroutines",
 
 	"state",
-	"state-arrow",
 	"state-coroutines",
 
 	"cache",
@@ -70,11 +69,5 @@ include(
 
 	"weak",
 
-	"spine",
-	"spine-ktor",
-	"spine-ktor:spine-ktor-server",
-	"spine-ktor:spine-ktor-client",
-
-	"logger",
-	"tester",
+	"logger"
 )

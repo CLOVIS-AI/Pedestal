@@ -3,8 +3,8 @@ package opensavvy.state.progressive
 import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
 import opensavvy.state.ExperimentalProgressiveRaiseApi
-import opensavvy.state.outcome.Outcome
-import kotlin.test.assertEquals
+import opensavvy.state.outcome.failed
+import opensavvy.state.outcome.successful
 
 class AccessorsTest : PreparedSpec({
 
@@ -15,18 +15,12 @@ class AccessorsTest : PreparedSpec({
 	suite("Access progress of unsuccessful values") {
 		test("Failure") {
 			val failure = ProgressiveOutcome.Failure(Unit, loading(0.13)) as ProgressiveOutcome.Unsuccessful<Unit>
-			assertEquals(
-				loading(0.13),
-				failure.progress
-			)
+			check(failure.progress == loading(0.13))
 		}
 
 		test("Incomplete") {
 			val failure = ProgressiveOutcome.Incomplete(loading(0.13)) as ProgressiveOutcome.Unsuccessful<Unit>
-			assertEquals(
-				loading(0.13),
-				failure.progress
-			)
+			check(failure.progress == loading(0.13))
 		}
 	}
 
@@ -67,24 +61,24 @@ class AccessorsTest : PreparedSpec({
 			val value: ProgressiveOutcome<*, Int> = ProgressiveOutcome.Success(5, loading(0.23))
 			val (outcome, progress) = value
 
-			assertEquals(Outcome.Success(5), outcome)
-			assertEquals(loading(0.23), progress)
+			check(outcome == 5.successful())
+			check(progress == loading(0.23))
 		}
 
 		test("Failure") {
 			val value: ProgressiveOutcome<*, Int> = ProgressiveOutcome.Failure(Failed, loading(0.23))
 			val (outcome, progress) = value
 
-			assertEquals(Outcome.Failure(Failed), outcome)
-			assertEquals(loading(0.23), progress)
+			check(outcome == Failed.failed())
+			check(progress == loading(0.23))
 		}
 
 		test("Incomplete") {
 			val value: ProgressiveOutcome<*, Int> = ProgressiveOutcome.Incomplete(loading(0.23))
 			val (outcome, progress) = value
 
-			assertEquals(null, outcome)
-			assertEquals(loading(0.23), progress)
+			check(outcome == null)
+			check(progress == loading(0.23))
 		}
 	}
 })

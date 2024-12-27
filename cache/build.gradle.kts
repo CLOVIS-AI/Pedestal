@@ -23,9 +23,6 @@ kotlin {
 
 	sourceSets.commonTest.dependencies {
 		implementation(libs.bundles.prepared)
-		implementation(projects.tester)
-		implementation(libs.kotlinx.coroutines.test)
-		implementation(projects.stateArrow)
 	}
 }
 

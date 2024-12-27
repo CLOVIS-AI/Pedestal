@@ -1,5 +1,3 @@
-@file:Suppress("UNUSED_VARIABLE")
-
 plugins {
 	alias(opensavvyConventions.plugins.base)
 	alias(opensavvyConventions.plugins.kotlin.library)
@@ -8,23 +6,16 @@ plugins {
 kotlin {
 	jvm()
 
-	sourceSets {
-		val commonMain by getting {
-			dependencies {
-				api(projects.cache)
+	sourceSets.commonMain.dependencies {
+		api(projects.cache)
 
-				implementation(projects.logger)
-			}
-		}
+		implementation(projects.logger)
+	}
 
-		val commonTest by getting {
-			dependencies {
-				implementation(projects.tester)
-				implementation(libs.kotlinx.coroutines.test)
-				implementation(libs.lincheck)
-				implementation(projects.stateArrow)
-			}
-		}
+	sourceSets.commonTest.dependencies {
+		implementation(libs.bundles.prepared)
+		implementation(libs.lincheck)
+		implementation(opensavvyConventions.aligned.kotlin.test) // Needed by Lincheck
 	}
 }
 

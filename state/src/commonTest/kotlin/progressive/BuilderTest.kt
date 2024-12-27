@@ -7,7 +7,6 @@ import opensavvy.progress.loading
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.outcome.failed
 import opensavvy.state.outcome.successful
-import kotlin.test.assertEquals
 
 @OptIn(ExperimentalProgressApi::class)
 class BuilderTest : PreparedSpec({
@@ -17,17 +16,11 @@ class BuilderTest : PreparedSpec({
 
 	suite("With progress") {
 		test("Success") {
-			assertEquals(
-				ProgressiveOutcome.Success(5, loading(0.57)),
-				Outcome.Success(5).withProgress(loading(0.57)),
-			)
+			check(Outcome.Success(5).withProgress(loading(0.57)) == ProgressiveOutcome.Success(5, loading(0.57)))
 		}
 
 		test("Failure") {
-			assertEquals(
-				ProgressiveOutcome.Failure(Failed, loading(0.57)),
-				Outcome.Failure(Failed).withProgress(loading(0.57)),
-			)
+			check(Outcome.Failure(Failed).withProgress(loading(0.57)) == ProgressiveOutcome.Failure(Failed, loading(0.57)))
 		}
 	}
 
@@ -35,26 +28,17 @@ class BuilderTest : PreparedSpec({
 		test("Success") {
 			val initial = Progressive(5.successful(), loading(0.2))
 
-			assertEquals(
-				initial,
-				initial.flatten().explode(),
-			)
+			check(initial == initial.flatten().explode())
 		}
 
 		test("Failure") {
 			val initial = Progressive(3.failed(), loading(0.1))
 
-			assertEquals(
-				initial,
-				initial.flatten().explode(),
-			)
+			check(initial == initial.flatten().explode())
 		}
 
 		test("Incomplete") {
-			assertEquals(
-				Progressive(null, loading(0.33)),
-				ProgressiveOutcome.Incomplete(loading(0.33)).explode(),
-			)
+			check(ProgressiveOutcome.Incomplete(loading(0.33)).explode() == Progressive(null, loading(0.33)))
 		}
 	}
 
@@ -64,24 +48,15 @@ class BuilderTest : PreparedSpec({
 			copy(progress = loading(0.23))
 
 		test("Success") {
-			assertEquals(
-				ProgressiveOutcome.Success(Unit, loading(0.23)),
-				ProgressiveOutcome.Success(Unit).copyProgress()
-			)
+			check(ProgressiveOutcome.Success(Unit).copyProgress() == ProgressiveOutcome.Success(Unit, loading(0.23)))
 		}
 
 		test("Failure") {
-			assertEquals(
-				ProgressiveOutcome.Failure(Unit, loading(0.23)),
-				ProgressiveOutcome.Failure(Unit).copyProgress()
-			)
+			check(ProgressiveOutcome.Failure(Unit).copyProgress() == ProgressiveOutcome.Failure(Unit, loading(0.23)))
 		}
 
 		test("Incomplete") {
-			assertEquals(
-				ProgressiveOutcome.Incomplete(loading(0.23)),
-				ProgressiveOutcome.Incomplete().copyProgress()
-			)
+			check(ProgressiveOutcome.Incomplete().copyProgress() == ProgressiveOutcome.Incomplete(loading(0.23)))
 		}
 	}
 })

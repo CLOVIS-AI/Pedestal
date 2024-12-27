@@ -5,7 +5,6 @@ import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome
-import kotlin.test.assertEquals
 
 class ProgressiveFlowAccessorsTest : PreparedSpec({
 
@@ -18,10 +17,7 @@ class ProgressiveFlowAccessorsTest : PreparedSpec({
 			ProgressiveOutcome.Failure(NotFound(2)),
 		)
 
-		assertEquals(
-			Outcome.Failure(NotFound(2)),
-			input.now(),
-		)
+		check(input.now() == Outcome.Failure(NotFound(2)))
 	}
 
 	test("Success") {
@@ -31,9 +27,6 @@ class ProgressiveFlowAccessorsTest : PreparedSpec({
 			ProgressiveOutcome.Success(2),
 		)
 
-		assertEquals(
-			Outcome.Success(2),
-			input.now(),
-		)
+		check(input.now() == Outcome.Success(2))
 	}
 })

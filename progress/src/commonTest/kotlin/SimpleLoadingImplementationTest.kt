@@ -6,7 +6,6 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import opensavvy.prepared.runner.kotest.PreparedSpec
-import kotlin.test.assertContains
 
 @Suppress("unused")
 class SimpleLoadingImplementationTest : PreparedSpec({
@@ -71,11 +70,11 @@ class SimpleLoadingImplementationTest : PreparedSpec({
             loading(1.0),
         )
 
-        assertContains(set, done())
-        assertContains(set, loading(0.0))
-        assertContains(set, loading(0.7))
-        assertContains(set, loading(0.9))
-        assertContains(set, loading(1.0))
+        check(done() in set)
+        check(loading(0.0) in set)
+        check(loading(0.7) in set)
+        check(loading(0.9) in set)
+        check(loading(1.0) in set)
     }
 
     suite("Equality") {

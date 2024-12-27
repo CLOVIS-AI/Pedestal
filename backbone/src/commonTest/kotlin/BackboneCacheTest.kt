@@ -1,72 +1,47 @@
 package opensavvy.backbone
 
 import arrow.core.raise.ensure
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.test.runTest
 import opensavvy.cache.cache
+import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.state.arrow.out
 import opensavvy.state.outcome.valueOrNull
-import kotlin.test.Test
-import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class BackboneCacheTest {
+private data class BasicRef(val id: String, val backbone: Bone) : Ref<Bone.Invalid, Int> {
 
-	data class BasicRef(val id: String, val backbone: Bone) : Ref<Bone.Invalid, Int> {
+	override fun request() = backbone.cache[this]
+}
 
-		override fun request() = backbone.cache[this]
-	}
-
-	// Id("12") -> 12
-	class Bone : Backbone<BasicRef, Bone.Invalid, Int> {
-		val cache = cache<BasicRef, Invalid, Int> {
-			out {
-				val int = it.id.toIntOrNull()
-				ensure(int != null) { Invalid }
-				int
-			}
+// Id("12") -> 12
+private class Bone : Backbone<BasicRef, Bone.Invalid, Int> {
+	val cache = cache<BasicRef, Invalid, Int> {
+		out {
+			val int = it.id.toIntOrNull()
+			ensure(int != null) { Invalid }
+			int
 		}
-
-		fun of(int: Int) = BasicRef(int.toString(), this)
-
-		object Invalid
 	}
 
-	@Test
-	fun default() = runTest {
+	fun of(int: Int) = BasicRef(int.toString(), this)
+
+	object Invalid
+}
+
+class BackboneCacheTest : PreparedSpec({
+
+	test("Default") {
 		val bone = Bone()
 		val id5 = bone.of(5)
 		val id2 = bone.of(2)
 
-		assertEquals(5, id5.now().valueOrNull)
-		assertEquals(2, id2.now().valueOrNull)
+		check(id5.now().valueOrNull == 5)
+		check(id2.now().valueOrNull == 2)
 
 		bone.cache.expire(id2)
-		assertEquals(2, id2.now().valueOrNull)
+		check(id2.now().valueOrNull == 2)
 	}
 
-	@Test
-	fun batching() = runTest {
-		val job = Job()
-
-		val bone = Bone()
-		val id5 = bone.of(5)
-		val id2 = bone.of(2)
-
-		assertEquals(5, id5.now().valueOrNull)
-		assertEquals(2, id2.now().valueOrNull)
-
-		bone.cache.expire(id2)
-		assertEquals(2, id2.now().valueOrNull)
-
-		job.cancel()
-	}
-
-	@Test
-	fun companions() {
+	test("Existence of companions") {
 		println(Ref)
 		println(Backbone)
-		println()
 	}
-}
+})

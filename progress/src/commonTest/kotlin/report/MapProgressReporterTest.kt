@@ -5,7 +5,6 @@ import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.Progress
 import opensavvy.progress.done
 import opensavvy.progress.loading
-import kotlin.test.assertEquals
 
 @Suppress("unused")
 class MapProgressReporterTest : PreparedSpec({
@@ -35,6 +34,6 @@ class MapProgressReporterTest : PreparedSpec({
             .reduceToInterval(0.1, 0.2)
             .map { it }
 
-        assertEquals("NoOpProgressReporter.reduceToInterval(0.1..0.2).map()", reporter.toString())
+        check(reporter.toString() == "NoOpProgressReporter.reduceToInterval(0.1..0.2).map()")
     }
 })

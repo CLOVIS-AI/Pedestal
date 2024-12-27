@@ -5,12 +5,11 @@ import opensavvy.logger.Logger.Companion.error
 import opensavvy.logger.Logger.Companion.info
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.Logger.Companion.warn
-import kotlin.test.Test
+import opensavvy.prepared.runner.kotest.PreparedSpec
 
-class LoggerTest {
+class LoggerTest : PreparedSpec({
 
-	@Test
-	fun output() {
+	test("Output") {
 		val log = loggerFor(this)
 		log.level = LogLevel.TRACE
 
@@ -21,10 +20,9 @@ class LoggerTest {
 		log.error { "This is an error!" }
 	}
 
-	private data class Message(val int: Int, val text: String)
+	data class Message(val int: Int, val text: String)
 
-	@Test
-	fun outputWithObject() {
+	test("Output with object") {
 		val message = Message(5, "hello")
 
 		val log = loggerFor(this)
@@ -36,4 +34,4 @@ class LoggerTest {
 		log.warn(message) { "This is a warning!" }
 		log.error(message) { "This is an error!" }
 	}
-}
+})

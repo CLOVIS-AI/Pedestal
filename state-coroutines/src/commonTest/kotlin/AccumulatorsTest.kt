@@ -6,7 +6,6 @@ import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.combineCompleted
-import kotlin.test.assertEquals
 
 class AccumulatorsTest : PreparedSpec({
 
@@ -35,6 +34,6 @@ class AccumulatorsTest : PreparedSpec({
 
 		val actual = initial.asFlow().combineCompleted().toList()
 
-		assertEquals(expected, actual)
+		check(actual == expected)
 	}
 })

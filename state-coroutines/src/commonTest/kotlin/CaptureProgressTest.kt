@@ -7,7 +7,6 @@ import opensavvy.progress.coroutines.report
 import opensavvy.progress.loading
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome
-import kotlin.test.assertEquals
 
 private object Error
 
@@ -31,7 +30,7 @@ class CaptureProgressTest : PreparedSpec({
 			ProgressiveOutcome.Success(5),
 		)
 
-		assertEquals(expect, actual)
+		check(expect == actual)
 	}
 
 	test("captureFromBlock") {
@@ -47,6 +46,6 @@ class CaptureProgressTest : PreparedSpec({
 			ProgressiveOutcome.Success(5),
 		)
 
-		assertEquals(expect, actual)
+		check(expect == actual)
 	}
 })

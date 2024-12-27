@@ -2,7 +2,6 @@ package opensavvy.state.progressive
 
 import opensavvy.prepared.runner.kotest.PreparedSpec
 import opensavvy.progress.loading
-import kotlin.test.assertEquals
 
 class AccumulatorsTest : PreparedSpec({
 
@@ -30,7 +29,7 @@ class AccumulatorsTest : PreparedSpec({
 			ProgressiveOutcome.Failure(Unit, loading(0.3)),
 		)
 
-		assertEquals(expected, actual)
+		check(actual == expected)
 	}
 
 	test("Sequence") {
@@ -58,6 +57,6 @@ class AccumulatorsTest : PreparedSpec({
 			ProgressiveOutcome.Failure(Unit, loading(0.3)),
 		)
 
-		assertEquals(expected, actual)
+		check(actual == expected)
 	}
 })

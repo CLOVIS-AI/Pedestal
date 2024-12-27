@@ -1,7 +1,6 @@
 package opensavvy.state.progressive
 
 import opensavvy.prepared.runner.kotest.PreparedSpec
-import kotlin.test.assertEquals
 
 class MappingTest : PreparedSpec({
 
@@ -9,53 +8,37 @@ class MappingTest : PreparedSpec({
 
 	suite("map") {
 		test("Success") {
-			assertEquals(
-				ProgressiveOutcome.Success("5"),
-				ProgressiveOutcome.Success(5).map { it.toString() },
-			)
+			check(ProgressiveOutcome.Success(5).map { it.toString() } == "5".successfulWithProgress())
 		}
 
 		@Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
 		test("Failure") {
-			assertEquals(
-				ProgressiveOutcome.Failure(Failed),
-				ProgressiveOutcome.Failure(Failed).map { it.toString() },
-			)
+			check(ProgressiveOutcome.Failure(Failed).map { it.toString() } == Failed.failedWithProgress())
 		}
 
 		@Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
 		test("Incomplete") {
-			assertEquals(
-				ProgressiveOutcome.Incomplete(),
-				ProgressiveOutcome.Incomplete().map { it.toString() },
-			)
+			check(ProgressiveOutcome.Incomplete().map { it.toString() } == ProgressiveOutcome.Incomplete())
 		}
 	}
 
 	suite("mapFailure") {
 		test("Success") {
-			assertEquals(
-				ProgressiveOutcome.Success(5),
+			check(
 				ProgressiveOutcome.Success(5).mapFailure {
 					@Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
 					it.toString()
-				},
+				} == 5.successfulWithProgress()
 			)
 		}
 
 		test("Failure") {
-			assertEquals(
-				ProgressiveOutcome.Failure("5"),
-				ProgressiveOutcome.Failure(5).mapFailure { it.toString() },
-			)
+			check(ProgressiveOutcome.Failure(5).mapFailure { it.toString() } == "5".failedWithProgress())
 		}
 
 		@Suppress("UNREACHABLE_CODE") // it's the purpose of the test!
 		test("Incomplete") {
-			assertEquals(
-				ProgressiveOutcome.Incomplete(),
-				ProgressiveOutcome.Incomplete().mapFailure { it.toString() },
-			)
+			check(ProgressiveOutcome.Incomplete().mapFailure { it.toString() } == ProgressiveOutcome.Incomplete())
 		}
 	}
 })
