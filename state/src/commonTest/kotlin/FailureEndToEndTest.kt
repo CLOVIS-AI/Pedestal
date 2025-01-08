@@ -74,7 +74,7 @@ private data class Counter(
 			}
 		}
 
-		suspend fun get(auth: Auth, id: Id) = out {
+		suspend fun get(auth: Auth, id: Id): Outcome<Get, Counter> = out {
 			ensureNotNull(auth.user) { Unauthenticated }
 
 			val counter = lock.withLock("get($id) by ${auth.user}") { data[id] }
