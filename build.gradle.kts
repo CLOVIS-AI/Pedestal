@@ -21,15 +21,15 @@ plugins {
 
 dependencies {
 	// List the 'library' projects
-	dokkatoo(projects.backbone)
-	dokkatoo(projects.cacheBlocking)
-	dokkatoo(projects.cache)
-	dokkatoo(projects.logger)
-	dokkatoo(projects.progress)
-	dokkatoo(projects.progressCoroutines)
-	dokkatoo(projects.state)
-	dokkatoo(projects.stateCoroutines)
-	dokkatoo(projects.weak)
+	dokka(projects.backbone)
+	dokka(projects.cacheBlocking)
+	dokka(projects.cache)
+	dokka(projects.logger)
+	dokka(projects.progress)
+	dokka(projects.progressCoroutines)
+	dokka(projects.state)
+	dokka(projects.stateCoroutines)
+	dokka(projects.weak)
 
 	kover(projects.backbone)
 	kover(projects.cache)
