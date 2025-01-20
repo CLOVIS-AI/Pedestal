@@ -2,7 +2,13 @@ package opensavvy.pedestal.weak.algorithms
 
 import opensavvy.pedestal.weak.ExperimentalWeakApi
 import opensavvy.prepared.runner.kotest.PreparedSpec
-import opensavvy.prepared.suite.*
+import opensavvy.prepared.suite.Prepared
+import opensavvy.prepared.suite.TestDsl
+import opensavvy.prepared.suite.prepared
+import opensavvy.prepared.suite.random.nextBoolean
+import opensavvy.prepared.suite.random.nextInt
+import opensavvy.prepared.suite.random.random
+import opensavvy.prepared.suite.random.randomInt
 
 @Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalWeakApi::class)
