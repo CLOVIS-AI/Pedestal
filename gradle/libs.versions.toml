@@ -7,7 +7,7 @@ lincheck = "2.34"                     # https://github.com/JetBrains/lincheck/re
 kotlinx-datetime = "0.6.1"            # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlinx-coroutines = "1.10.1"         # https://github.com/Kotlin/kotlinx.coroutines/releases
 prepared = "2.0.0-alpha.2"            # https://gitlab.com/opensavvy/groundwork/prepared/-/releases
-kotlin-js = "1.0.0-pre.801"           # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
+kotlin-js = "2025.1.4"                # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
 
 [plugins]
 
