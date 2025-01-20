@@ -5,7 +5,7 @@ slf4j = "2.0.16"                      # https://github.com/qos-ch/slf4j/tags
 arrow = "1.2.4"                       # https://github.com/arrow-kt/arrow/releases
 lincheck = "2.34"                     # https://github.com/JetBrains/lincheck/releases
 kotlinx-datetime = "0.6.1"            # https://github.com/Kotlin/kotlinx-datetime/releases
-kotlinx-coroutines = "1.9.0"          # https://github.com/Kotlin/kotlinx.coroutines/releases
+kotlinx-coroutines = "1.10.1"         # https://github.com/Kotlin/kotlinx.coroutines/releases
 prepared = "1.5.2"                    # https://gitlab.com/opensavvy/prepared/-/releases
 kotlin-js = "1.0.0-pre.801"           # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
 
@@ -14,7 +14,6 @@ kotlin-js = "1.0.0-pre.801"           # https://central.sonatype.com/artifact/or
 [libraries]
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 kotlinJs = { module = "org.jetbrains.kotlin-wrappers:kotlin-js", version.ref = "kotlin-js" }
 
