@@ -3,8 +3,8 @@
 OpenSavvy Pedestal is a collection of open source utilities for unified software architecture, aiming to solve common problems in a simple and elegant way with Kotlin Multiplatform.
 In particular, Pedestal focuses on fullstack development.
 
-The rendered documentation for the latest released version is [available here](https://opensavvy.gitlab.io/pedestal/api-docs/).
-The release notes and changelogs are [available here](https://gitlab.com/opensavvy/pedestal/-/releases) or as Git tags.
+The rendered documentation for the latest released version is [available here](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/).
+The release notes and changelogs are [available here](https://gitlab.com/opensavvy/groundwork/pedestal/-/releases) or as Git tags.
 
 This project contains the following modules:
 
@@ -12,16 +12,10 @@ This project contains the following modules:
 - [Pedestal State](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/state/index.html) models the success or failure of an operation, without losing progress information.
 - [Pedestal Cache](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/cache/index.html) is a collection of reactive cache implementations to aggressively reduce bandwidth usage with easy integration with reactive UI frameworks, like React or Compose.
 - [Pedestal Backbone](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/backbone/index.html) is an opinionated architectural pattern, using aggressive caching in all layers of a multiplatform application to entirely abstract away mutability behind coroutines.
+- [Pedestal Weak](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/weak/index.html) brings cross-platform weak references and weak maps.
 
 Pedestal focuses heavily on Kotlin and attempts to depend on as few external dependencies as possible.
 Where possible, compatibility modules are provided to interoperate with other ecosystems.
-
-## In the wild
-
-OpenSavvy Pedestal is used by these projects:
-
-- [Formulaide](https://gitlab.com/opensavvy/formulaide) is a web form editor with integrated workflow management,
-- [Decouple](https://gitlab.com/opensavvy/decouple) is a Kotlin Multiplatform UI framework aiming to decouple design systems from UI logic.
 
 ## Using in your own projects
 
@@ -45,14 +39,9 @@ dependencies {
 }
 ```
 
-Currently, we only publish builds for Kotlin/JVM, Kotlin/JS (IR only) and Kotlin/Native for iOS.
-This project has very little platform-specific code, and would be easy to port to any other platform—we just don't have the need for it.
-If you are interested in another platform, we encourage contributions that add the relevant CI configuration to test and deploy for that platform.
-
 - [Release list](https://gitlab.com/opensavvy/groundwork/pedestal/-/releases)
 - [Artifact list for MavenCentral](https://search.maven.org/search?q=g:dev.opensavvy.pedestal)
 - [Artifact list for the GitLab Repository](https://gitlab.com/opensavvy/groundwork/pedestal/-/packages)
-- [Breaking changes migration guide](docs/MIGRATION_GUIDE.md)
 
 ## Development
 
