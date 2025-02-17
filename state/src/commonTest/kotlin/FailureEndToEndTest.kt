@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2023-2025, OpenSavvy and contributors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package opensavvy.state
 
 import arrow.core.raise.ExperimentalTraceApi
@@ -14,9 +30,21 @@ import opensavvy.state.Counter.Service.Failures.*
 import opensavvy.state.arrow.out
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.outcome.failed
+import kotlin.collections.HashMap
 import kotlin.collections.List
+import kotlin.collections.Set
+import kotlin.collections.asSequence
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.emptySet
+import kotlin.collections.plus
+import kotlin.collections.set
+import kotlin.collections.setOf
 import kotlin.jvm.JvmInline
 import kotlin.random.Random
+import kotlin.sequences.filter
+import kotlin.sequences.map
+import kotlin.sequences.toList
 
 private data class User(
 	// In real life, this would be a data class+Id+Service
