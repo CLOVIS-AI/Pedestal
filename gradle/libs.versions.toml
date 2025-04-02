@@ -4,7 +4,7 @@
 slf4j = "2.0.17"                      # https://github.com/qos-ch/slf4j/tags
 arrow = "2.0.1"                       # https://github.com/arrow-kt/arrow/releases
 lincheck = "2.34"                     # https://github.com/JetBrains/lincheck/releases
-kotlinx-datetime = "0.6.1"            # https://github.com/Kotlin/kotlinx-datetime/releases
+kotlinx-datetime = "0.6.2"            # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlinx-coroutines = "1.10.1"         # https://github.com/Kotlin/kotlinx.coroutines/releases
 prepared = "2.0.0-alpha.2"            # https://gitlab.com/opensavvy/groundwork/prepared/-/releases
 kotlin-js = "2025.1.4"                # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
