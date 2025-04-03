@@ -77,6 +77,7 @@ import opensavvy.logger.Logger.Companion.warn
  * On Kotlin/JS, it uses the `console` object.
  * On Kotlin/JVM, it uses the [Slf4j](https://www.slf4j.org/) library, you will need to include a Slf4j binding in your project.
  */
+@Deprecated(DEPRECATION_MESSAGE)
 interface Logger {
 
 	/**
@@ -86,6 +87,7 @@ interface Logger {
 	 * additionally to this attribute.
 	 * For example, LogBack has its own log level configuration, Slf4j-simple never prints trace and debug messages.
 	 */
+	@Deprecated(DEPRECATION_MESSAGE)
 	var level: LogLevel
 
 	fun forceTrace(message: String, vararg objects: Any?)
@@ -122,4 +124,35 @@ interface Logger {
 	}
 }
 
-expect fun loggerFor(obj: Any): Logger
+@Deprecated(DEPRECATION_MESSAGE)
+fun loggerFor(obj: Any): Logger =
+	VerySimpleLogger(obj)
+
+private class VerySimpleLogger(private val obj: Any) : Logger {
+	override var level: LogLevel = LogLevel.default
+
+	private val objName = obj::class.toString()
+
+	private fun buildMessage(vararg values: Any?) =
+		values.joinToString(separator = " • ")
+
+	override fun forceTrace(message: String, vararg objects: Any?) {
+		println("[TRACE] $objName: ${buildMessage(message, *objects)}")
+	}
+
+	override fun forceDebug(message: String, vararg objects: Any?) {
+		println("[DEBUG] $objName: ${buildMessage(message, *objects)}")
+	}
+
+	override fun forceInfo(message: String, vararg objects: Any?) {
+		println("[INFO]  $objName: ${buildMessage(message, *objects)}")
+	}
+
+	override fun forceWarn(message: String, vararg objects: Any?) {
+		println("[WARN]  $objName: ${buildMessage(message, *objects)}")
+	}
+
+	override fun forceError(message: String, vararg objects: Any?) {
+		println("[ERROR] $objName: ${buildMessage(message, *objects)}")
+	}
+}

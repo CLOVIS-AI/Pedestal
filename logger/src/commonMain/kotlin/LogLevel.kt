@@ -16,6 +16,7 @@
 
 package opensavvy.logger
 
+@Deprecated(DEPRECATION_MESSAGE)
 enum class LogLevel {
 	// The order of the elements is important
 	TRACE,
