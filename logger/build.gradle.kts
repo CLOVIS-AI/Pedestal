@@ -21,18 +21,25 @@ plugins {
 
 kotlin {
 	jvm()
-	js(IR) {
+	js {
 		browser()
 		nodejs()
 	}
-	iosSimulatorArm64()
+	linuxX64()
+	linuxArm64()
+	macosX64()
+	macosArm64()
 	iosArm64()
 	iosX64()
-	linuxX64()
-
-	sourceSets.jvmMain.dependencies {
-		implementation(libs.slf4j)
-	}
+	iosSimulatorArm64()
+	watchosX64()
+	watchosArm32()
+	watchosArm64()
+	watchosSimulatorArm64()
+	tvosX64()
+	tvosArm64()
+	tvosSimulatorArm64()
+	mingwX64()
 
 	sourceSets.commonTest.dependencies {
 		implementation(libs.bundles.prepared)
