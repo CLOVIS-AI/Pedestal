@@ -77,7 +77,6 @@ interface WeakRef<out T> {
  *
  * @see SoftRef For implementing caches
  */
-@ExperimentalWeakApi
 expect fun <T> WeakRef(value: T): WeakRef<T>
 
 /**
@@ -99,6 +98,5 @@ expect fun <T> WeakRef(value: T): WeakRef<T>
  *
  * @see WeakRef For implementing mappers
  */
-@ExperimentalWeakApi
 @Suppress("FunctionName")
 expect fun <T> SoftRef(value: T): WeakRef<T>

@@ -37,7 +37,6 @@ private class NativeWeakRef<T : Any>(
  *
  * Kotlin Native doesn't make a difference between weak and soft references.
  */
-@ExperimentalWeakApi
 @ExperimentalNativeApi
 actual fun <T> WeakRef(value: T): WeakRef<T> =
 	if (value == null) EmptyWeakRef()
@@ -48,7 +47,6 @@ actual fun <T> WeakRef(value: T): WeakRef<T> =
  *
  * Kotlin Native doesn't make a difference between weak and soft references.
  */
-@ExperimentalWeakApi
 @ExperimentalNativeApi
 @Suppress("FunctionName")
 actual fun <T> SoftRef(value: T): WeakRef<T> =
