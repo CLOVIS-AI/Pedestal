@@ -2,7 +2,7 @@
 
 [versions]
 arrow = "2.1.2"                       # https://github.com/arrow-kt/arrow/releases
-lincheck = "2.34"                     # https://github.com/JetBrains/lincheck/releases
+lincheck = "2.39"                     # https://github.com/JetBrains/lincheck/releases
 kotlinx-datetime = "0.6.2"            # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlinx-coroutines = "1.10.1"         # https://github.com/Kotlin/kotlinx.coroutines/releases
 prepared = "2.0.0-rc.1"               # https://gitlab.com/opensavvy/groundwork/prepared/-/releases
