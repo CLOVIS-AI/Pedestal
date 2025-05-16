@@ -125,6 +125,7 @@ private val compareByIdentity = { a: Any?, b: Any? -> a === b }
  *
  * Additionally, older elements are visited more often, so they are more likely to be freed early.
  */
+@Suppress("FunctionName")
 @ExperimentalWeakApi
 fun <K, V> WeakKeyArrayMap(): WeakMap<K, V> =
 	WeakKeyMapImpl(
@@ -151,6 +152,7 @@ fun <K, V> WeakKeyArrayMap(): WeakMap<K, V> =
  *
  * Additionally, older elements are visited more often, so they are more likely to be freed early.
  */
+@Suppress("FunctionName")
 @ExperimentalWeakApi
 fun <K, V> SoftKeyArrayMap(): WeakMap<K, V> =
 	WeakKeyMapImpl(
@@ -175,6 +177,7 @@ fun <K, V> SoftKeyArrayMap(): WeakMap<K, V> =
  *
  * Additionally, older elements are visited more often, so they are more likely to be freed early.
  */
+@Suppress("FunctionName")
 @ExperimentalWeakApi
 fun <K, V> IdentityWeakKeyArrayMap(): WeakMap<K, V> =
 	WeakKeyMapImpl(
@@ -203,6 +206,7 @@ fun <K, V> IdentityWeakKeyArrayMap(): WeakMap<K, V> =
  *
  * Additionally, older elements are visited more often, so they are more likely to be freed early.
  */
+@Suppress("FunctionName")
 @ExperimentalWeakApi
 fun <K, V> IdentitySoftKeyArrayMap(): WeakMap<K, V> =
 	WeakKeyMapImpl(
