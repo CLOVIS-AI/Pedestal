@@ -40,7 +40,7 @@ private class NativeWeakRef<T : Any>(
 @ExperimentalWeakApi
 @ExperimentalNativeApi
 actual fun <T> WeakRef(value: T): WeakRef<T> =
-	if (value == null) EmptyWeakRef(value)
+	if (value == null) EmptyWeakRef()
 	else NativeWeakRef(value)
 
 /**

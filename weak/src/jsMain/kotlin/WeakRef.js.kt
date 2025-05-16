@@ -39,7 +39,7 @@ private class JsWeakRef<T : Any>(
  */
 @ExperimentalWeakApi
 actual fun <T> WeakRef(value: T): WeakRef<T> =
-	if (value == null) EmptyWeakRef(value)
+	if (value == null) EmptyWeakRef()
 	else JsWeakRef(value)
 
 /**
