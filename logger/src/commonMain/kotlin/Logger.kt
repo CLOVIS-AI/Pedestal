@@ -128,7 +128,8 @@ interface Logger {
 fun loggerFor(obj: Any): Logger =
 	VerySimpleLogger(obj)
 
-private class VerySimpleLogger(private val obj: Any) : Logger {
+private class VerySimpleLogger(obj: Any) : Logger {
+	@Deprecated(DEPRECATION_MESSAGE)
 	override var level: LogLevel = LogLevel.default
 
 	private val objName = obj::class.toString()

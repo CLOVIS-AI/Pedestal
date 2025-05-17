@@ -64,7 +64,7 @@ private class JsWeakMap<K, V>(
  */
 @ExperimentalWeakApi
 actual fun <K, V> WeakMap(): WeakMap<K, V> =
-	JsWeakMap(js.collections.WeakMap<K & Any, V>())
+	JsWeakMap(js.collections.WeakMap())
 
 /**
  * Instantiates a new [WeakMap] by copying [values].

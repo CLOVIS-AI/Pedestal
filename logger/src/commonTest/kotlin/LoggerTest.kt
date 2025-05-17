@@ -23,6 +23,7 @@ import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.Logger.Companion.warn
 import opensavvy.prepared.runner.kotest.PreparedSpec
 
+@Suppress("DEPRECATION")
 class LoggerTest : PreparedSpec({
 
 	test("Output") {
