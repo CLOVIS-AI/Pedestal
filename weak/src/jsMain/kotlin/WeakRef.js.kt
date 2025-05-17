@@ -37,9 +37,8 @@ private class JsWeakRef<T : Any>(
  *
  * JS doesn't make a difference between weak and soft references.
  */
-@ExperimentalWeakApi
 actual fun <T> WeakRef(value: T): WeakRef<T> =
-	if (value == null) EmptyWeakRef(value)
+	if (value == null) EmptyWeakRef()
 	else JsWeakRef(value)
 
 /**
@@ -47,7 +46,6 @@ actual fun <T> WeakRef(value: T): WeakRef<T> =
  *
  * JS doesn't make a difference between weak and soft references.
  */
-@ExperimentalWeakApi
 @Suppress("FunctionName")
 actual fun <T> SoftRef(value: T): WeakRef<T> =
 	WeakRef(value)

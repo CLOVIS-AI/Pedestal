@@ -40,14 +40,12 @@ fun <T : Any> WeakRef.Companion.fromJava(reference: Reference<T>): WeakRef<T> =
 /**
  * Implementation of [WeakRef] backed by a JVM [WeakReference].
  */
-@ExperimentalWeakApi
 actual fun <T> WeakRef(value: T): WeakRef<T> =
 	JavaReferenceHolder(WeakReference(value))
 
 /**
  * Implementation of [WeakRef] backed by a JVM [SoftReference].
  */
-@ExperimentalWeakApi
 @Suppress("FunctionName")
 actual fun <T> SoftRef(value: T): WeakRef<T> =
 	JavaReferenceHolder(SoftReference(value))
