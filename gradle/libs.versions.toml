@@ -1,12 +1,12 @@
 # List of dependencies of the project
 
 [versions]
-arrow = "2.0.1"                       # https://github.com/arrow-kt/arrow/releases
-lincheck = "2.34"                     # https://github.com/JetBrains/lincheck/releases
+arrow = "2.1.2"                       # https://github.com/arrow-kt/arrow/releases
+lincheck = "2.39"                     # https://github.com/JetBrains/lincheck/releases
 kotlinx-datetime = "0.6.2"            # https://github.com/Kotlin/kotlinx-datetime/releases
-kotlinx-coroutines = "1.10.1"         # https://github.com/Kotlin/kotlinx.coroutines/releases
-prepared = "2.0.0-rc.1"               # https://gitlab.com/opensavvy/groundwork/prepared/-/releases
-kotlin-js = "2025.1.4"                # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
+kotlinx-coroutines = "1.10.2"         # https://github.com/Kotlin/kotlinx.coroutines/releases
+prepared = "2.0.1"                    # https://gitlab.com/opensavvy/groundwork/prepared/-/releases
+kotlin-js = "2025.5.8"                # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
 
 [plugins]
 

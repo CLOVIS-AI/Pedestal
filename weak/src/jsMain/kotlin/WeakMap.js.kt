@@ -25,14 +25,14 @@ private class JsWeakMap<K, V>(
 		if (key == null)
 			return null
 
-		return wrapped[key]
+		return wrapped.get(key)
 	}
 
 	override fun set(key: K, value: V) {
 		if (key == null)
 			return
 
-		wrapped[key] = value
+		wrapped.set(key, value)
 	}
 
 	@ExperimentalWeakApi

@@ -44,7 +44,6 @@ kotlin {
 	sourceSets.commonMain.dependencies {
 		api(projects.state)
 		api(projects.cache)
-		api(libs.kotlinx.datetime)
 
 		implementation(projects.logger)
 	}
