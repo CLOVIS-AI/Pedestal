@@ -41,25 +41,16 @@ plugins {
 
 dependencies {
 	// List the 'library' projects
-	dokka(projects.backbone)
-	dokka(projects.cacheBlocking)
-	dokka(projects.cache)
-	dokka(projects.logger)
-	dokka(projects.progress)
-	dokka(projects.progressCoroutines)
-	dokka(projects.state)
-	dokka(projects.stateCoroutines)
-	dokka(projects.weak)
-	dokka(projects.enumset)
-
-	kover(projects.backbone)
-	kover(projects.cache)
-	kover(projects.cacheBlocking)
-	kover(projects.progress)
-	kover(projects.progressCoroutines)
-	kover(projects.state)
-	kover(projects.stateCoroutines)
-	kover(projects.enumset)
+	library(projects.backbone)
+	library(projects.cacheBlocking)
+	library(projects.cache)
+	library(projects.logger)
+	library(projects.progress)
+	library(projects.progressCoroutines)
+	library(projects.state)
+	library(projects.stateCoroutines)
+	library(projects.weak)
+	library(projects.enumset)
 }
 
 // region Check the users of the project didn't forget to rename the group
@@ -67,6 +58,15 @@ dependencies {
 val projectPath: String? = System.getenv("CI_PROJECT_PATH")
 if (projectPath != null && projectPath != "opensavvy/playgrounds/gradle" && group == "dev.opensavvy.playground") {
 	error("The project is declared to be in the group '$group', which is recognized as the Gradle Playground, but it's hosted in '$projectPath', which is not the Playground. Maybe you forgot to rename the group when importing the Playground in your own project?")
+}
+
+// endregion
+// region Enable the :lib template if we're in the playground
+
+if (group == "dev.opensavvy.playground") {
+	dependencies {
+		library(projects.gradle.templates.templateLib)
+	}
 }
 
 // endregion
