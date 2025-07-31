@@ -15,7 +15,7 @@ kotest = "5.9.1"
 kotest-plugin = "6.0.0.M4"
 
 # https://github.com/infix-de/testBalloon/releases
-testBalloon = "0.3.3-K2.2.0"
+testBalloon = "0.4.0-K2.2.0"
 
 # https://gitlab.com/opensavvy/groundwork/pedestal/-/releases
 pedestal = "3.0.0"
