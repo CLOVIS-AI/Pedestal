@@ -17,6 +17,7 @@
 plugins {
 	alias(opensavvyConventions.plugins.base)
 	alias(opensavvyConventions.plugins.kotlin.library)
+	alias(libsCommon.plugins.testBalloon)
 }
 
 kotlin {
@@ -46,7 +47,7 @@ kotlin {
 	}
 
 	sourceSets.commonTest.dependencies {
-		implementation(libs.bundles.prepared)
+		implementation(libsCommon.opensavvy.prepared.testBalloon)
 	}
 }
 
