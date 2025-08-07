@@ -41,6 +41,11 @@ kotlin {
 	tvosArm64()
 	tvosSimulatorArm64()
 	mingwX64()
+	@Suppress("OPT_IN_USAGE")
+	wasmJs {
+		browser()
+		nodejs()
+	}
 
 	sourceSets.jsMain.dependencies {
 		implementation(libs.kotlinJs)
