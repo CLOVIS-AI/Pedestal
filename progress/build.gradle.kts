@@ -53,7 +53,7 @@ kotlin {
 library {
     name.set("Progress")
     description.set("Lingua franca for progress representation")
-    homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/progress/index.html")
+    homeUrl.set("https://pedestal.opensavvy.dev/api-docs/progress/index.html")
 
     license.set {
         name.set("Apache 2.0")

@@ -59,7 +59,7 @@ kotlin {
 library {
 	name.set("Weak")
 	description.set("Weak references and maps for Kotlin Multiplatform")
-	homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/weak/index.html")
+	homeUrl.set("https://pedestal.opensavvy.dev/api-docs/weak/index.html")
 
 	license.set {
 		name.set("Apache 2.0")

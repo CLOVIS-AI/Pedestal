@@ -3,16 +3,16 @@
 OpenSavvy Pedestal is a collection of open source utilities for unified software architecture, aiming to solve common problems in a simple and elegant way with Kotlin Multiplatform.
 In particular, Pedestal focuses on fullstack development.
 
-The rendered documentation for the latest released version is [available here](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/).
+The rendered documentation for the latest released version is [available here](https://pedestal.opensavvy.dev/api-docs/).
 The release notes and changelogs are [available here](https://gitlab.com/opensavvy/groundwork/pedestal/-/releases) or as Git tags.
 
 This project contains the following modules:
 
-- [Pedestal Progress](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/progress/index.html) models the progress of an asynchronous task and its subtasks.
-- [Pedestal State](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/state/index.html) models the success or failure of an operation, without losing progress information.
-- [Pedestal Cache](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/cache/index.html) is a collection of reactive cache implementations to aggressively reduce bandwidth usage with easy integration with reactive UI frameworks, like React or Compose.
-- [Pedestal Backbone](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/backbone/index.html) is an opinionated architectural pattern, using aggressive caching in all layers of a multiplatform application to entirely abstract away mutability behind coroutines.
-- [Pedestal Weak](https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/weak/index.html) brings cross-platform weak references and weak maps.
+- [Pedestal Progress](https://pedestal.opensavvy.dev/api-docs/progress/index.html) models the progress of an asynchronous task and its subtasks.
+- [Pedestal State](https://pedestal.opensavvy.dev/api-docs/state/index.html) models the success or failure of an operation, without losing progress information.
+- [Pedestal Cache](https://pedestal.opensavvy.dev/api-docs/cache/index.html) is a collection of reactive cache implementations to aggressively reduce bandwidth usage with easy integration with reactive UI frameworks, like React or Compose.
+- [Pedestal Backbone](https://pedestal.opensavvy.dev/api-docs/backbone/index.html) is an opinionated architectural pattern, using aggressive caching in all layers of a multiplatform application to entirely abstract away mutability behind coroutines.
+- [Pedestal Weak](https://pedestal.opensavvy.dev/api-docs/weak/index.html) brings cross-platform weak references and weak maps.
 
 Pedestal focuses heavily on Kotlin and attempts to depend on as few external dependencies as possible.
 Where possible, compatibility modules are provided to interoperate with other ecosystems.

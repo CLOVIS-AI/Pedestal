@@ -57,7 +57,7 @@ kotlin {
 library {
 	name.set("Cache")
 	description.set("Multiplatform observable asynchronous cache algorithms")
-	homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/cache/index.html")
+	homeUrl.set("https://pedestal.opensavvy.dev/api-docs/cache/index.html")
 
 	license.set {
 		name.set("Apache 2.0")

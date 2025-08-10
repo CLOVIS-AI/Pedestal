@@ -38,7 +38,7 @@ kotlin {
 library {
 	name.set("Cache (Blocking)")
 	description.set("Blocking wrappers for Pedestal Cache")
-	homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/cache-blocking/index.html")
+	homeUrl.set("https://pedestal.opensavvy.dev/api-docs/cache-blocking/index.html")
 
 	license.set {
 		name.set("Apache 2.0")

@@ -49,7 +49,7 @@ kotlin {
 library {
 	name.set("EnumSet")
 	description.set("Efficient bitfield-based collections")
-	homeUrl.set("https://opensavvy.gitlab.io/groundwork/pedestal/api-docs/enumset/index.html")
+	homeUrl.set("https://pedestal.opensavvy.dev/api-docs/enumset/index.html")
 
 	license.set {
 		name.set("Apache 2.0")
