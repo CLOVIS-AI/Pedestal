@@ -17,7 +17,7 @@
 package opensavvy.pedestal.weak.algorithms
 
 import opensavvy.pedestal.weak.ExperimentalWeakApi
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.prepared.suite.Prepared
 import opensavvy.prepared.suite.TestDsl
 import opensavvy.prepared.suite.prepared
@@ -28,7 +28,7 @@ import opensavvy.prepared.suite.random.randomInt
 
 @Suppress("NAME_SHADOWING")
 @OptIn(ExperimentalWeakApi::class)
-class WeakKeyArrayMapTest : PreparedSpec({
+val WeakKeyArrayMapTest by preparedSuite {
 
 	// region Helpers to fake weak references used as keys during these tests
 
@@ -182,4 +182,4 @@ class WeakKeyArrayMapTest : PreparedSpec({
 		}
 	}
 
-})
+}
