@@ -27,6 +27,10 @@ internal fun <E : Enum<E>> enumSetOf(
 ): Set<E> {
 	return when (entries.size) {
 		0 -> emptySet()
+
+		// If the passed elements are already an EnumEntries, we know the user wants a set with *all* elements.
+		else if elements is EnumEntries<*> -> EnumEntriesSet(entries)
+
 		else -> elements.toSet()
 	}
 }

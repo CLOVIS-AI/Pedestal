@@ -17,10 +17,10 @@
 package opensavvy.enumset.datatypes
 
 import io.kotest.assertions.throwables.shouldThrow
+import opensavvy.enumset.EnumEntriesSet
 import opensavvy.prepared.suite.Prepared
 import opensavvy.prepared.suite.SuiteDsl
 import opensavvy.prepared.suite.TestDsl
-import opensavvy.prepared.suite.config.Ignored
 import opensavvy.prepared.suite.prepared
 import opensavvy.prepared.suite.random.random
 import opensavvy.prepared.suite.random.randomInt
@@ -105,8 +105,12 @@ fun <E : Enum<E>> SuiteDsl.testEnumSetValidity(
 			check(set().size == targetSize())
 		}
 
-		test("toString should mention exactly all elements, in order", Ignored) { // TODO: this test is only valid for our custom implementations, not for the stdlib
-			check(set().toString() == values().sorted().joinToString(", ", prefix = "[", postfix = "]"))
+		test("toString should mention exactly all elements, in order") {
+			if (set() is EnumEntriesSet) {
+				check(set().toString() == values().sorted().joinToString(", ", prefix = "[", postfix = "]"))
+			} else {
+				println("This test does not make sense for set ${set()} (${set()::class})")
+			}
 		}
 
 		test("The iterator's size should be correct") {
