@@ -98,6 +98,12 @@ value class BitSet32 internal constructor(internal val value: Int) : Set<Int> {
 		}
 	}
 
+	@ExperimentalEnumSetApi
+	fun toSet(): BitSet32 = this
+
+	@ExperimentalEnumSetApi
+	fun toMutableSet(): MutableBitSet32 = MutableBitSet32(this)
+
 	companion object {
 
 		/**
@@ -294,6 +300,12 @@ class MutableBitSet32 internal constructor(private var storage: BitSet32) : Muta
 	override fun clear() {
 		storage = BitSet32.empty()
 	}
+
+	@ExperimentalEnumSetApi
+	fun toSet(): BitSet32 = storage
+
+	@ExperimentalEnumSetApi
+	fun toMutableSet(): MutableBitSet32 = MutableBitSet32(storage)
 
 	override fun hashCode(): Int = storage.hashCode()
 
