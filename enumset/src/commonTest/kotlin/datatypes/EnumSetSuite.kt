@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalEnumSetApi::class)
+
 package opensavvy.enumset.datatypes
 
 import io.kotest.assertions.throwables.shouldThrow
 import opensavvy.enumset.EnumEntriesSet
+import opensavvy.enumset.EnumSet32
+import opensavvy.enumset.ExperimentalEnumSetApi
 import opensavvy.prepared.suite.Prepared
 import opensavvy.prepared.suite.SuiteDsl
 import opensavvy.prepared.suite.TestDsl
@@ -106,7 +110,7 @@ fun <E : Enum<E>> SuiteDsl.testEnumSetValidity(
 		}
 
 		test("toString should mention exactly all elements, in order") {
-			if (set() is EnumEntriesSet) {
+			if (set() is EnumEntriesSet || set() is EnumSet32) {
 				check(set().toString() == values().sorted().joinToString(", ", prefix = "[", postfix = "]"))
 			} else {
 				println("This test does not make sense for set ${set()} (${set()::class})")

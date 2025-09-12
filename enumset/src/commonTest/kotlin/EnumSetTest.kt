@@ -18,6 +18,7 @@
 
 package opensavvy.enumset
 
+import io.kotest.assertions.throwables.shouldThrow
 import opensavvy.enumset.datatypes.testEmptyEnumSetValidity
 import opensavvy.enumset.datatypes.testEnumSetValidity
 import opensavvy.prepared.runner.kotest.PreparedSpec
@@ -46,4 +47,13 @@ class EnumSetTest : PreparedSpec({
 	testEnumSetValidity("of 7 elements", Enum7.entries) { enumSetOf(it) }
 	testEnumSetValidity("of 26 elements", Enum26.entries) { enumSetOf(it) }
 	testEnumSetValidity("of 36 elements", Enum36.entries) { enumSetOf(it) }
+
+	testEmptyEnumSetValidity("EnumSet32 of 0 elements", Enum0.entries) { EnumSet32.of(emptyList(), Enum0.entries) }
+	testEnumSetValidity("EnumSet32 of 2 elements", Enum2.entries) { EnumSet32.of(it, Enum2.entries) }
+	testEnumSetValidity("EnumSet32 of 7 elements", Enum7.entries) { EnumSet32.of(it, Enum7.entries) }
+	testEnumSetValidity("EnumSet32 of 26 elements", Enum26.entries) { EnumSet32.of(it, Enum26.entries) }
+
+	test("Cannot instantiate an EnumSet32 with an enum that has more than 32 elements") {
+		shouldThrow<IllegalArgumentException> { EnumSet32.of(emptyList(), Enum36.entries) }
+	}
 })

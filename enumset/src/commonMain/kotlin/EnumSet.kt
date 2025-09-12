@@ -28,6 +28,8 @@ internal fun <E : Enum<E>> enumSetOf(
 	return when (entries.size) {
 		0 -> emptySet()
 
+		in 1..32 -> EnumSet32.of(elements, entries)
+
 		// If the passed elements are already an EnumEntries, we know the user wants a set with *all* elements.
 		else if elements is EnumEntries<*> -> EnumEntriesSet(entries)
 
