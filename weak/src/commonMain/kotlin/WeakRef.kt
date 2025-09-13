@@ -49,11 +49,47 @@ interface WeakRef<out T> {
 	 * to be returned long after it has become unreachable from anywhere else in the program,
 	 * or disappear sooner than one expected.
 	 *
-	 * In particular, it is not possible for this class to provide a function to check whether
-	 * the value is still available or not: the value could disappear between that check and
-	 * the call to this function.
+	 * ### Native limitations
+	 *
+	 * On Kotlin Native, values can only be freed by the GC in a different frame than the one they
+	 * were created in. This means that if you call [read] within the body of a function,
+	 * the weak reference cannot be cleared anymore until the end of the function.
+	 *
+	 * Be careful of this limitation when using weak references inside a single expensive function.
+	 *
+	 * To learn more, follow [KT-79985](https://youtrack.jetbrains.com/issue/KT-79985).
+	 *
+	 * @see isEmpty Test if the reference has been cleared.
 	 */
 	fun read(): T?
+
+	/**
+	 * Checks whether this weak reference has been cleared.
+	 *
+	 * If this function returns `true`, calling [read] will return `null`.
+	 *
+	 * @see read Read the current value.
+	 */
+	@ExperimentalWeakApi
+	fun isEmpty(): Boolean =
+		read() == null
+
+	/**
+	 * Checks whether this weak reference still contains some data.
+	 *
+	 * If this function returns `true`, the weak reference still contained some data at the moment
+	 * where the function was called.
+	 * Note that this **does not guarantee** that a subsequent call to [read] will return any data, as the
+	 * data could have been cleared in between.
+	 *
+	 * If you need to write an algorithm that depends on the data and its presence, prefer using [read] and a `null`-check
+	 * to ensure that the data doesn't disappear between the test and the access.
+	 *
+	 * @see read Read the current value.
+	 */
+	@ExperimentalWeakApi
+	fun isNotEmpty(): Boolean =
+		!isEmpty()
 
 	companion object
 }
