@@ -98,6 +98,12 @@ value class BitSet32 internal constructor(internal val value: Int) : Set<Int> {
 		}
 	}
 
+	@ExperimentalEnumSetApi
+	fun toSet(): BitSet32 = this
+
+	@ExperimentalEnumSetApi
+	fun toMutableSet(): MutableBitSet32 = MutableBitSet32(this)
+
 	companion object {
 
 		/**
@@ -130,7 +136,18 @@ value class BitSet32 internal constructor(internal val value: Int) : Set<Int> {
 		 * @throws IllegalArgumentException If an element is not in the range `0..31`.
 		 */
 		@ExperimentalEnumSetApi
-		fun of(vararg elements: Int): BitSet32 {
+		fun of(vararg elements: Int): BitSet32 =
+			of(elements.asIterable())
+
+		/**
+		 * Creates an instance of [BitSet32] that contains the given [elements].
+		 *
+		 * If [elements] contains duplicates, they will only be present once in the resulting set (since sets cannot contain duplicates).
+		 *
+		 * @throws IllegalArgumentException If an element is not in the range `0..31`.
+		 */
+		@ExperimentalEnumSetApi
+		fun of(elements: Iterable<Int>): BitSet32 {
 			var value = 0
 
 			for (element in elements) {
@@ -283,6 +300,12 @@ class MutableBitSet32 internal constructor(private var storage: BitSet32) : Muta
 	override fun clear() {
 		storage = BitSet32.empty()
 	}
+
+	@ExperimentalEnumSetApi
+	fun toSet(): BitSet32 = storage
+
+	@ExperimentalEnumSetApi
+	fun toMutableSet(): MutableBitSet32 = MutableBitSet32(storage)
 
 	override fun hashCode(): Int = storage.hashCode()
 
