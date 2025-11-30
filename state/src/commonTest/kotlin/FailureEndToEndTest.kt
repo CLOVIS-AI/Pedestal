@@ -19,12 +19,11 @@ package opensavvy.state
 import arrow.core.raise.ExperimentalTraceApi
 import arrow.core.raise.ensure
 import arrow.core.raise.ensureNotNull
-import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import opensavvy.prepared.compat.arrow.core.assertRaises
+import opensavvy.prepared.compat.arrow.core.checkRaises
 import opensavvy.prepared.compat.arrow.core.failOnRaise
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.prepared.suite.prepared
 import opensavvy.state.Counter.Service.Failures.*
 import opensavvy.state.arrow.out
@@ -180,7 +179,7 @@ private data class Counter(
 }
 
 @OptIn(ExperimentalTraceApi::class)
-class FailureEndToEndTest : PreparedSpec({
+val FailureEndToEndTest by preparedSuite {
 
 	val guest: User? = null
 	val user1 = User("User 1")
@@ -200,23 +199,23 @@ class FailureEndToEndTest : PreparedSpec({
 
 	suite("Guests") {
 		test("Guests cannot create a counter") {
-			service().create(guestAuth) shouldBe Unauthenticated.failed()
+			check(service().create(guestAuth) == Unauthenticated.failed())
 		}
 
 		test("Guests cannot list counters") {
-			service().list(guestAuth) shouldBe Unauthenticated.failed()
+			check(service().list(guestAuth) == Unauthenticated.failed())
 		}
 
 		test("Guests cannot get counters") {
 			val id = service().create(user1Auth).getOrThrow()
 
-			service().get(guestAuth, id) shouldBe Unauthenticated.failed()
+			check(service().get(guestAuth, id) == Unauthenticated.failed())
 		}
 
 		test("Guests cannot increment counters") {
 			val id = service().create(user1Auth).getOrThrow()
 
-			service().increment(guestAuth, id) shouldBe Unauthenticated.failed()
+			check(service().increment(guestAuth, id) == Unauthenticated.failed())
 		}
 	}
 
@@ -250,7 +249,7 @@ class FailureEndToEndTest : PreparedSpec({
 				out {
 					val id = service().create(user1Auth).bind()
 
-					service().get(user1Auth, id).bind() shouldBe Counter(user1, 0, emptySet())
+					check(service().get(user1Auth, id).bind() == Counter(user1, 0, emptySet()))
 				}
 			}
 		}
@@ -262,7 +261,7 @@ class FailureEndToEndTest : PreparedSpec({
 				}
 			}
 
-			assertRaises(NotFound(id) as Counter.Service.Failures) {
+			checkRaises(NotFound(id) as Counter.Service.Failures) {
 				out {
 					service().get(user2Auth, id).bind()
 				}
@@ -272,7 +271,7 @@ class FailureEndToEndTest : PreparedSpec({
 		test("Users cannot get a counter that doesn't exist") {
 			val id = Counter.Id(2)
 
-			assertRaises(NotFound(id) as Counter.Service.Failures) {
+			checkRaises(NotFound(id) as Counter.Service.Failures) {
 				out {
 					service().get(user2Auth, id).bind()
 				}
@@ -285,7 +284,7 @@ class FailureEndToEndTest : PreparedSpec({
 					val id = service().create(user1Auth).bind()
 					service().increment(user1Auth, id).bind()
 
-					service().get(user1Auth, id).bind() shouldBe Counter(user1, 1, emptySet())
+					check(service().get(user1Auth, id).bind() == Counter(user1, 1, emptySet()))
 				}
 			}
 		}
@@ -296,7 +295,7 @@ class FailureEndToEndTest : PreparedSpec({
 					val id = service().create(user1Auth).bind()
 					service().share(user1Auth, id, user2).bind()
 
-					service().get(user1Auth, id).bind() shouldBe Counter(user1, 0, setOf(user2))
+					check(service().get(user1Auth, id).bind() == Counter(user1, 0, setOf(user2)))
 				}
 			}
 		}
@@ -318,7 +317,7 @@ class FailureEndToEndTest : PreparedSpec({
 					val id = service().create(user1Auth).bind()
 					service().share(user1Auth, id, user2).bind()
 
-					service().get(user2Auth, id).bind() shouldBe Counter(user1, 0, setOf(user2))
+					check(service().get(user2Auth, id).bind() == Counter(user1, 0, setOf(user2)))
 				}
 			}
 		}
@@ -329,7 +328,7 @@ class FailureEndToEndTest : PreparedSpec({
 					val id = service().create(user1Auth).bind()
 					service().share(user1Auth, id, user2).bind()
 
-					assertRaises(NotTheOwner(id) as Counter.Service.Failures) {
+					checkRaises(NotTheOwner(id) as Counter.Service.Failures) {
 						out {
 							service().increment(user2Auth, id).bind()
 						}
@@ -344,7 +343,7 @@ class FailureEndToEndTest : PreparedSpec({
 					val id = service().create(user1Auth).bind()
 					service().share(user1Auth, id, user2).bind()
 
-					assertRaises(NotTheOwner(id) as Counter.Service.Failures) {
+					checkRaises(NotTheOwner(id) as Counter.Service.Failures) {
 						out {
 							service().share(user2Auth, id, user1).bind()
 						}
@@ -353,4 +352,4 @@ class FailureEndToEndTest : PreparedSpec({
 			}
 		}
 	}
-})
+}

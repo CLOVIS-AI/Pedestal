@@ -16,9 +16,9 @@
 
 package opensavvy.state.outcome
 
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
-class ConditionalTest : PreparedSpec({
+val ConditionalTest by preparedSuite {
 
 	@Suppress("LocalVariableName")
 	val Failed = "FAILED"
@@ -66,4 +66,4 @@ class ConditionalTest : PreparedSpec({
 			check(test)
 		}
 	}
-})
+}

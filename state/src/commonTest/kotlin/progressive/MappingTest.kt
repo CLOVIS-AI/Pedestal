@@ -16,9 +16,9 @@
 
 package opensavvy.state.progressive
 
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
-class MappingTest : PreparedSpec({
+val MappingTest by preparedSuite {
 
 	@Suppress("LocalVariableName") val Failed = "FAILED"
 
@@ -57,4 +57,4 @@ class MappingTest : PreparedSpec({
 			check(ProgressiveOutcome.Incomplete().mapFailure { it.toString() } == ProgressiveOutcome.Incomplete())
 		}
 	}
-})
+}

@@ -16,10 +16,10 @@
 
 package opensavvy.state.progressive
 
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.loading
 
-class AccumulatorsTest : PreparedSpec({
+val AccumulatorsTest by preparedSuite {
 
 	test("Iterable") {
 		val actual = listOf(
@@ -75,4 +75,4 @@ class AccumulatorsTest : PreparedSpec({
 
 		check(actual == expected)
 	}
-})
+}

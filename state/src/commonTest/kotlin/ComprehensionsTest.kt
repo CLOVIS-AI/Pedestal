@@ -16,18 +16,17 @@
 
 package opensavvy.state
 
-import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
 /**
  * This is a series of examples of how to combine state instances together.
  */
 @Suppress("unused")
-class ComprehensionsTest : PreparedSpec({
+val ComprehensionsTest by preparedSuite {
 	test("Map values") {
 		val input = flow {
 			emit("5")
@@ -40,6 +39,6 @@ class ComprehensionsTest : PreparedSpec({
 		}.map { it.toIntOrNull() }
 			.toList()
 
-		input shouldBe listOf(5, 10, null)
+		check(input == listOf(5, 10, null))
 	}
-})
+}

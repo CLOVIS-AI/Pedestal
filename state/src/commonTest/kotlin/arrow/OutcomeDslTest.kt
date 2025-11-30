@@ -17,11 +17,11 @@
 package opensavvy.state.arrow
 
 import arrow.core.left
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.state.outcome.failed
 import opensavvy.state.outcome.successful
 
-class OutcomeDslTest : PreparedSpec({
+val OutcomeDslTest by preparedSuite {
 	test("Success") {
 		check(out<String, Int> { 2 } == 2.successful())
 	}
@@ -42,4 +42,4 @@ class OutcomeDslTest : PreparedSpec({
 	test("To either") {
 		check("test".failed().toEither() == "test".left())
 	}
-})
+}

@@ -16,10 +16,10 @@
 
 package opensavvy.state.progressive
 
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.loading
 
-class ConditionalTest : PreparedSpec({
+val ConditionalTest by preparedSuite {
 
 	@Suppress("LocalVariableName")
 	val Failed = "FAILED"
@@ -151,4 +151,4 @@ class ConditionalTest : PreparedSpec({
 			check(test)
 		}
 	}
-})
+}

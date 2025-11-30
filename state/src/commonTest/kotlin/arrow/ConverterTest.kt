@@ -18,7 +18,7 @@ package opensavvy.state.arrow
 
 import arrow.core.left
 import arrow.core.right
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.loading
 import opensavvy.state.outcome.failed
 import opensavvy.state.outcome.successful
@@ -27,7 +27,7 @@ import opensavvy.state.progressive.failedWithProgress
 import opensavvy.state.progressive.successfulWithProgress
 import opensavvy.state.progressive.withProgress
 
-class ConverterTest : PreparedSpec({
+val ConverterTest by preparedSuite {
 
 	data class NotFound(val value: Int)
 
@@ -70,13 +70,13 @@ class ConverterTest : PreparedSpec({
 		}
 
 		suite("ProgressiveOutcome") {
-			suite("Success") {
+			test("Success") {
 				check(5.right().toOutcome(loading(0.5)) == 5.successfulWithProgress(loading(0.5)))
 			}
 
-			suite("Failure") {
+			test("Failure") {
 				check(NotFound(5).left().toOutcome(loading(0.5)) == NotFound(5).failedWithProgress(loading(0.5)))
 			}
 		}
 	}
-})
+}

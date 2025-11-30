@@ -16,9 +16,9 @@
 
 package opensavvy.state.outcome
 
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
-class MappingTest : PreparedSpec({
+val MappingTest by preparedSuite {
 
 	suite("map") {
 		test("Success") {
@@ -41,4 +41,4 @@ class MappingTest : PreparedSpec({
 			check(5.failed().mapFailure { it.toString() } == "5".failed())
 		}
 	}
-})
+}
