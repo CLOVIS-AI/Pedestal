@@ -18,12 +18,12 @@ package opensavvy.state.coroutines
 
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.toList
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.loading
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.combineCompleted
 
-class AccumulatorsTest : PreparedSpec({
+val AccumulatorsTest by preparedSuite {
 
 	test("Flow") {
 		val initial = listOf(
@@ -52,4 +52,4 @@ class AccumulatorsTest : PreparedSpec({
 
 		check(actual == expected)
 	}
-})
+}

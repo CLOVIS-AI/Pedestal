@@ -17,12 +17,12 @@
 package opensavvy.state.coroutines
 
 import kotlinx.coroutines.flow.flowOf
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.loading
 import opensavvy.state.outcome.Outcome
 import opensavvy.state.progressive.ProgressiveOutcome
 
-class ProgressiveFlowAccessorsTest : PreparedSpec({
+val ProgressiveFlowAccessorsTest by preparedSuite {
 
 	data class NotFound(val value: Int)
 
@@ -45,4 +45,4 @@ class ProgressiveFlowAccessorsTest : PreparedSpec({
 
 		check(input.now() == Outcome.Success(2))
 	}
-})
+}
