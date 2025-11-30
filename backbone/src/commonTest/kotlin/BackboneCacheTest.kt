@@ -18,7 +18,7 @@ package opensavvy.backbone
 
 import arrow.core.raise.ensure
 import opensavvy.cache.cache
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.state.arrow.out
 import opensavvy.state.outcome.valueOrNull
 
@@ -42,7 +42,7 @@ private class Bone : Backbone<BasicRef, Bone.Invalid, Int> {
 	object Invalid
 }
 
-class BackboneCacheTest : PreparedSpec({
+val BackboneCacheTest by preparedSuite {
 
 	test("Default") {
 		val bone = Bone()
@@ -60,4 +60,4 @@ class BackboneCacheTest : PreparedSpec({
 		println(Ref)
 		println(Backbone)
 	}
-})
+}
