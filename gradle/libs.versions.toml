@@ -5,7 +5,6 @@ arrow = "2.1.2"                       # https://github.com/arrow-kt/arrow/releas
 lincheck = "2.39"                     # https://github.com/JetBrains/lincheck/releases
 kotlinx-datetime = "0.6.2"            # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlinx-coroutines = "1.10.2"         # https://github.com/Kotlin/kotlinx.coroutines/releases
-prepared = "2.0.1"                    # https://gitlab.com/opensavvy/groundwork/prepared/-/releases
 kotlin-js = "2025.7.6"                # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
 
 [plugins]
@@ -18,16 +17,3 @@ kotlinJs = { module = "org.jetbrains.kotlin-wrappers:kotlin-js", version.ref = "
 
 arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 lincheck = { module = "org.jetbrains.kotlinx:lincheck", version.ref = "lincheck" }
-
-prepared = { module = "dev.opensavvy.prepared:runner-kotest", version.ref = "prepared" }
-prepared-arrow = { module = "dev.opensavvy.prepared:compat-arrow", version.ref = "prepared" }
-prepared-datetime = { module = "dev.opensavvy.prepared:compat-kotlinx-datetime", version.ref = "prepared" }
-prepared-parameterize = { module = "dev.opensavvy.prepared:compat-parameterize", version.ref = "prepared" }
-
-[bundles]
-prepared = [
-	"prepared",
-	"prepared-arrow",
-	"prepared-datetime",
-	"prepared-parameterize",
-]
