@@ -19,12 +19,12 @@ package opensavvy.progress.coroutines
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.flow.transformWhile
 import kotlinx.coroutines.yield
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.prepared.suite.launch
 import opensavvy.progress.done
 import opensavvy.progress.loading
 
-class StateFlowProgressReporterTest : PreparedSpec({
+val StateFlowProgressReporterTest by preparedSuite {
 
 	test("Reporting progress events through a StateFlow") {
 		val reporter = StateFlowProgressReporter()
@@ -52,4 +52,4 @@ class StateFlowProgressReporterTest : PreparedSpec({
 		check(expected == reporter.progress.transformWhile { emit(it); it != done() }.toList())
 	}
 
-})
+}
