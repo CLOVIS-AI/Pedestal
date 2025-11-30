@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalTime::class)
+
 package opensavvy.cache
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.loggerFor
 import opensavvy.progress.done
 import opensavvy.state.coroutines.ProgressiveFlow
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 /**
  * Cache layer that expires values from the previous layer after a specified [duration][expireAfter].

@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalTime::class)
+
 package opensavvy.cache.contextual
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.datetime.Clock
 import opensavvy.cache.expireAfter
 import opensavvy.state.coroutines.ProgressiveFlow
+import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 internal class ContextualExpirationCache<I, C, F, V>(
 	private val upstream: ContextualCache<I, C, F, V>,

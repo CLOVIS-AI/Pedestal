@@ -45,14 +45,12 @@ kotlin {
 	sourceSets.commonMain.dependencies {
 		api(projects.state)
 		api(projects.stateCoroutines)
-		api(libs.kotlinx.datetime)
 
 		implementation(projects.logger)
 	}
 
 	sourceSets.commonTest.dependencies {
 		implementation(libsCommon.opensavvy.prepared.testBalloon)
-		implementation(libsCommon.opensavvy.prepared.kotlinx.datetime)
 		implementation(libsCommon.kotlin.test)
 	}
 }

@@ -3,14 +3,12 @@
 [versions]
 arrow = "2.1.2"                       # https://github.com/arrow-kt/arrow/releases
 lincheck = "2.39"                     # https://github.com/JetBrains/lincheck/releases
-kotlinx-datetime = "0.6.2"            # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlinx-coroutines = "1.10.2"         # https://github.com/Kotlin/kotlinx.coroutines/releases
 kotlin-js = "2025.7.6"                # https://central.sonatype.com/artifact/org.jetbrains.kotlin-wrappers/kotlin-js
 
 [plugins]
 
 [libraries]
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
 kotlinJs = { module = "org.jetbrains.kotlin-wrappers:kotlin-js", version.ref = "kotlin-js" }
