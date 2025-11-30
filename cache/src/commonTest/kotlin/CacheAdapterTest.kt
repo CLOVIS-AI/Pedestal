@@ -18,11 +18,11 @@ package opensavvy.cache
 
 import opensavvy.cache.properties.contextPassthrough
 import opensavvy.cache.properties.readingValues
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
-class CacheAdapterTest : PreparedSpec({
+val CacheAdapterTest by preparedSuite {
 
 	readingValues { it }
 	contextPassthrough { it }
 
-})
+}

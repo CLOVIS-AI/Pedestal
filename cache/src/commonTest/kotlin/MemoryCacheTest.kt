@@ -21,7 +21,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import kotlinx.coroutines.yield
 import opensavvy.cache.properties.*
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.prepared.suite.TestDsl
 import opensavvy.prepared.suite.backgroundScope
 import opensavvy.prepared.suite.launchInBackground
@@ -29,7 +29,7 @@ import opensavvy.progress.Progress
 import opensavvy.state.progressive.ProgressiveOutcome
 import opensavvy.state.progressive.successfulWithProgress
 
-class MemoryCacheTest : PreparedSpec({
+val MemoryCacheTest by preparedSuite {
 
 	fun <A, B, C> TestDsl.decorate(upstream: Cache<A, B, C>): Cache<A, B, C> = upstream
 		.cachedInMemory(backgroundScope.coroutineContext.job)
@@ -64,7 +64,7 @@ class MemoryCacheTest : PreparedSpec({
 		check(result == "1".successfulWithProgress())
 	}
 
-})
+}
 
 private suspend fun yieldUntil(predicate: () -> Boolean) {
 	while (!predicate()) {
