@@ -100,5 +100,14 @@ val SimpleLoadingImplementationTest by preparedSuite {
 			check(loading(0.0) != loading(0.7))
 			check(loading(0.0) != Unit)
 		}
+
+		test("Nullability") {
+			check(!loading(0.0).equals(null))
+		}
+
+		test("Same reference") {
+			val l = loading(0.0)
+			check(l == l)
+		}
 	}
 }
