@@ -16,7 +16,7 @@
 
 package opensavvy.state.progressive
 
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.ExperimentalProgressApi
 import opensavvy.progress.Progressive
 import opensavvy.progress.loading
@@ -25,7 +25,7 @@ import opensavvy.state.outcome.failed
 import opensavvy.state.outcome.successful
 
 @OptIn(ExperimentalProgressApi::class)
-class BuilderTest : PreparedSpec({
+val ProgressiveBuilderTest by preparedSuite {
 
 	@Suppress("LocalVariableName")
 	val Failed = "FAILED"
@@ -75,4 +75,4 @@ class BuilderTest : PreparedSpec({
 			check(ProgressiveOutcome.Incomplete().copyProgress() == ProgressiveOutcome.Incomplete(loading(0.23)))
 		}
 	}
-})
+}

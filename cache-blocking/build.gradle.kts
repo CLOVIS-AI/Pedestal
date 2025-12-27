@@ -17,6 +17,7 @@
 plugins {
 	alias(opensavvyConventions.plugins.base)
 	alias(opensavvyConventions.plugins.kotlin.library)
+	alias(libsCommon.plugins.testBalloon)
 }
 
 kotlin {
@@ -29,9 +30,9 @@ kotlin {
 	}
 
 	sourceSets.commonTest.dependencies {
-		implementation(libs.bundles.prepared)
+		implementation(libsCommon.opensavvy.prepared.testBalloon)
+		implementation(libsCommon.kotlin.test)
 		implementation(libs.lincheck)
-		implementation(libsCommon.kotlin.test) // Needed by Lincheck
 	}
 }
 
@@ -44,4 +45,9 @@ library {
 		name.set("Apache 2.0")
 		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
 	}
+}
+
+tasks.withType<Test> {
+	// LinCheck dies with the default of 512 mB
+	maxHeapSize = "4g"
 }

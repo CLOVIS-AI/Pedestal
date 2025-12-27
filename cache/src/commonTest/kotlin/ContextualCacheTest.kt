@@ -24,9 +24,9 @@ import opensavvy.cache.contextual.batchingCache
 import opensavvy.cache.contextual.cache
 import opensavvy.cache.contextual.cachedInMemory
 import opensavvy.cache.contextual.expireAfter
-import opensavvy.prepared.compat.kotlinx.datetime.clock
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.prepared.suite.backgroundScope
+import opensavvy.prepared.suite.clock
 import opensavvy.prepared.suite.time
 import opensavvy.state.arrow.out
 import opensavvy.state.coroutines.now
@@ -58,7 +58,7 @@ private fun createCache() = cache<Identifier, Context, Nothing, List<Int>> { id,
 }
 
 @OptIn(ExperimentalTime::class, ExperimentalCoroutinesApi::class)
-class ContextualCacheTest : PreparedSpec({
+val ContextualCacheTest by preparedSuite {
 
 	test("Read") {
 		val cache = createCache()
@@ -188,4 +188,4 @@ class ContextualCacheTest : PreparedSpec({
 		}
 	}
 
-})
+}

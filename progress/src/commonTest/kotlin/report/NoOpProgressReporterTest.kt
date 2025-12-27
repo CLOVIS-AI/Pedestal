@@ -16,13 +16,13 @@
 
 package opensavvy.progress.report
 
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.loading
 
 @Suppress("unused")
-class NoOpProgressReporterTest : PreparedSpec({
+val NoOpProgressReporterTest by preparedSuite {
 	test("No-op") {
 		// it does nothing anyway…
 		emptyProgressReporter().report(loading(0.5))
 	}
-})
+}

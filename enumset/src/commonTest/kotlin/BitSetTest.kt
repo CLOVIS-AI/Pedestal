@@ -19,15 +19,15 @@ package opensavvy.enumset
 import opensavvy.enumset.datatypes.testEmptySetValidity
 import opensavvy.enumset.datatypes.testFullSetValidity
 import opensavvy.enumset.datatypes.testSetValidity
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.prepared.suite.prepared
 
 @OptIn(ExperimentalEnumSetApi::class)
-class BitSetTest : PreparedSpec({
+val BitSetTest by preparedSuite {
 	val emptySet by prepared { BitSet32.empty() }
 	val fullSet by prepared { BitSet32.full() }
 
 	testEmptySetValidity("BitSet32", 32, emptySet)
 	testFullSetValidity("BitSet32", 32, fullSet)
 	testSetValidity("BitSet32", 32) { BitSet32.of(*it.toIntArray()) }
-})
+}

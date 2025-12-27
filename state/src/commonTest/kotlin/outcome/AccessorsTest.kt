@@ -16,9 +16,9 @@
 
 package opensavvy.state.outcome
 
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
-class AccessorsTest : PreparedSpec({
+val AccessorsTest by preparedSuite {
 
 	@Suppress("LocalVariableName")
 	val Failed = "FAILED"
@@ -54,4 +54,4 @@ class AccessorsTest : PreparedSpec({
 			check((Failed.failed() as Outcome<Any, Nothing>).failure == Failed)
 		}
 	}
-})
+}

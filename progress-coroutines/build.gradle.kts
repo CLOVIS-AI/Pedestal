@@ -15,53 +15,56 @@
  */
 
 plugins {
-    alias(opensavvyConventions.plugins.base)
-    alias(opensavvyConventions.plugins.kotlin.library)
+	alias(opensavvyConventions.plugins.base)
+	alias(opensavvyConventions.plugins.kotlin.library)
+	alias(libsCommon.plugins.testBalloon)
 }
 
 kotlin {
-    jvm()
-    js {
-        browser()
-        nodejs()
-    }
-    linuxX64()
-    linuxArm64()
-    macosX64()
-    macosArm64()
-    iosArm64()
-    iosX64()
-    iosSimulatorArm64()
-    watchosX64()
-    watchosArm32()
-    watchosArm64()
-    watchosSimulatorArm64()
-    tvosX64()
-    tvosArm64()
-    tvosSimulatorArm64()
-    mingwX64()
+	jvm()
+	js {
+		browser()
+		nodejs()
+	}
+	linuxX64()
+	linuxArm64()
+	macosX64()
+	macosArm64()
+	iosArm64()
+	iosX64()
+	iosSimulatorArm64()
+	watchosX64()
+	watchosArm32()
+	watchosArm64()
+	watchosSimulatorArm64()
+	tvosX64()
+	tvosArm64()
+	tvosSimulatorArm64()
+	mingwX64()
 
-    sourceSets.commonMain.dependencies {
-        api(projects.progress)
-        api(libs.kotlinx.coroutines.core)
+	sourceSets.commonMain.dependencies {
+		api(projects.progress)
+		api(libs.kotlinx.coroutines.core)
 
-        implementation(projects.logger)
-    }
+		implementation(projects.logger)
+	}
 
-    sourceSets.commonTest.dependencies {
-        implementation(libs.bundles.prepared)
-    }
+	sourceSets.commonTest.dependencies {
+		implementation(libsCommon.opensavvy.prepared.testBalloon)
+		implementation(libsCommon.opensavvy.prepared.parameterize)
+		implementation(libsCommon.kotlin.test)
+	}
 }
 
 library {
-    name.set("Progress (Coroutines compatibility)")
-    description.set("Coroutine-aware universal progress representation")
-    homeUrl.set("https://pedestal.opensavvy.dev/api-docs/progress-coroutines/index.html")
+	name.set("Progress (Coroutines compatibility)")
+	description.set("Coroutine-aware universal progress representation")
+	homeUrl.set("https://pedestal.opensavvy.dev/api-docs/progress-coroutines/index.html")
 
-    license.set {
-        name.set("Apache 2.0")
-        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-    }
+	license.set {
+		name.set("Apache 2.0")
+		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+	}
 
-    coverage.set(87)
+	coverage.set(87)
 }

@@ -17,12 +17,12 @@
 package opensavvy.progress.coroutines
 
 import kotlinx.coroutines.withContext
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.Progress
 import opensavvy.progress.loading
 import opensavvy.progress.report.ProgressReporter
 
-class CoroutineProgressReporterTest : PreparedSpec({
+val CoroutineProgressReporterTest by preparedSuite {
 
 	test("Report a value through the coroutine context") {
 		var value: Progress? = null
@@ -51,4 +51,4 @@ class CoroutineProgressReporterTest : PreparedSpec({
 		check(value == loading(0.2))
 	}
 
-})
+}

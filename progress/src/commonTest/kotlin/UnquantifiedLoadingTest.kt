@@ -16,12 +16,11 @@
 
 package opensavvy.progress
 
-import io.kotest.matchers.shouldBe
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
 @Suppress("unused")
-class UnquantifiedLoadingTest : PreparedSpec({
-    test("String representation") {
-        loading().toString() shouldBe "Loading"
-    }
-})
+val UnquantifiedLoadingTest by preparedSuite {
+	test("String representation") {
+		check(loading().toString() == "Loading")
+	}
+}

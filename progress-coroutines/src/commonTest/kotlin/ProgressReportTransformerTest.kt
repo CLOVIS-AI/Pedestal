@@ -17,12 +17,12 @@
 package opensavvy.progress.coroutines
 
 import kotlinx.coroutines.withContext
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.Progress
 import opensavvy.progress.loading
 import opensavvy.progress.report.ProgressReporter
 
-class ProgressReportTransformerTest : PreparedSpec({
+val ProgressReportTransformerTest by preparedSuite {
 
 	test("Using the progress transformer") {
 		var value: Progress? = null
@@ -53,4 +53,4 @@ class ProgressReportTransformerTest : PreparedSpec({
 		}
 	}
 
-})
+}

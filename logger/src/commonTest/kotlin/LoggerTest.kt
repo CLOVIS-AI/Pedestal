@@ -21,10 +21,10 @@ import opensavvy.logger.Logger.Companion.error
 import opensavvy.logger.Logger.Companion.info
 import opensavvy.logger.Logger.Companion.trace
 import opensavvy.logger.Logger.Companion.warn
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 
 @Suppress("DEPRECATION")
-class LoggerTest : PreparedSpec({
+val LoggerTest by preparedSuite {
 
 	test("Output") {
 		val log = loggerFor(this)
@@ -51,4 +51,4 @@ class LoggerTest : PreparedSpec({
 		log.warn(message) { "This is a warning!" }
 		log.error(message) { "This is an error!" }
 	}
-})
+}

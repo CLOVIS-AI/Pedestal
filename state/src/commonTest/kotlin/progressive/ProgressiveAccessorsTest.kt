@@ -16,13 +16,13 @@
 
 package opensavvy.state.progressive
 
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.loading
 import opensavvy.state.ExperimentalProgressiveRaiseApi
 import opensavvy.state.outcome.failed
 import opensavvy.state.outcome.successful
 
-class AccessorsTest : PreparedSpec({
+val ProgressiveAccessorsTest by preparedSuite {
 
 	@Suppress("LocalVariableName")
 	val Failed = "FAILED"
@@ -97,4 +97,4 @@ class AccessorsTest : PreparedSpec({
 			check(progress == loading(0.23))
 		}
 	}
-})
+}

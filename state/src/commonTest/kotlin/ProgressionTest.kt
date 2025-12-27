@@ -18,11 +18,11 @@ package opensavvy.state
 
 import com.benwoodworth.parameterize.parameterOf
 import com.benwoodworth.parameterize.parameterize
-import io.kotest.assertions.throwables.shouldThrow
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
+import opensavvy.prepared.suite.assertions.checkThrows
 import opensavvy.progress.loading
 
-class ProgressionTest : PreparedSpec({
+val ProgressionTest by preparedSuite {
 
 	test("String representation of loading states") {
 		check(loading().toString() == "Loading")
@@ -54,10 +54,10 @@ class ProgressionTest : PreparedSpec({
 			val parameter by parameterOf(-1.0, 1.01, 1.00000001, Double.MAX_VALUE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY)
 
 			test("A progress value of $parameter is not allowed") {
-				shouldThrow<IllegalArgumentException> {
+				checkThrows<IllegalArgumentException> {
 					loading(parameter)
 				}
 			}
 		}
 	}
-})
+}

@@ -22,9 +22,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.job
 import kotlinx.coroutines.withTimeout
 import opensavvy.cache.properties.*
-import opensavvy.prepared.compat.kotlinx.datetime.clock
-import opensavvy.prepared.compat.kotlinx.datetime.now
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.prepared.suite.*
 import opensavvy.state.coroutines.now
 import opensavvy.state.outcome.valueOrNull
@@ -34,7 +32,7 @@ import kotlin.time.ExperimentalTime
 private val expirationDuration = 10.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
-class ExpirationCacheTest : PreparedSpec({
+val ExpirationCacheTest by preparedSuite {
 
 	fun <A, B, C> TestDsl.decorateExpiration(upstream: Cache<A, B, C>): Cache<A, B, C> = upstream
 		.expireAfter(expirationDuration, backgroundScope, time.clock)
@@ -54,7 +52,7 @@ class ExpirationCacheTest : PreparedSpec({
 		automaticallyExpires { decorateMemoryAndExpiration(it) }
 		contextPassthrough { decorateMemoryAndExpiration(it) }
 	}
-})
+}
 
 @OptIn(ExperimentalTime::class, ExperimentalCoroutinesApi::class)
 private fun SuiteDsl.automaticallyExpires(

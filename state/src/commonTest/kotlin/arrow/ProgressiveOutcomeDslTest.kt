@@ -17,7 +17,7 @@
 package opensavvy.state.arrow
 
 import arrow.core.raise.recover
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.loading
 import opensavvy.state.ExperimentalProgressiveRaiseApi
 import opensavvy.state.outcome.failed
@@ -27,7 +27,7 @@ import opensavvy.state.progressive.failedWithProgress
 import opensavvy.state.progressive.successfulWithProgress
 
 @OptIn(ExperimentalProgressiveRaiseApi::class)
-class ProgressiveOutcomeDslTest : PreparedSpec({
+val ProgressiveOutcomeDslTest by preparedSuite {
 
 	test("Success") {
 		check(progressive<String, Int> { 2 } == 2.successfulWithProgress())
@@ -72,4 +72,4 @@ class ProgressiveOutcomeDslTest : PreparedSpec({
 		// …however, for now, we can't, so we settle for this weird behavior:
 		check(result == "foo".failedWithProgress(loading(0.2)))
 	}
-})
+}

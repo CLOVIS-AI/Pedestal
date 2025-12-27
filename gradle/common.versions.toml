@@ -5,25 +5,28 @@
 [versions]
 
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlin = "2.2.0"
+kotlin = "2.2.21"
 
 # https://github.com/google/ksp/releases
-ksp = "2.2.0-2.0.2"
+ksp = "2.3.2"
 
 # https://github.com/JetBrains/compose-multiplatform/releases
 compose = "1.8.2"
 
 # https://github.com/kotest/kotest/releases
-kotest = "6.0.1"
+kotest = "6.0.4"
 
 # https://github.com/infix-de/testBalloon/releases
-testBalloon = "0.5.0-K2.2.0"
+testBalloon = "0.7.1-K2.2.21"
 
 # https://gitlab.com/opensavvy/groundwork/pedestal/-/releases
-pedestal = "3.0.0"
+pedestal = "3.1.1"
 
-# https://opensavvy.gitlab.io/groundwork/prepared/docs/news
-prepared = "2.1.0"
+# https://prepared.opensavvy.dev/news
+prepared = "2.2.0"
+
+# https://github.com/JetBrains/java-annotations/releases
+jetbrains-annotations = "26.0.2-1"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
@@ -32,6 +35,9 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 kotlinx-powerAssert = { id = "org.jetbrains.kotlin.plugin.power-assert", version.ref = "kotlin" }
 
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
+# Kotest Gradle plugin for KMP (v6.0+)
+kotest = { id = "io.kotest", version.ref = "kotest" }
 
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
@@ -45,6 +51,8 @@ kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", versi
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotest-assertions-collections = { module = "io.kotest:kotest-assertions-collections", version.ref = "kotest" }
 kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
+
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
 
 opensavvy-pedestal-progress = { module = "dev.opensavvy.pedestal:progress", version.ref = "pedestal" }
 opensavvy-pedestal-progress-coroutines = { module = "dev.opensavvy.pedestal:progress-coroutines", version.ref = "pedestal" }

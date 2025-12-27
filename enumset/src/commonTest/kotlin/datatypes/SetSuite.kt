@@ -21,10 +21,10 @@ package opensavvy.enumset.datatypes
 import com.benwoodworth.parameterize.ExperimentalParameterizeApi
 import com.benwoodworth.parameterize.parameterOf
 import com.benwoodworth.parameterize.parameterize
-import io.kotest.assertions.throwables.shouldThrow
 import opensavvy.prepared.suite.Prepared
 import opensavvy.prepared.suite.SuiteDsl
 import opensavvy.prepared.suite.TestDsl
+import opensavvy.prepared.suite.assertions.checkThrows
 import opensavvy.prepared.suite.prepared
 import opensavvy.prepared.suite.random.nextInt
 import opensavvy.prepared.suite.random.random
@@ -83,7 +83,7 @@ fun SuiteDsl.testSetValidity(
 		}
 
 		test("Creation with an element out of range fails") {
-			shouldThrow<IllegalArgumentException> {
+			checkThrows<IllegalArgumentException> {
 				create(arrayOf(maxSize))
 			}
 		}
@@ -185,7 +185,7 @@ fun SuiteDsl.testEmptySetValidity(
 	test("Iterator should be empty") {
 		check(!set().iterator().hasNext())
 
-		shouldThrow<NoSuchElementException> {
+		checkThrows<NoSuchElementException> {
 			set().iterator().next()
 		}
 	}

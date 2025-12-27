@@ -18,7 +18,7 @@ package opensavvy.state.coroutines
 
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.coroutines.report
 import opensavvy.progress.loading
 import opensavvy.state.outcome.Outcome
@@ -26,7 +26,7 @@ import opensavvy.state.progressive.ProgressiveOutcome
 
 private object Error
 
-class CaptureProgressTest : PreparedSpec({
+val CaptureProgressTest by preparedSuite {
 
 	test("captureFromFlow") {
 		val actual = flow {
@@ -64,4 +64,4 @@ class CaptureProgressTest : PreparedSpec({
 
 		check(expect == actual)
 	}
-})
+}

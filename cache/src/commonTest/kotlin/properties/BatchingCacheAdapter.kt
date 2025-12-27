@@ -22,9 +22,9 @@ import kotlinx.coroutines.job
 import opensavvy.cache.batchingCache
 import opensavvy.cache.cachedInMemory
 import opensavvy.cache.expireAfter
-import opensavvy.prepared.compat.kotlinx.datetime.clock
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.prepared.suite.backgroundScope
+import opensavvy.prepared.suite.clock
 import opensavvy.prepared.suite.time
 import opensavvy.progress.loading
 import opensavvy.state.coroutines.now
@@ -35,7 +35,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
-class BatchingCacheAdapter : PreparedSpec({
+val BatchingCacheAdapter by preparedSuite {
 
 	test("Checking for batching") {
 		val cache = batchingCache<Int, Failures, String>(backgroundScope) { ids ->
@@ -63,4 +63,4 @@ class BatchingCacheAdapter : PreparedSpec({
 		check("1" == cache[1].now().valueOrNull)
 	}
 
-})
+}

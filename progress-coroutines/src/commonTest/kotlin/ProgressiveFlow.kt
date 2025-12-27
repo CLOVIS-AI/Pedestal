@@ -16,38 +16,41 @@
 
 package opensavvy.progress.coroutines
 
-import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.toList
-import opensavvy.prepared.runner.kotest.PreparedSpec
+import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.ExperimentalProgressApi
 import opensavvy.progress.Progressive
 import opensavvy.progress.done
 import opensavvy.progress.loading
 
 @OptIn(ExperimentalProgressApi::class)
-class ProgressiveFlow : PreparedSpec({
+val ProgressiveFlow by preparedSuite {
 
 	suite("Capture progress") {
 
 		test("Capture in a function") {
-			captureProgress {
+			val actual = captureProgress {
 				report(loading(0.1))
 				delay(100)
 				report(loading(0.9))
 				"It's done"
-			}.toList() shouldBe listOf(
+			}.toList()
+
+			val expected = listOf(
 				Progressive(null, loading(0.1)),
 				Progressive(null, loading(0.9)),
 				Progressive("It's done", done()),
 			)
+
+			check(actual == expected)
 		}
 
 		test("Capture in a flow") {
-			flow {
+			val actual = flow {
 				delay(100)
 				report(loading(0.5))
 				emit("It's done")
@@ -56,27 +59,32 @@ class ProgressiveFlow : PreparedSpec({
 				.onEach { report(loading(0.99)) }
 				.captureProgress()
 				.toList()
-				.shouldBe(
-					listOf(
-						Progressive(null, loading(0.0)),
-						Progressive(null, loading(0.5)),
-						Progressive(null, loading(0.99)),
-						Progressive("It's done", done()),
-					)
-				)
+
+			val expected = listOf(
+				Progressive(null, loading(0.0)),
+				Progressive(null, loading(0.5)),
+				Progressive(null, loading(0.99)),
+				Progressive("It's done", done()),
+			)
+
+			check(actual == expected)
 		}
 
 		test("Ignore non-loading events") {
-			captureProgress {
+			val actual = captureProgress {
 				report(loading(0.1))
 				report(done())
 				"It's done"
-			}.toList() shouldBe listOf(
+			}.toList()
+
+			val expected = listOf(
 				Progressive(null, loading(0.1)),
 				Progressive("It's done", done()),
 			)
+
+			check(actual == expected)
 		}
 
 	}
 
-})
+}

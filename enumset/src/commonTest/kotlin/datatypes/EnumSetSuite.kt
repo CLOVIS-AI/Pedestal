@@ -18,13 +18,13 @@
 
 package opensavvy.enumset.datatypes
 
-import io.kotest.assertions.throwables.shouldThrow
 import opensavvy.enumset.EnumEntriesSet
 import opensavvy.enumset.EnumSet32
 import opensavvy.enumset.ExperimentalEnumSetApi
 import opensavvy.prepared.suite.Prepared
 import opensavvy.prepared.suite.SuiteDsl
 import opensavvy.prepared.suite.TestDsl
+import opensavvy.prepared.suite.assertions.checkThrows
 import opensavvy.prepared.suite.prepared
 import opensavvy.prepared.suite.random.random
 import opensavvy.prepared.suite.random.randomInt
@@ -178,7 +178,7 @@ fun <E : Enum<E>> SuiteDsl.testEmptyEnumSetValidity(
 	test("Iterator should be empty") {
 		check(!set().iterator().hasNext())
 
-		shouldThrow<NoSuchElementException> {
+		checkThrows<NoSuchElementException> {
 			set().iterator().next()
 		}
 	}

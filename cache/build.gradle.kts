@@ -17,6 +17,7 @@
 plugins {
 	alias(opensavvyConventions.plugins.base)
 	alias(opensavvyConventions.plugins.kotlin.library)
+	alias(libsCommon.plugins.testBalloon)
 }
 
 kotlin {
@@ -44,13 +45,13 @@ kotlin {
 	sourceSets.commonMain.dependencies {
 		api(projects.state)
 		api(projects.stateCoroutines)
-		api(libs.kotlinx.datetime)
 
 		implementation(projects.logger)
 	}
 
 	sourceSets.commonTest.dependencies {
-		implementation(libs.bundles.prepared)
+		implementation(libsCommon.opensavvy.prepared.testBalloon)
+		implementation(libsCommon.kotlin.test)
 	}
 }
 
