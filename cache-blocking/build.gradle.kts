@@ -46,3 +46,8 @@ library {
 		url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
 	}
 }
+
+tasks.withType<Test> {
+	// LinCheck dies with the default of 512 mB
+	maxHeapSize = "4g"
+}
