@@ -39,4 +39,20 @@ class FakeWeakRef<T>(
 	fun clear() {
 		value = null
 	}
+
+	override fun toString(): String =
+		if (value == null) "FakeWeakRef.Empty" else "FakeWeakRef($value)"
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (other !is FakeWeakRef<*>) return false
+
+		if (value != other.value) return false
+
+		return true
+	}
+
+	override fun hashCode(): Int {
+		return value?.hashCode() ?: 0
+	}
 }
