@@ -1,7 +1,7 @@
 #!/usr/bin/env kotlin
 
 // https://gitlab-ci-kts.opensavvy.dev/news/index.html
-@file:DependsOn("dev.opensavvy.gitlab:gitlab-ci-kotlin-jvm:0.7.1")
+@file:DependsOn("dev.opensavvy.gitlab:gitlab-ci-kotlin-jvm:0.7.2")
 
 import opensavvy.gitlab.ci.*
 import opensavvy.gitlab.ci.Environment.EnvironmentTier.Development
@@ -15,7 +15,7 @@ val ciContainers = "0.8.2"
 /**
  * The URL of the website built by /docs/website.
  */
-val siteUrl = "\$CI_PAGES_URL"
+val siteUrl = "https://pedestal.opensavvy.dev/"
 
 // ***
 
