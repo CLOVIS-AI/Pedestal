@@ -19,7 +19,7 @@ package opensavvy.state.progressive
 import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.loading
 
-val ConditionalTest by preparedSuite {
+val ProgressiveConditionalTest by preparedSuite {
 
 	@Suppress("LocalVariableName")
 	val Failed = "FAILED"

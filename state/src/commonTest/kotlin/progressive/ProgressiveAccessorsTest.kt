@@ -22,7 +22,7 @@ import opensavvy.state.ExperimentalProgressiveRaiseApi
 import opensavvy.state.outcome.failed
 import opensavvy.state.outcome.successful
 
-val AccessorsTest by preparedSuite {
+val ProgressiveAccessorsTest by preparedSuite {
 
 	@Suppress("LocalVariableName")
 	val Failed = "FAILED"

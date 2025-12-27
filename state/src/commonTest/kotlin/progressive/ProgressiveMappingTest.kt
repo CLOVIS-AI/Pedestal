@@ -18,7 +18,7 @@ package opensavvy.state.progressive
 
 import opensavvy.prepared.runner.testballoon.preparedSuite
 
-val MappingTest by preparedSuite {
+val ProgressiveMappingTest by preparedSuite {
 
 	@Suppress("LocalVariableName") val Failed = "FAILED"
 

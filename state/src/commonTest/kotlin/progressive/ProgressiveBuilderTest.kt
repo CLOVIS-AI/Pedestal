@@ -25,7 +25,7 @@ import opensavvy.state.outcome.failed
 import opensavvy.state.outcome.successful
 
 @OptIn(ExperimentalProgressApi::class)
-val BuilderTest by preparedSuite {
+val ProgressiveBuilderTest by preparedSuite {
 
 	@Suppress("LocalVariableName")
 	val Failed = "FAILED"

@@ -19,7 +19,7 @@ package opensavvy.state.progressive
 import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.progress.loading
 
-val AccumulatorsTest by preparedSuite {
+val ProgressiveAccumulatorsTest by preparedSuite {
 
 	test("Iterable") {
 		val actual = listOf(
