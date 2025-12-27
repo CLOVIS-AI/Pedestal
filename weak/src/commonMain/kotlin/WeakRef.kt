@@ -111,6 +111,10 @@ interface WeakRef<out T> {
  *
  * The exact behavior of the returned object is platform-specific.
  *
+ * ### Thread-safety
+ *
+ * The reference returned by this function is thread-safe.
+ *
  * @see SoftRef For implementing caches
  */
 expect fun <T> WeakRef(value: T): WeakRef<T>
@@ -131,6 +135,10 @@ expect fun <T> WeakRef(value: T): WeakRef<T>
  * than strictly necessary.
  *
  * The exact behavior of the returned object is platform-specific.
+ *
+ * ### Thread-safety
+ *
+ * The reference returned by this function is thread-safe.
  *
  * @see WeakRef For implementing mappers
  */
