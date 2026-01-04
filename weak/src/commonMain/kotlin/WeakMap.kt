@@ -37,6 +37,10 @@ import kotlin.reflect.KProperty
  *
  * The default implementation is available via the top-level [WeakMap] function.
  * Other implementations are available in the `algorithms` subpackage.
+ *
+ * ### Thread-safety
+ *
+ * Implementations of this interface are **not thread-safe**.
  */
 interface WeakMap<in K, V> {
 
