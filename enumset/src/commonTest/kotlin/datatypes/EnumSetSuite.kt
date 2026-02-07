@@ -18,6 +18,8 @@
 
 package opensavvy.enumset.datatypes
 
+import com.benwoodworth.parameterize.parameterOf
+import com.benwoodworth.parameterize.parameterize
 import opensavvy.enumset.EnumEntriesSet
 import opensavvy.enumset.EnumSet32
 import opensavvy.enumset.ExperimentalEnumSetApi
@@ -212,6 +214,17 @@ fun <E : Enum<E>> SuiteDsl.testEmptyEnumSetValidity(
 	name: String,
 	entries: EnumEntries<E>,
 	create: () -> Set<E>,
+) {
+	val emptySet by prepared {
+		create()
+	}
+	testEmptyEnumSetValidity(name, entries, emptySet)
+}
+
+fun <E : Enum<E>> SuiteDsl.testEmptyEnumSetValidity(
+	name: String,
+	entries: EnumEntries<E>,
+	create: Prepared<Set<E>>,
 ) = suite("Empty $name") {
 	val set by prepared {
 		create()
@@ -290,3 +303,236 @@ private suspend fun <E : Enum<E>> TestDsl.buildSetOfSize(
 			add(entries.random(random.accessUnsafe()))
 		}
 	}
+
+fun <E : Enum<E>> SuiteDsl.testMutableEnumSetValidity(
+	name: String,
+	entries: EnumEntries<E>,
+	create: (Iterable<E>) -> MutableSet<E>,
+) = suite("MutableSet $name") {
+	/**
+	 * Shuffled `entries` to easily test non-deterministic order.
+	 *
+	 * Each test will see the elements in a different order.
+	 */
+	val shuffledEntries by prepared {
+		val result = entries.toMutableList()
+		random.use { r -> result.shuffle(r) }
+		result
+	}
+
+	testEnumSetValidity(name, entries, create)
+
+	suite("clear") {
+		val clearedSet by prepared {
+			val set = create(listOf(shuffledEntries()[0], shuffledEntries()[1]))
+			set.clear()
+			set
+		}
+
+		testEmptyEnumSetValidity(name, entries, clearedSet)
+	}
+
+	suite("add") {
+		test("Add an element to the empty set") {
+			val set = create(emptyList())
+			val element = entries[entries.size / 2]
+			check(set.add(element))
+			check(element in set)
+			check(set.size == 1)
+		}
+
+		if (entries.size >= 2) {
+			test("Add an element to a set of one element") {
+				val set = create(listOf(shuffledEntries()[0]))
+				val element = shuffledEntries()[1]
+				check(set.add(element))
+				check(element in set)
+				check(shuffledEntries()[0] in set)
+				check(set.size == 2)
+			}
+		}
+
+		if (entries.size >= 3) {
+			test("Add an element to set with two elements") {
+				val set = create(listOf(shuffledEntries()[0], shuffledEntries()[1]))
+				val element = shuffledEntries()[2]
+				check(set.add(element))
+				check(element in set)
+				check(shuffledEntries()[0] in set)
+				check(shuffledEntries()[1] in set)
+				check(set.size == 3)
+			}
+		}
+
+		test("Add an element that is already present") {
+			val alreadyInSet = shuffledEntries()[0]
+			val element = shuffledEntries()[1]
+			val set = create(listOf(alreadyInSet, element))
+			check(!set.add(element))
+			check(alreadyInSet in set)
+			check(element in set)
+			check(set.size == 2)
+		}
+	}
+
+	suite("addAll") {
+		parameterize {
+			val currentSize by parameterOf(0, 1, 2, 12.coerceAtMost(entries.size - 1), entries.size - 1)
+
+			val set by prepared {
+				create(buildSetOfSize(currentSize, entries))
+			}
+
+			val addingSize by parameterOf(0, 1, entries.size.coerceAtMost(4))
+
+			val addingValues by prepared {
+				buildSetOfSize(addingSize, entries)
+			}
+
+			val addingSet by parameterOf(
+				prepared("set of any type") {
+					addingValues()
+				},
+				prepared("set of same type") {
+					create(addingValues())
+				}
+			)
+
+			test("Adding $addingSize elements to a set of size $currentSize (${addingSet.name})") {
+				val set = set()
+
+				val willBeAdded = addingSet().filter { it !in set }
+
+				check(set.addAll(addingSet()) == willBeAdded.isNotEmpty())
+				check(set.size == currentSize + willBeAdded.size)
+			}
+		}
+	}
+
+	suite("remove") {
+		test("Remove an element from the empty set") {
+			val set = create(emptyList())
+			val element = shuffledEntries()[0]
+			check(!set.remove(element))
+			check(set.isEmpty())
+		}
+
+		test("Remove the only element in a set") {
+			val element = shuffledEntries()[0]
+			val set = create(listOf(element))
+			check(set.remove(element))
+			check(set.isEmpty())
+		}
+
+		if (entries.size >= 3) {
+			test("Remove an element that is not contained in the set") {
+				val set = create(listOf(shuffledEntries()[0], shuffledEntries()[1]))
+				val element = shuffledEntries()[2]
+				check(!set.remove(element))
+				check(!set.isEmpty())
+				check(set.size == 2)
+			}
+		}
+
+		if (entries.size >= 3) {
+			test("Remove an element in a set with multiple elements") {
+				val element = shuffledEntries()[2]
+				val set = create(listOf(shuffledEntries()[0], shuffledEntries()[1], element))
+				check(set.remove(element))
+				check(!set.isEmpty())
+				check(set.size == 2)
+			}
+		}
+	}
+
+	suite("removeAll") {
+		parameterize {
+			val removingSize by parameterOf(0, 1, entries.size.coerceAtMost(4))
+
+			val currentSize by parameterOf(0, 1, 2, 12.coerceAtMost(entries.size - removingSize), entries.size - removingSize)
+
+			val set by prepared {
+				create(buildSetOfSize(currentSize, entries))
+			}
+
+			val removingValues by prepared {
+				buildSetOfSize(removingSize, entries)
+			}
+
+			val removingSet by parameterOf(
+				prepared("set of any type") {
+					removingValues()
+				},
+				prepared("set of same type") {
+					create(removingValues())
+				}
+			)
+
+			test("Removing $removingSize elements from a set of size $currentSize (${removingSet.name})") {
+				val set = set()
+
+				val willBeRemoved = removingSet().filter { it in set }
+
+				check(set.removeAll(removingSet()) == willBeRemoved.isNotEmpty())
+				check(set.size == currentSize - willBeRemoved.size)
+			}
+		}
+	}
+
+	if (entries.size >= 3) {
+		suite("Iterator") {
+			test("Remove an item while iterating") {
+				val set = create(listOf(entries[0], entries[1], entries[2]))
+				println("Iterating through set $set")
+				val iter = set.iterator()
+
+				check(iter.hasNext())
+				check(iter.next() == entries[0])
+
+				check(iter.hasNext())
+				iter.remove()
+
+				println("After removal: $set")
+
+				check(iter.hasNext())
+				check(iter.next() == entries[2])
+			}
+		}
+	}
+
+	if (entries.size >= 3) {
+		suite("retainAll") {
+			test("Remove all elements") {
+				val set = create(listOf(shuffledEntries()[0], shuffledEntries()[1], shuffledEntries()[2]))
+
+				check(set.retainAll(emptySet()))
+				check(set.isEmpty())
+			}
+
+			if (entries.size >= 4) {
+				test("Remove a single element") {
+					val element1 = shuffledEntries()[0]
+					val element2 = shuffledEntries()[1]
+					val element3 = shuffledEntries()[2]
+					val element4 = shuffledEntries()[3]
+					val set = create(listOf(element1, element2, element3))
+
+					check(set.retainAll(setOf(element4, element1, element3)))
+					check(!set.isEmpty())
+					check(set.size == 2)
+				}
+			}
+
+			test("Remove no elements") {
+				val element1 = shuffledEntries()[0]
+				val element2 = shuffledEntries()[1]
+				val element3 = shuffledEntries()[2]
+				val set = create(listOf(element1, element2, element3))
+
+				check(!set.retainAll(setOf(element1, element2, element3)))
+				check(!set.isEmpty())
+				check(set.size == 3)
+			}
+		}
+	}
+}

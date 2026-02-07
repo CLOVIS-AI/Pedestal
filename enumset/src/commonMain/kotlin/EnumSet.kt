@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, OpenSavvy and contributors.
+ * Copyright (c) 2025-2026, OpenSavvy and contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package opensavvy.enumset
 
 import kotlin.enums.EnumEntries
 import kotlin.enums.enumEntries
+
+// region Set
 
 @PublishedApi
 @ExperimentalEnumSetApi
@@ -103,3 +105,90 @@ inline fun <reified E : Enum<E>> enumSetOf(
 @ExperimentalEnumSetApi
 inline fun <reified E : Enum<E>> Set<E>.toEnumSet(): Set<E> =
 	enumSetOf(this, enumEntries())
+
+// endregion
+// region MutableSet
+
+@PublishedApi
+@ExperimentalEnumSetApi
+internal fun <E : Enum<E>> mutableEnumSetOf(
+	elements: Iterable<E>,
+	entries: EnumEntries<E>,
+): MutableSet<E> {
+	return when (entries.size) {
+		0 -> mutableSetOf()
+
+		in 1..32 -> MutableEnumSet32.of(elements, entries)
+
+		else -> elements.toMutableSet()
+	}
+}
+
+/**
+ * Creates a [MutableSet] optimized for storing elements of enumerations.
+ *
+ * Depending on the enumeration size, different implementations may be returned.
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * enum class Foo {
+ *     A,
+ *     B,
+ *     C,
+ * }
+ *
+ * val foo = mutableEnumSetOf(Foo.A, Foo.B)
+ * ```
+ */
+@ExperimentalEnumSetApi
+inline fun <reified E : Enum<E>> mutableEnumSetOf(
+	vararg elements: E,
+): MutableSet<E> =
+	mutableEnumSetOf(elements.asIterable())
+
+/**
+ * Creates a [MutableSet] optimized for storing elements of enumerations.
+ *
+ * Depending on the enumeration size, different implementations may be returned.
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * enum class Foo {
+ *     A,
+ *     B,
+ *     C,
+ * }
+ *
+ * val foo = mutableEnumSetOf(Foo.A, Foo.B)
+ * ```
+ */
+@ExperimentalEnumSetApi
+inline fun <reified E : Enum<E>> mutableEnumSetOf(
+	elements: Iterable<E>,
+): MutableSet<E> =
+	mutableEnumSetOf(elements, enumEntries<E>())
+
+/**
+ * Copies a regular [Set] into a mutable set optimized for enumerations.
+ *
+ * Depending on the enumeration size, different implementations may be returned.
+ *
+ * ### Example
+ *
+ * ```kotlin
+ * enum class Foo {
+ *     A,
+ *     B,
+ *     C,
+ * }
+ *
+ * val foo = setOf(Foo.A, Foo.B).toMutableEnumSet()
+ * ```
+ */
+@ExperimentalEnumSetApi
+inline fun <reified E : Enum<E>> Set<E>.toMutableEnumSet(): MutableSet<E> =
+	mutableEnumSetOf(this, enumEntries())
+
+// endregion

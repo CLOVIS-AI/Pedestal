@@ -89,3 +89,98 @@ internal class EnumSet32<E : Enum<E>> private constructor(
 		}
 	}
 }
+
+@ExperimentalEnumSetApi
+internal class MutableEnumSet32<E : Enum<E>> private constructor(
+	private val set: MutableBitSet32,
+	private val entries: EnumEntries<E>,
+) : MutableSet<E> {
+
+	init {
+		require(entries.size < 32) { "A MutableEnumSet32 cannot be instantiated for this enum because it has more than 32 entries" }
+	}
+
+	override val size: Int
+		get() = set.size
+
+	override fun isEmpty(): Boolean =
+		set.isEmpty()
+
+	override fun contains(element: E): Boolean =
+		set.contains(element.ordinal)
+
+	override fun iterator(): MutableIterator<E> =
+		MutableEnumSet32Iterator(set.iterator(), entries)
+
+	override fun add(element: E): Boolean =
+		set.add(element.ordinal)
+
+	override fun remove(element: E): Boolean =
+		set.remove(element.ordinal)
+
+	override fun addAll(elements: Collection<E>): Boolean =
+		set.addAll(elements.map { it.ordinal })
+
+	override fun removeAll(elements: Collection<E>): Boolean =
+		set.removeAll(elements.map { it.ordinal })
+
+	override fun retainAll(elements: Collection<E>): Boolean =
+		set.retainAll(elements.map { it.ordinal })
+
+	override fun clear() {
+		set.clear()
+	}
+
+	private class MutableEnumSet32Iterator<E : Enum<E>>(
+		private val iter: MutableIterator<Int>,
+		private val entries: EnumEntries<E>,
+	) : MutableIterator<E> {
+		override fun hasNext(): Boolean =
+			iter.hasNext()
+
+		override fun next(): E =
+			entries[iter.next()]
+
+		override fun remove() {
+			iter.remove()
+		}
+	}
+
+	override fun containsAll(elements: Collection<E>): Boolean {
+		val elementsMask = MutableBitSet32()
+		for (element in elements) {
+			val ordinal = element.ordinal
+			elementsMask.add(ordinal)
+		}
+
+		return set.containsAll(elementsMask)
+	}
+
+	override fun toString(): String =
+		this.joinToString(", ", "[", "]")
+
+	override fun equals(other: Any?): Boolean {
+		if (other === null) return false
+		if (other === this) return true
+		if (other is MutableEnumSet32<*>) return entries == other.entries && set == other.set
+		if (other !is Set<*>) return false
+
+		return size == other.size &&
+			this.containsAll(other)
+	}
+
+	override fun hashCode(): Int =
+		sumOf { it.hashCode() }
+
+	companion object {
+
+		internal fun <E : Enum<E>> of(elements: Iterable<E>, entries: EnumEntries<E>): MutableEnumSet32<E> {
+			val elementsSet = MutableBitSet32()
+			for (element in elements) {
+				elementsSet.add(element.ordinal)
+			}
+
+			return MutableEnumSet32(elementsSet, entries)
+		}
+	}
+}

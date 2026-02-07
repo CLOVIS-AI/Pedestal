@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, OpenSavvy and contributors.
+ * Copyright (c) 2025-2026, OpenSavvy and contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package opensavvy.enumset
 
 import opensavvy.enumset.datatypes.testEmptyEnumSetValidity
 import opensavvy.enumset.datatypes.testEnumSetValidity
+import opensavvy.enumset.datatypes.testMutableEnumSetValidity
 import opensavvy.prepared.runner.testballoon.preparedSuite
 import opensavvy.prepared.suite.assertions.checkThrows
 
@@ -55,5 +56,22 @@ val EnumSetTest by preparedSuite {
 
 	test("Cannot instantiate an EnumSet32 with an enum that has more than 32 elements") {
 		checkThrows<IllegalArgumentException> { EnumSet32.of(emptyList(), Enum36.entries) }
+	}
+}
+
+val MutableEnumSetTest by preparedSuite {
+	testEmptyEnumSetValidity("of 0 elements", Enum0.entries) { mutableEnumSetOf() }
+	testMutableEnumSetValidity("of 2 elements", Enum2.entries) { mutableEnumSetOf(it) }
+	testMutableEnumSetValidity("of 7 elements", Enum7.entries) { mutableEnumSetOf(it) }
+	testMutableEnumSetValidity("of 26 elements", Enum26.entries) { mutableEnumSetOf(it) }
+	testMutableEnumSetValidity("of 36 elements", Enum36.entries) { mutableEnumSetOf(it) }
+
+	testEmptyEnumSetValidity("MutableEnumSet32 of 0 elements", Enum0.entries) { MutableEnumSet32.of(emptyList(), Enum0.entries) }
+	testMutableEnumSetValidity("MutableEnumSet32 of 2 elements", Enum2.entries) { MutableEnumSet32.of(it, Enum2.entries) }
+	testMutableEnumSetValidity("MutableEnumSet32 of 7 elements", Enum7.entries) { MutableEnumSet32.of(it, Enum7.entries) }
+	testMutableEnumSetValidity("MutableEnumSet32 of 26 elements", Enum26.entries) { MutableEnumSet32.of(it, Enum26.entries) }
+
+	test("Cannot instantiate a MutableEnumSet32 with an enum that has more than 32 elements") {
+		checkThrows<IllegalArgumentException> { MutableEnumSet32.of(emptyList(), Enum36.entries) }
 	}
 }
