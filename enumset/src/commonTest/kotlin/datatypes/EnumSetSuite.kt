@@ -488,9 +488,10 @@ fun <E : Enum<E>> SuiteDsl.testMutableEnumSetValidity(
 
 				check(iter.hasNext())
 				check(iter.next() == entries[0])
+				iter.remove()
 
 				check(iter.hasNext())
-				iter.remove()
+				check(iter.next() == entries[1])
 
 				println("After removal: $set")
 
