@@ -19,6 +19,15 @@ package opensavvy.enumset
 import kotlin.enums.EnumEntries
 
 @ExperimentalEnumSetApi
+private fun <E : Enum<E>> Iterable<E>.toBitSet(): MutableBitSet32 {
+	val elements = MutableBitSet32()
+	for (element in this) {
+		elements.add(element.ordinal)
+	}
+	return elements
+}
+
+@ExperimentalEnumSetApi
 internal class EnumSet32<E : Enum<E>> private constructor(
 	private val set: BitSet32,
 	private val entries: EnumEntries<E>,
@@ -52,13 +61,7 @@ internal class EnumSet32<E : Enum<E>> private constructor(
 	}
 
 	override fun containsAll(elements: Collection<E>): Boolean {
-		val elementsMask = MutableBitSet32()
-		for (element in elements) {
-			val ordinal = element.ordinal
-			elementsMask.add(ordinal)
-		}
-
-		return set.containsAll(elementsMask)
+		return set.containsAll(elements.toBitSet())
 	}
 
 	override fun toString(): String =
@@ -80,12 +83,7 @@ internal class EnumSet32<E : Enum<E>> private constructor(
 	companion object {
 
 		internal fun <E : Enum<E>> of(elements: Iterable<E>, entries: EnumEntries<E>): EnumSet32<E> {
-			val elementsSet = MutableBitSet32()
-			for (element in elements) {
-				elementsSet.add(element.ordinal)
-			}
-
-			return EnumSet32(elementsSet.toSet(), entries)
+			return EnumSet32(elements.toBitSet().toSet(), entries)
 		}
 	}
 }
@@ -119,13 +117,13 @@ internal class MutableEnumSet32<E : Enum<E>> private constructor(
 		set.remove(element.ordinal)
 
 	override fun addAll(elements: Collection<E>): Boolean =
-		set.addAll(elements.map { it.ordinal })
+		set.addAll(elements.toBitSet())
 
 	override fun removeAll(elements: Collection<E>): Boolean =
-		set.removeAll(elements.map { it.ordinal })
+		set.removeAll(elements.toBitSet())
 
 	override fun retainAll(elements: Collection<E>): Boolean =
-		set.retainAll(elements.map { it.ordinal })
+		set.retainAll(elements.toBitSet())
 
 	override fun clear() {
 		set.clear()
@@ -146,15 +144,8 @@ internal class MutableEnumSet32<E : Enum<E>> private constructor(
 		}
 	}
 
-	override fun containsAll(elements: Collection<E>): Boolean {
-		val elementsMask = MutableBitSet32()
-		for (element in elements) {
-			val ordinal = element.ordinal
-			elementsMask.add(ordinal)
-		}
-
-		return set.containsAll(elementsMask)
-	}
+	override fun containsAll(elements: Collection<E>): Boolean =
+		set.containsAll(elements.toBitSet())
 
 	override fun toString(): String =
 		this.joinToString(", ", "[", "]")
