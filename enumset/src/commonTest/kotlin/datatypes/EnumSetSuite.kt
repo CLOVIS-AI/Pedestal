@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, OpenSavvy and contributors.
+ * Copyright (c) 2025-2026, OpenSavvy and contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,8 @@ import opensavvy.prepared.suite.prepared
 import opensavvy.prepared.suite.random.random
 import opensavvy.prepared.suite.random.randomInt
 import kotlin.enums.EnumEntries
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 fun <E : Enum<E>> SuiteDsl.testEnumSetValidity(
 	name: String,
@@ -150,6 +152,59 @@ fun <E : Enum<E>> SuiteDsl.testEnumSetValidity(
 			create(entries)
 		}
 		testFullEnumSetValidity(name, entries, set)
+	}
+
+	suite("Identity") {
+		val itemCounts = listOf(
+			0,
+			1,
+			2,
+			Random.nextInt(0..entries.size),
+			entries.size / 2,
+			entries.size,
+		)
+
+		for (itemCount in itemCounts) suite("$itemCount items") {
+			/**
+			 * A set of size `itemCount` with random items.
+			 *
+			 * This is a standard set, used as a control for this test.
+			 */
+			val hashSet by prepared {
+				val allItems = entries.toMutableList()
+				random.use { allItems.shuffle() }
+
+				val items = HashSet<E>()
+				repeat(itemCount) {
+					items.add(allItems.removeLast())
+				}
+
+				items
+			}
+
+			/**
+			 * The test implementation we want to test, with the same content as `hashSet`.
+			 */
+			val testedSet by prepared {
+				create(hashSet())
+			}
+
+			test("Equals") {
+				check(hashSet() == testedSet()) { "A HashSet should detect that it has the same elements as the tested set" }
+				check(testedSet() == hashSet()) { "The tested set should detect that it has the same elements as the HashSet" }
+			}
+
+			test("Equals: fast-paths") {
+				check(testedSet() == testedSet()) { "The tested set itself is equal to itself" }
+				check(testedSet() == create(hashSet())) { "The tested set is equal to another set of the same type with the same elements" }
+				check(!testedSet().equals(null))
+				check(testedSet() != Any())
+			}
+
+			test("HashCode") {
+				check(hashSet().hashCode() == testedSet().hashCode())
+			}
+		}
 	}
 }
 

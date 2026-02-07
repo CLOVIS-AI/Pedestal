@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, OpenSavvy and contributors.
+ * Copyright (c) 2025-2026, OpenSavvy and contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,19 @@ internal class EnumSet32<E : Enum<E>> private constructor(
 
 	override fun toString(): String =
 		this.joinToString(", ", "[", "]")
+
+	override fun equals(other: Any?): Boolean {
+		if (other === null) return false
+		if (other === this) return true
+		if (other is EnumSet32<*>) return entries == other.entries && set == other.set
+		if (other !is Set<*>) return false
+
+		return size == other.size &&
+			this.containsAll(other)
+	}
+
+	override fun hashCode(): Int =
+		sumOf { it.hashCode() }
 
 	companion object {
 
