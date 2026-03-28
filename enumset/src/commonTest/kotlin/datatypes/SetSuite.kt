@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, OpenSavvy and contributors.
+ * Copyright (c) 2025-2026, OpenSavvy and contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -405,8 +405,39 @@ fun SuiteDsl.testMutableSetValidity(
 			check(iter.hasNext())
 			iter.remove()
 
+			// 'remove' deletes the last item returned by 'next', NOT the last item as seen by hasNext
+			check(5 !in set)
+			check(7 in set)
+			check(9 in set)
+			check(set.size == 2)
+
+			check(iter.next() == 7)
+
 			check(iter.hasNext())
 			check(iter.next() == 9)
+		}
+
+		test("Cannot remove an item before reading the first element") {
+			val set = create(arrayOf(5, 7, 9))
+			val iter = set.iterator()
+			check(iter.hasNext())
+			checkThrows<IllegalStateException> {
+				iter.remove()
+			}
+		}
+
+		test("Cannot remove an item twice") {
+			val set = create(arrayOf(5, 7, 9))
+			println("Iterating through set $set")
+			val iter = set.iterator()
+
+			check(iter.hasNext())
+			check(iter.next() == 5)
+			iter.remove()
+
+			checkThrows<IllegalStateException> {
+				iter.remove()
+			}
 		}
 	}
 

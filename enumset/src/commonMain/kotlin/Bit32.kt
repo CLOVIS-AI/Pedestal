@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, OpenSavvy and contributors.
+ * Copyright (c) 2025-2026, OpenSavvy and contributors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,6 +209,7 @@ class MutableBitSet32 internal constructor(private var storage: BitSet32) : Muta
 		private val set: MutableBitSet32,
 	) : MutableIterator<Int> {
 		private var index = 0
+		private var lastIndexReturned = -1
 
 		override fun hasNext(): Boolean {
 			while (index < 32) {
@@ -227,11 +228,15 @@ class MutableBitSet32 internal constructor(private var storage: BitSet32) : Muta
 				throw NoSuchElementException()
 			}
 
+			lastIndexReturned = index
 			return index++
 		}
 
 		override fun remove() {
-			set.remove(index)
+			check(lastIndexReturned != -1) { "Cannot remove an item before next() is called at least once" }
+			check(lastIndexReturned != -2) { "Cannot remove an item multiple times. remove() removes the last item viewed by next(), but it has already been removed" }
+			set.remove(lastIndexReturned)
+			lastIndexReturned = -2
 		}
 	}
 
