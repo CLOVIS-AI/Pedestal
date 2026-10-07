@@ -84,7 +84,7 @@ sealed class AccountCreationFailure {
 suspend fun createAccount(username: String, password: String, passwordCopy: String) = out<AccountCreationFailure, User> {
 	// …data checking…
 	ensure(password.length >= 4) { AccountCreationFailure.PasswordTooShort }
-	ensure(password != passwordCopy) { AccountCreationFailure.PasswordsDoNotMatch }
+	ensure(password == passwordCopy) { AccountCreationFailure.PasswordsDoNotMatch }
 	// note that the conditions are in a better order
 	
 	// …
