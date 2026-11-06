@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnLockMismatchReport
-import org.jetbrains.kotlin.gradle.targets.js.yarn.YarnRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.npm.LockFileMismatchReport
+import org.jetbrains.kotlin.gradle.targets.js.npm.NpmExtension
+import org.jetbrains.kotlin.gradle.targets.wasm.npm.WasmNpmExtension
 
 /*
  * This is the root project.
@@ -70,12 +71,19 @@ if (group == "dev.opensavvy.playground") {
 }
 
 // endregion
-// region Always ignore the yarn.lock file
+// region Always ignore the package-lock.json file
 // See https://kotlinlang.org/docs/js-project-setup.html#reporting-that-yarn-lock-has-been-updated
 
-plugins.withType(org.jetbrains.kotlin.gradle.targets.js.yarn.YarnPlugin::class.java) {
-	the<YarnRootExtension>().yarnLockMismatchReport = YarnLockMismatchReport.NONE
-	the<YarnRootExtension>().yarnLockAutoReplace = true
+plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
+	the<NpmExtension>().packageLockMismatchReport.set(LockFileMismatchReport.NONE)
+	the<NpmExtension>().packageLockAutoReplace.set(true)
+	the<NpmExtension>().override("webpack", libsCommon.versions.webpack.get())
+}
+
+plugins.withType<org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsRootPlugin> {
+	the<WasmNpmExtension>().packageLockMismatchReport.set(LockFileMismatchReport.NONE)
+	the<WasmNpmExtension>().packageLockAutoReplace.set(true)
+	the<WasmNpmExtension>().override("webpack", libsCommon.versions.webpack.get())
 }
 
 // endregion
@@ -90,12 +98,14 @@ dokka {
 // endregion
 // region NodeJS version
 
-project.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin> {
-	project.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec>().version.set(libsCommon.versions.nodejs)
-}
+allprojects {
+	plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsPlugin> {
+		the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsEnvSpec>().version.set(libsCommon.versions.nodejs)
+	}
 
-project.plugins.withType<org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsPlugin> {
-	project.the<org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsEnvSpec>().version.set(libsCommon.versions.nodejs)
+	plugins.withType<org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsPlugin> {
+		the<org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsEnvSpec>().version.set(libsCommon.versions.nodejs)
+	}
 }
 
 // endregion
