@@ -6,8 +6,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 plugins {
 	alias(opensavvyConventions.plugins.base)
 	alias(opensavvyConventions.plugins.kotlin.application)
-	alias(libsCommon.plugins.kotest)
-	alias(libsCommon.plugins.ksp)
+	alias(libsCommon.plugins.testBalloon)
 }
 
 kotlin {
@@ -27,7 +26,6 @@ kotlin {
 	macosArm64()
 	iosArm64()
 	iosSimulatorArm64()
-	watchosArm32()
 	watchosArm64()
 	watchosSimulatorArm64()
 	tvosArm64()
@@ -43,13 +41,8 @@ kotlin {
 	}
 
 	sourceSets.commonTest.dependencies {
-		implementation(libsCommon.bundles.kotest)
+		implementation(libsCommon.bundles.testBalloon)
 	}
-}
-
-tasks.withType<AbstractTestTask> {
-	// Kotest doesn't report test correctly as of now
-	failOnNoDiscoveredTests = false
 }
 
 // region Publication test
